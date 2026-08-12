@@ -1,0 +1,320 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   InstaDM247 design system
+   Dark-first. One accent ramp (violet → fuchsia → coral) used sparingly so the
+   product surfaces stay calm and the marketing surfaces can go loud.
+   ========================================================================== */
+
+@theme {
+  --font-sans: "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  --font-display: "InterVariable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Neutral ramp — slightly blue-cool so the accent reads warm against it */
+  --color-ink-50: #f6f7fb;
+  --color-ink-100: #eceef6;
+  --color-ink-200: #d6dae8;
+  --color-ink-300: #b0b7cd;
+  --color-ink-400: #7d87a6;
+  --color-ink-500: #5a6483;
+  --color-ink-600: #414a66;
+  --color-ink-700: #2e3550;
+  --color-ink-800: #1c2138;
+  --color-ink-900: #131728;
+  --color-ink-950: #0b0e1a;
+
+  --color-brand-50: #f4f1ff;
+  --color-brand-100: #ebe4ff;
+  --color-brand-200: #d9ceff;
+  --color-brand-300: #bfa8ff;
+  --color-brand-400: #9f76ff;
+  --color-brand-500: #8344ff;
+  --color-brand-600: #7222f5;
+  --color-brand-700: #6014d8;
+  --color-brand-800: #5014b0;
+  --color-brand-900: #43148f;
+
+  --color-flare-400: #ff6ec7;
+  --color-flare-500: #f43ba6;
+  --color-flare-600: #db1f87;
+
+  --color-ember-400: #ff9a62;
+  --color-ember-500: #ff7a3d;
+
+  --color-mint-400: #4ade9f;
+  --color-mint-500: #16c47f;
+
+  --color-sky-450: #38bdf8;
+
+  --radius-card: 1.125rem;
+
+  --animate-marquee: marquee 42s linear infinite;
+  --animate-shimmer: shimmer 2.6s linear infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-typing: typing 1.2s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(1.5deg); }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  70% { transform: scale(1.6); opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* --- Theme tokens ---------------------------------------------------------
+   Light palette on bare :root, dark redefined in both the media query and the
+   [data-theme] selector so an explicit toggle wins in both directions.        */
+
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f6f7fb;
+  --bg-raised: #ffffff;
+  --bg-sunken: #eef0f7;
+  --border: #e2e5ef;
+  --border-strong: #cdd2e2;
+  --text: #131728;
+  --text-muted: #5a6483;
+  --text-faint: #7d87a6;
+  --accent: #7222f5;
+  --accent-contrast: #ffffff;
+  --shadow-color: 220 40% 40%;
+  --grid-line: rgba(19, 23, 40, 0.055);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0e1a;
+    --bg-subtle: #101426;
+    --bg-raised: #151a30;
+    --bg-sunken: #080a14;
+    --border: #232a45;
+    --border-strong: #333b5e;
+    --text: #eceef6;
+    --text-muted: #a3abc6;
+    --text-faint: #7d87a6;
+    --accent: #9f76ff;
+    --accent-contrast: #0b0e1a;
+    --shadow-color: 250 60% 4%;
+    --grid-line: rgba(236, 238, 246, 0.05);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b0e1a;
+  --bg-subtle: #101426;
+  --bg-raised: #151a30;
+  --bg-sunken: #080a14;
+  --border: #232a45;
+  --border-strong: #333b5e;
+  --text: #eceef6;
+  --text-muted: #a3abc6;
+  --text-faint: #7d87a6;
+  --accent: #9f76ff;
+  --accent-contrast: #0b0e1a;
+  --shadow-color: 250 60% 4%;
+  --grid-line: rgba(236, 238, 246, 0.05);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "ss03";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 32%, transparent);
+    color: var(--text);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.028em;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Scrollbars — subtle, themed */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 999px;
+    border: 3px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .surface {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+  }
+
+  .text-gradient {
+    background: linear-gradient(
+      100deg,
+      var(--color-brand-400) 0%,
+      var(--color-flare-400) 46%,
+      var(--color-ember-400) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Animated gradient border. Uses a masked pseudo-element so the fill stays
+     independent of the stroke. */
+  .gradient-ring {
+    position: relative;
+    isolation: isolate;
+  }
+  .gradient-ring::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-brand-400) 70%, transparent),
+      color-mix(in oklab, var(--color-flare-400) 50%, transparent) 45%,
+      transparent 75%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .glass {
+    background: color-mix(in oklab, var(--bg-raised) 72%, transparent);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+  }
+
+  /* Faint blueprint grid used behind hero sections */
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .radial-fade {
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
+  }
+
+  /* Film grain — kills the flat "template" look on large gradient areas */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .shadow-lift {
+    box-shadow:
+      0 1px 2px hsl(var(--shadow-color) / 0.08),
+      0 8px 24px -8px hsl(var(--shadow-color) / 0.16),
+      0 24px 56px -24px hsl(var(--shadow-color) / 0.24);
+  }
+
+  .shadow-glow {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--color-brand-400) 22%, transparent),
+      0 12px 48px -12px color-mix(in oklab, var(--color-brand-500) 45%, transparent);
+  }
+
+  .mask-fade-r {
+    mask-image: linear-gradient(to right, #000 76%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, #000 76%, transparent 100%);
+  }
+  .mask-fade-x {
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+}
+
+/* --- React Flow theming --------------------------------------------------- */
+
+.react-flow {
+  --xy-background-color: var(--bg-subtle);
+  --xy-edge-stroke: var(--border-strong);
+  --xy-edge-stroke-selected: var(--accent);
+  --xy-handle-background-color: var(--accent);
+  --xy-handle-border-color: var(--bg-raised);
+}
+.react-flow__attribution { display: none; }
+.react-flow__edge-path { stroke-width: 2; }
+.react-flow__edge.selected .react-flow__edge-path { stroke-width: 2.5; }
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--bg-raised);
+}
+.react-flow__controls-button {
+  background: var(--bg-raised);
+  border-color: var(--border);
+  fill: var(--text-muted);
+}
+.react-flow__controls-button:hover { background: var(--bg-subtle); }
+.react-flow__minimap { background: var(--bg-subtle); }
+.react-flow__node { cursor: grab; }
+.react-flow__node:active { cursor: grabbing; }

@@ -101,11 +101,13 @@ export async function scheduleMaintenance(): Promise<void> {
     ["reengage", { kind: "reengage" }, "*/30 * * * *"],
   ];
 
+  // BullMQ v5+ replaced repeatable jobs with job schedulers. Upserting by a
+  // stable id keeps a worker restart from stacking duplicate schedules.
   for (const [name, data, pattern] of repeating) {
-    await queue.add(name, data, {
-      repeat: { pattern },
-      jobId: `repeat:${name}`,
-      removeOnComplete: true,
-    });
+    await queue.upsertJobScheduler(
+      `repeat:${name}`,
+      { pattern },
+      { name, data, opts: { removeOnComplete: true } },
+    );
   }
 }
