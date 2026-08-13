@@ -60,7 +60,8 @@ follow/unfollow tricks.
 | [`docs/FEATURES.md`](docs/FEATURES.md) | Competitor matrix and the Phase 1 / Phase 2 split |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How the pieces fit together |
 | [`docs/META_API.md`](docs/META_API.md) | Grounded Instagram API reference — check before writing API code |
-| [`docs/SETUP.md`](docs/SETUP.md) | Local setup, connecting Instagram, deploying |
+| [`docs/SETUP.md`](docs/SETUP.md) | Local setup and connecting Instagram |
+| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Server sizing and the step-by-step production runbook |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | Build status and known gaps |
 
 ## Stack

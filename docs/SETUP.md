@@ -101,7 +101,8 @@ that the `HUMAN_AGENT` tag is never attached to automation.
 
 ## Deploying
 
-Two processes from one image:
+See **[`docs/DEPLOY.md`](DEPLOY.md)** for server sizing and a full step-by-step
+runbook. The short version — two processes from one checkout:
 
 ```bash
 pnpm build && pnpm start     # web
