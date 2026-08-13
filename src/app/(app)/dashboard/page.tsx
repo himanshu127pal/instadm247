@@ -63,21 +63,21 @@ export default async function DashboardPage() {
         <StatCard
           label="Automations triggered"
           value={stats.triggered}
-          icon={Zap}
+          icon={<Zap />}
           tone="brand"
           hint="last 14 days"
         />
-        <StatCard label="DMs sent" value={stats.sent} icon={Send} tone="success" hint="last 14 days" />
+        <StatCard label="DMs sent" value={stats.sent} icon={<Send />} tone="success" hint="last 14 days" />
         <StatCard
           label="Open rate"
           value={formatPercent(stats.openRate)}
-          icon={Inbox}
+          icon={<Inbox />}
           hint={`${stats.opened.toLocaleString()} opened`}
         />
         <StatCard
           label="Click-through rate"
           value={formatPercent(stats.ctr)}
-          icon={MousePointerClick}
+          icon={<MousePointerClick />}
           hint={`${stats.clicked.toLocaleString()} clicks`}
         />
       </div>
@@ -103,7 +103,7 @@ export default async function DashboardPage() {
         >
           {recentRuns.length === 0 ? (
             <EmptyState
-              icon={Workflow}
+              icon={<Workflow />}
               title="No runs yet"
               description="As soon as someone comments or replies, their journey shows up here."
             />
@@ -137,7 +137,7 @@ export default async function DashboardPage() {
         <div className="space-y-5">
           <SectionCard title="Busiest automations">
             {topAutomations.length === 0 ? (
-              <EmptyState icon={Zap} title="Nothing running yet" />
+              <EmptyState icon={<Zap />} title="Nothing running yet" />
             ) : (
               <ul className="space-y-2.5">
                 {topAutomations.map((automation, i) => (

@@ -16,11 +16,16 @@ export type Handler<T> = (ctx: {
   params: T;
 }) => Promise<NextResponse | Response>;
 
+/**
+ * Next.js 15 validates the exported handler's signature, so the context
+ * argument must be required and carry a `params` promise — even for routes
+ * with no dynamic segments, where it resolves to an empty object.
+ */
 export function route<T = Record<string, never>>(handler: Handler<T>) {
-  return async (request: Request, context: { params?: Promise<T> } = {}) => {
+  return async (request: Request, context: { params: Promise<T> }) => {
     try {
       const { user, workspace } = await requireWorkspace();
-      const params = ((await context.params) ?? {}) as T;
+      const params = ((await context?.params) ?? {}) as T;
       return await handler({ workspace, user, request, params });
     } catch (error) {
       return errorResponse(error);
@@ -78,4 +83,14 @@ export async function parseBody<S extends z.ZodTypeAny>(
 
 export function ok(data: unknown = { ok: true }) {
   return NextResponse.json(data);
+}
+
+/**
+ * Quote anything that could break a CSV parser, and neutralise formula
+ * injection so a value like `=cmd|...` can't execute when opened in Excel.
+ */
+export function csvCell(value: string): string {
+  const text = String(value ?? "");
+  const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }

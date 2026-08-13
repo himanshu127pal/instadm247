@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/db";
-import { errorResponse } from "@/lib/api";
+import { csvCell, errorResponse } from "@/lib/api";
 import { requireWorkspace } from "@/lib/auth";
 import { getAccountIds } from "@/lib/queries";
 
@@ -96,11 +96,4 @@ export async function GET(request: Request) {
   } catch (error) {
     return errorResponse(error);
   }
-}
-
-/** Quote anything that could break a CSV parser, and neutralise formula injection. */
-export function csvCell(value: string): string {
-  const text = String(value ?? "");
-  const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
-  return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }

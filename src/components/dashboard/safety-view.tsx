@@ -67,7 +67,7 @@ export function SafetyView({
           label="Messages skipped"
           value={totalSkips}
           hint="last 7 days"
-          icon={ShieldOff}
+          icon={<ShieldOff />}
           tone={totalSkips > 0 ? "warning" : "neutral"}
         />
         <StatCard label="Suppressed contacts" value={suppressions} hint="opt-outs and blocks" />

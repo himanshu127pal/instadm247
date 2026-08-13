@@ -55,7 +55,7 @@ export default async function AutomationsPage() {
 
       {accountCount === 0 ? (
         <EmptyState
-          icon={Workflow}
+          icon={<Workflow />}
           title="Connect Instagram first"
           description="Automations listen to a specific Instagram account, so you'll need to connect one before building anything."
           action={
@@ -66,7 +66,7 @@ export default async function AutomationsPage() {
         />
       ) : automations.length === 0 ? (
         <EmptyState
-          icon={Zap}
+          icon={<Zap />}
           title="No automations yet"
           description="Start from a template — comment-to-DM takes about a minute to set up."
           action={

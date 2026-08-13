@@ -47,7 +47,7 @@ export default async function ContactsPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total contacts" value={total} icon={Users} tone="brand" />
+        <StatCard label="Total contacts" value={total} icon={<Users />} tone="brand" />
         <StatCard
           label="Reachable now"
           value={reachable}
@@ -60,7 +60,7 @@ export default async function ContactsPage() {
 
       {contacts.length === 0 ? (
         <EmptyState
-          icon={Users}
+          icon={<Users />}
           title="No contacts yet"
           description="Contacts are created automatically the first time someone comments, replies to a story or messages you."
         />

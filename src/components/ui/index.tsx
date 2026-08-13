@@ -251,22 +251,26 @@ export function Skeleton({ className }: { className?: string }) {
   );
 }
 
+/**
+ * `icon` takes a rendered element, not a component reference — a function can't
+ * cross the Server/Client Component boundary.
+ */
 export function EmptyState({
-  icon: Icon,
+  icon,
   title,
   description,
   action,
 }: {
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: React.ReactNode;
   title: string;
   description?: string;
   action?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-dashed border-[var(--border-strong)] px-6 py-14 text-center">
-      {Icon && (
-        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[var(--bg-sunken)]">
-          <Icon className="h-5 w-5 text-[var(--text-faint)]" />
+      {icon && (
+        <div className="grid h-12 w-12 place-items-center rounded-2xl text-[var(--text-faint)] bg-[var(--bg-sunken)] [&_svg]:h-5 [&_svg]:w-5">
+          {icon}
         </div>
       )}
       <div className="space-y-1">

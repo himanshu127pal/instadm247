@@ -8,16 +8,17 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "worker": "tsx src/worker/index.ts",
-    "worker:dev": "tsx watch src/worker/index.ts",
+    "worker": "tsx --env-file-if-exists=.env src/worker/index.ts",
+    "worker:dev": "tsx watch --env-file-if-exists=.env src/worker/index.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "e2e": "tsx --env-file-if-exists=.env scripts/e2e-check.ts"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx --env-file-if-exists=.env prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

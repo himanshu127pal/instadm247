@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion } from "motion/react";
-import { ArrowDownRight, ArrowUpRight, type LucideIcon } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn, formatNumber } from "@/lib/utils";
 
 export function PageHeader({
@@ -34,14 +34,15 @@ export function StatCard({
   value,
   delta,
   hint,
-  icon: Icon,
+  icon,
   tone = "neutral",
 }: {
   label: string;
   value: number | string;
   delta?: number;
   hint?: string;
-  icon?: LucideIcon;
+  /** A rendered element — component references can't cross the RSC boundary. */
+  icon?: React.ReactNode;
   tone?: "neutral" | "brand" | "success" | "warning";
 }) {
   const toneRing: Record<string, string> = {
@@ -60,9 +61,14 @@ export function StatCard({
     >
       <div className="flex items-start justify-between gap-3">
         <p className="text-[12.5px] font-medium text-[var(--text-muted)]">{label}</p>
-        {Icon && (
-          <span className={cn("grid h-8 w-8 place-items-center rounded-xl", toneRing[tone])}>
-            <Icon className="h-4 w-4" />
+        {icon && (
+          <span
+            className={cn(
+              "grid h-8 w-8 place-items-center rounded-xl [&_svg]:h-4 [&_svg]:w-4",
+              toneRing[tone],
+            )}
+          >
+            {icon}
           </span>
         )}
       </div>

@@ -127,7 +127,7 @@ export function AccountsView({
 
       {accounts.length === 0 ? (
         <EmptyState
-          icon={Link2}
+          icon={<Link2 />}
           title="No account connected yet"
           description="You'll sign in on Instagram's own screen and grant messaging permissions. We never see your password."
           action={

@@ -75,18 +75,33 @@ export function matchesKeyword(text: string, keyword: string, opts: MatchOptions
       return haystack.startsWith(needle);
     case "CONTAINS":
     default: {
-      // Word-boundary-ish containment so "link" doesn't match "linkedin".
-      const words = haystack.split(" ");
+      // Whole-word matching, not raw substring — otherwise the keyword "LINK"
+      // fires on someone writing "linkedin", and "SHOP" on "shopping".
+      // Normalisation has already stripped punctuation and emoji, so a comment
+      // of "LINK!!! 🙏" is just the word "link" by this point.
       if (needle.includes(" ")) return haystack.includes(needle);
-      if (words.includes(needle)) return true;
-      if (haystack.includes(needle)) return true;
+
+      const words = haystack.split(" ");
+      if (words.some((word) => word === needle || isElongated(word, needle))) return true;
+
       if (opts.fuzzy) {
         const budget = fuzzyBudget(needle);
-        return words.some((w) => editDistance(w, needle, budget) <= budget);
+        return words.some((word) => editDistance(word, needle, budget) <= budget);
       }
       return false;
     }
   }
+}
+
+/**
+ * People type "LINKKK" when they're excited. Treat a word as the keyword when
+ * the only difference is the final character repeated — which "linkedin" is
+ * not, so the word-boundary guarantee still holds.
+ */
+function isElongated(word: string, needle: string): boolean {
+  if (word.length <= needle.length || !word.startsWith(needle)) return false;
+  const lastChar = needle.at(-1);
+  return [...word.slice(needle.length)].every((char) => char === lastChar);
 }
 
 /** Short words get no typo tolerance — "shop" vs "stop" must not collide. */

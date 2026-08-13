@@ -84,7 +84,7 @@ export function InboxView({ conversations: initial }: { conversations: Conversat
   if (conversations.length === 0) {
     return (
       <EmptyState
-        icon={InboxIcon}
+        icon={<InboxIcon />}
         title="No conversations yet"
         description="As soon as someone comments, replies to a story or messages you, the thread lands here."
       />
