@@ -10,8 +10,11 @@ import {
   Bot,
   ChevronDown,
   ClipboardList,
+  Code2,
+  CalendarClock,
   Gauge,
   Inbox,
+  Link2,
   Aperture,
   LogOut,
   Megaphone,
@@ -45,6 +48,7 @@ const NAV = [
       { href: "/dashboard/inbox", label: "Inbox", icon: Inbox },
       { href: "/dashboard/broadcasts", label: "Broadcasts", icon: Megaphone },
       { href: "/dashboard/planner", label: "DM Planner", icon: ClipboardList },
+      { href: "/dashboard/scheduler", label: "Scheduler", icon: CalendarClock },
     ],
   },
   {
@@ -52,6 +56,7 @@ const NAV = [
     items: [
       { href: "/dashboard/contacts", label: "Contacts", icon: Users },
       { href: "/dashboard/forms", label: "Lead forms", icon: ClipboardList },
+      { href: "/dashboard/bio", label: "Link in bio", icon: Link2 },
     ],
   },
   {
@@ -67,6 +72,7 @@ const NAV = [
       { href: "/dashboard/accounts", label: "Instagram accounts", icon: Aperture },
       { href: "/dashboard/safety", label: "Safety Center", icon: ShieldCheck },
       { href: "/dashboard/templates", label: "Templates", icon: MessagesSquare },
+      { href: "/dashboard/developers", label: "Developers", icon: Code2 },
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
     ],
   },

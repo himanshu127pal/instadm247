@@ -18,6 +18,7 @@ import { rollupDailyStats } from "@/lib/engine/analytics";
 import { runBroadcast, runDueReengagements } from "@/lib/engine/broadcast";
 import { runRewind } from "@/lib/engine/rewind";
 import { scanPlannedAutomations } from "@/lib/engine/planner";
+import { publishDuePosts } from "@/lib/engine/scheduler";
 import { refreshExpiringTokens } from "@/lib/meta/account";
 import type { OutboundMessage } from "@/lib/meta/types";
 
@@ -127,6 +128,11 @@ workers.push(
         case "reengage": {
           const started = await runDueReengagements();
           if (started) log("maintenance", `started ${started} re-engagement campaigns`);
+          return;
+        }
+        case "publish_due": {
+          const published = await publishDuePosts();
+          if (published) log("maintenance", `published ${published} scheduled posts`);
           return;
         }
       }

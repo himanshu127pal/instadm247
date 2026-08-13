@@ -8,6 +8,7 @@ import { Badge, Button, EmptyState, Field, Input, Select, Textarea } from "@/com
 import { CopyField, SectionCard, Tabs } from "@/components/dashboard/bits";
 import { previewTemplate } from "@/lib/engine/template";
 import { CouponsTab, type Pool } from "@/components/dashboard/coupons-tab";
+import { MenuTab, type MenuItem } from "@/components/dashboard/menu-tab";
 import { timeAgo } from "@/lib/utils";
 
 type Template = {
@@ -38,6 +39,7 @@ export function TemplatesView({
   templates,
   links,
   pools,
+  menus,
   iceBreakers,
 }: {
   appUrl: string;
@@ -45,6 +47,7 @@ export function TemplatesView({
   templates: Template[];
   links: TrackedLink[];
   pools: Pool[];
+  menus: Array<{ accountId: string; enabled: boolean; items: MenuItem[] }>;
   iceBreakers: IceBreaker[];
 }) {
   const [tab, setTab] = React.useState("templates");
@@ -56,6 +59,7 @@ export function TemplatesView({
           { id: "templates", label: "Messages", count: templates.length },
           { id: "links", label: "Tracked links", count: links.length },
           { id: "coupons", label: "Coupons", count: pools.length },
+          { id: "menu", label: "DM main menu" },
           { id: "starters", label: "Conversation starters", count: iceBreakers.length },
         ]}
         active={tab}
@@ -65,6 +69,7 @@ export function TemplatesView({
       {tab === "templates" && <TemplatesTab templates={templates} />}
       {tab === "links" && <LinksTab links={links} appUrl={appUrl} />}
       {tab === "coupons" && <CouponsTab pools={pools} />}
+      {tab === "menu" && <MenuTab accounts={accounts} menus={menus} />}
       {tab === "starters" && <StartersTab accounts={accounts} iceBreakers={iceBreakers} />}
     </div>
   );

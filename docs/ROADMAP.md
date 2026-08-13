@@ -7,7 +7,7 @@ holds the researched competitor matrix, this holds what actually exists.
 
 ### Foundation
 - [x] Next.js 15 App Router + TypeScript, Tailwind v4 design system, light/dark
-- [x] Postgres + Prisma schema (28 models)
+- [x] Postgres + Prisma schema (42 models)
 - [x] Redis + BullMQ (5 queues) with a separate worker process
 - [x] Email/password auth, workspaces, session cookies
 - [x] Boots and is fully explorable with **no** Meta credentials
@@ -41,7 +41,7 @@ holds the researched competitor matrix, this holds what actually exists.
 - [x] Optional typo tolerance, disabled for short keywords
 
 ### Flow engine
-- [x] Visual builder (React Flow) with 15 step types
+- [x] Visual builder (React Flow) with 16 step types
 - [x] Send text / image / video / audio / buttons / 10-slide carousel
 - [x] Public comment reply (rotating variants)
 - [x] Delay, condition, randomiser, tag, set field, HTTP request
@@ -64,6 +64,25 @@ holds the researched competitor matrix, this holds what actually exists.
 - [x] Policy-enforcement webhooks pause the account
 - [x] Safety Center showing every skip with a plain-language reason
 
+### Competitor-parity features added in the second pass
+- [x] **Rewind** — backsend DMs to still-eligible past comments, with a preview
+      that explains every exclusion
+- [x] **DM Coupons** — shared and unique code pools, one code per person,
+      atomic issuance, "ran out" branch
+- [x] **Link in Bio** — hosted `/l/[slug]` page, five themes, per-block click
+      tracking, badge toggle
+- [x] **Schedule & Auto-Post** — container-based publishing with status polling,
+      carousels, and automations that switch on at publish
+- [x] **Next Post** — attach an automation to whatever publishes next, no code
+- [x] **DM Main Menu** — persistent menu manager, up to 20 items
+- [x] **Viral Post Protection** — proactive spike detection arms Slow Down
+      before Instagram throttles
+- [x] **WhatsApp / email redirect presets** in the message editor
+- [x] **Kit + Flodesk integrations** — verified on save, leads forwarded
+      automatically
+- [x] **Public API** — scoped keys (hash-stored), `/api/v1/contacts`,
+      `/api/v1/send`, outbound webhook endpoints
+
 ### Product surfaces
 - [x] Dashboard overview with activity charts
 - [x] Automations list, creation wizard, builder
@@ -80,8 +99,15 @@ holds the researched competitor matrix, this holds what actually exists.
 
 ### Verification
 - [x] `pnpm typecheck` and `pnpm build` clean
-- [x] `pnpm e2e` — 66 checks against a live database, all passing
+- [x] `pnpm e2e` — 85 checks against a live database, all passing
 - [x] Every route smoke-tested authenticated and unauthenticated
+- [x] Every page loaded in a real browser and checked for client-side errors
+
+## Design
+
+Comic/cartoon system, chosen by the owner. Full intensity on marketing and
+auth; restrained in dense dashboard UI. See `docs/FEATURES.md` §F — the split is
+deliberate.
 
 ## Phase 2 — not started
 
@@ -89,12 +115,13 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
 
 - [ ] Pricing, plans and quota enforcement (seam exists in `src/lib/plan.ts`)
 - [ ] Team seats, roles and permissions
+- [ ] Facebook AutoDM (deferred by the owner — needs Facebook Login, Page
+      tokens and a second App Review)
 - [ ] WhatsApp / Messenger / TikTok channels
 - [ ] Catalogue and checkout inside the DM
 - [ ] Zapier / Make / CRM integrations
 - [ ] White-label and agency multi-client mode
 - [ ] A/B testing with statistical significance
-- [ ] Public API + customer-facing webhooks
 - [ ] Mobile app
 
 ## Known gaps worth knowing about
@@ -108,3 +135,11 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
   recorded as a skip, not an error, so the worst case is a missed DM.
 - **AI retrieval** is keyword-overlap, not embeddings. Fine at FAQ scale; revisit
   if a knowledge base grows past a few hundred articles.
+- **Outbound customer webhooks** deliver inline rather than through a retry
+  queue: a failing endpoint is recorded and disabled after 20 consecutive
+  failures, but individual deliveries are not retried.
+- **Publishing needs a reconnect.** `instagram_business_content_publish` was
+  added to the requested scopes; accounts connected before that must reconnect
+  before the scheduler works. The Scheduler page detects this and says so.
+- **Kit / Flodesk target pickers** take an ID by hand rather than listing forms
+  and segments from the provider.

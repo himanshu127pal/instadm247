@@ -66,7 +66,8 @@ export type MaintenanceJob =
   | { kind: "rollup_stats" }
   | { kind: "scan_planner" }
   | { kind: "sweep_windows" }
-  | { kind: "reengage" };
+  | { kind: "reengage" }
+  | { kind: "publish_due" };
 
 /**
  * Enqueue, tolerating a missing Redis. Returns false when the job could not be
@@ -99,6 +100,7 @@ export async function scheduleMaintenance(): Promise<void> {
     ["scan_planner", { kind: "scan_planner" }, "*/5 * * * *"],
     ["sweep_windows", { kind: "sweep_windows" }, "*/10 * * * *"],
     ["reengage", { kind: "reengage" }, "*/30 * * * *"],
+    ["publish_due", { kind: "publish_due" }, "*/2 * * * *"],
   ];
 
   // BullMQ v5+ replaced repeatable jobs with job schedulers. Upserting by a

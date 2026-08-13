@@ -15,6 +15,7 @@ import {
 import { generateAiReply } from "@/lib/ai/agent";
 import { issueCoupon } from "./coupons";
 import { renderTemplate } from "./template";
+import { emitWebhook } from "./outbound-webhooks";
 
 /**
  * The flow engine: walks the node graph for a single contact.
@@ -230,6 +231,12 @@ async function advance(flowRunId: string, fromNodeId: string): Promise<FlowRun |
     contactId: run.contactId,
     type: "flow_completed",
   });
+  void emitWebhook(run.account.workspaceId, "flow.completed", {
+    flow_run_id: run.id,
+    automation_id: run.automationId,
+    contact_id: run.contactId,
+    variables: ctx.variables,
+  }).catch(() => undefined);
 
   return prisma.flowRun.findUnique({ where: { id: run.id } });
 }

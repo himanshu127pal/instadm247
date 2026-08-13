@@ -18,6 +18,8 @@ import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
 import { PRESETS } from "../src/lib/engine/presets";
 import { captionContainsCode, generateDraftCode } from "../src/lib/engine/planner";
+import { addCodes, generateCodes, issueCoupon, poolStats } from "../src/lib/engine/coupons";
+import { createApiKey, authenticateApiKey, hashKey } from "../src/lib/api-keys";
 
 const prisma = new PrismaClient();
 
@@ -463,6 +465,144 @@ async function main() {
     "a human reply does carry it",
     tagged.filter((m) => m.source === "human").every((m) => m.humanAgentTag),
   );
+
+  // --- 11. Coupons ----------------------------------------------------------
+
+  section("DM Coupons");
+
+  const workspace = await prisma.workspace.findFirst();
+  if (!workspace) throw new Error("No workspace — run `pnpm db:seed`.");
+
+  const pool = await prisma.couponPool.create({
+    data: { workspaceId: workspace.id, name: `e2e pool ${Date.now()}`, mode: "UNIQUE" },
+  });
+
+  const generated = generateCodes("E2E", 5);
+  check("generated codes are unique", new Set(generated).size === 5);
+  check("generated codes carry the prefix", generated.every((c) => c.startsWith("E2E-")));
+
+  const added = await addCodes(pool.id, generated.join("\n"));
+  check("codes loaded into the pool", added === 5, `added ${added}`);
+
+  const dupes = await addCodes(pool.id, generated.join("\n"));
+  check("re-adding the same codes is a no-op", dupes === 0, `added ${dupes}`);
+
+  const couponContact = await prisma.contact.create({
+    data: {
+      accountId: account.id,
+      igsid: `e2e_coupon_${Date.now()}`,
+      username: "coupon.tester",
+      lastInteractionAt: new Date(),
+      windowExpiresAt: new Date(Date.now() + 3_600_000),
+    },
+  });
+
+  const firstIssue = await issueCoupon(pool.id, couponContact.id);
+  check("a code is issued", firstIssue.ok === true);
+
+  const secondIssue = await issueCoupon(pool.id, couponContact.id);
+  check(
+    "the same contact gets the same code back, not a new one",
+    secondIssue.ok === true &&
+      firstIssue.ok === true &&
+      secondIssue.code === firstIssue.code &&
+      secondIssue.reused,
+  );
+
+  // Concurrency: four different people racing for the four remaining codes.
+  const racers = await Promise.all(
+    Array.from({ length: 4 }, (_, i) =>
+      prisma.contact.create({
+        data: {
+          accountId: account.id,
+          igsid: `e2e_coupon_race_${Date.now()}_${i}`,
+          username: `racer${i}`,
+          lastInteractionAt: new Date(),
+          windowExpiresAt: new Date(Date.now() + 3_600_000),
+        },
+      }),
+    ),
+  );
+  const raceResults = await Promise.all(racers.map((c) => issueCoupon(pool.id, c.id)));
+  const issuedCodes = raceResults.filter((r) => r.ok).map((r) => (r.ok ? r.code : ""));
+  check(
+    "concurrent issues never hand out the same code",
+    new Set(issuedCodes).size === issuedCodes.length,
+    issuedCodes.join(", "),
+  );
+
+  const exhausted = await prisma.contact.create({
+    data: {
+      accountId: account.id,
+      igsid: `e2e_coupon_empty_${Date.now()}`,
+      username: "toolate",
+      lastInteractionAt: new Date(),
+      windowExpiresAt: new Date(Date.now() + 3_600_000),
+    },
+  });
+  const empty = await issueCoupon(pool.id, exhausted.id);
+  check("an empty pool reports pool_empty", !empty.ok && empty.reason === "pool_empty");
+
+  const stats = await poolStats(pool.id);
+  check("pool stats add up", stats.total === 5 && stats.issued === 5 && stats.remaining === 0);
+
+  const shared = await prisma.couponPool.create({
+    data: {
+      workspaceId: workspace.id,
+      name: `e2e shared ${Date.now()}`,
+      mode: "SHARED",
+      sharedCode: "SPRING20",
+    },
+  });
+  const sharedA = await issueCoupon(shared.id, couponContact.id);
+  const sharedB = await issueCoupon(shared.id, exhausted.id);
+  check(
+    "a shared pool gives everyone the same code",
+    sharedA.ok && sharedB.ok && sharedA.code === "SPRING20" && sharedB.code === "SPRING20",
+  );
+
+  const expiredPool = await prisma.couponPool.create({
+    data: {
+      workspaceId: workspace.id,
+      name: `e2e expired ${Date.now()}`,
+      mode: "SHARED",
+      sharedCode: "OLD",
+      expiresAt: new Date(Date.now() - 1000),
+    },
+  });
+  const expiredIssue = await issueCoupon(expiredPool.id, couponContact.id);
+  check("an expired pool refuses to issue", !expiredIssue.ok && expiredIssue.reason === "expired");
+
+  // --- 12. Public API keys ---------------------------------------------------
+
+  section("Public API keys");
+
+  const created = await createApiKey(workspace.id, "e2e key", ["read"]);
+  check("key uses the live prefix", created.key.startsWith("idm_live_"));
+
+  const stored = await prisma.apiKey.findUnique({ where: { id: created.id } });
+  check("plaintext key is never stored", stored?.keyHash !== created.key);
+  check("stored hash matches the key", stored?.keyHash === hashKey(created.key));
+
+  const goodAuth = await authenticateApiKey(
+    new Request("https://x", { headers: { authorization: `Bearer ${created.key}` } }),
+  );
+  check("a valid key authenticates", goodAuth?.workspaceId === workspace.id);
+  check("scopes come back", goodAuth?.scopes.includes("read") === true);
+
+  const badAuth = await authenticateApiKey(
+    new Request("https://x", { headers: { authorization: "Bearer idm_live_wrong" } }),
+  );
+  check("an invalid key is rejected", badAuth === null);
+
+  const noAuth = await authenticateApiKey(new Request("https://x"));
+  check("a missing header is rejected", noAuth === null);
+
+  await prisma.apiKey.update({ where: { id: created.id }, data: { revokedAt: new Date() } });
+  const revokedAuth = await authenticateApiKey(
+    new Request("https://x", { headers: { authorization: `Bearer ${created.key}` } }),
+  );
+  check("a revoked key stops working", revokedAuth === null);
 
   // --- Result ---------------------------------------------------------------
 

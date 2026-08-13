@@ -5,6 +5,9 @@ import { isOptOutMessage, suppress, windowExpiryFrom } from "./guards";
 import { canEnterFlow, findMatchingAutomations } from "./match";
 import { resumeFlowRun, startFlowRun } from "./run";
 import { recordEvent } from "./analytics";
+import { recordInboundAndCheckSpike } from "./viral";
+import { forwardLead } from "@/lib/integrations";
+import { emitWebhook } from "./outbound-webhooks";
 
 /**
  * Ingest: normalised event → contact/conversation bookkeeping → trigger match →
@@ -46,6 +49,10 @@ export async function handleEvent(event: NormalizedEvent): Promise<void> {
 
   // Never react to our own account's activity.
   if (event.igsid === account.igUserId) return;
+
+  // Viral Post Protection: measure the inbound rate and slow down proactively,
+  // before Instagram has any reason to throttle us.
+  void recordInboundAndCheckSpike(account);
 
   const contact = await upsertContact(account.id, event);
   const conversation = await upsertConversation(account.id, contact.id, event);
@@ -172,7 +179,10 @@ async function saveLeadAnswer(
   }
 
   if (completed) {
-    const run = await prisma.flowRun.findUnique({ where: { id: flowRunId } });
+    const run = await prisma.flowRun.findUnique({
+      where: { id: flowRunId },
+      include: { account: { select: { workspaceId: true } } },
+    });
     if (run) {
       await recordEvent({
         accountId: run.accountId,
@@ -180,8 +190,45 @@ async function saveLeadAnswer(
         contactId,
         type: "form_completed",
       });
+
+      // Push the lead to Kit / Flodesk and any customer webhooks.
+      // Fire-and-forget — a downstream system being slow or down must never
+      // fail the flow that captured them.
+      const email = findEmail(answers);
+      const contact = await prisma.contact.findUnique({ where: { id: contactId } });
+
+      void emitWebhook(run.account.workspaceId, "lead.captured", {
+        contact_id: contactId,
+        username: contact?.username ?? null,
+        form_id: formId,
+        answers,
+      }).catch(() => undefined);
+
+      if (email) {
+        void forwardLead(run.account.workspaceId, {
+          email,
+          firstName: contact?.name?.split(" ")[0],
+          fields: { instagram_username: contact?.username ?? "" },
+          tags: contact?.tags,
+        }).catch(() => undefined);
+      }
     }
   }
+}
+
+/** Pull an email out of whatever the form called its field. */
+function findEmail(answers: Record<string, unknown>): string | null {
+  for (const [key, value] of Object.entries(answers)) {
+    if (typeof value !== "string") continue;
+    if (key.toLowerCase().includes("email") && value.includes("@")) return value.trim();
+  }
+  // Fall back to any answer that simply looks like an address.
+  for (const value of Object.values(answers)) {
+    if (typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+      return value.trim();
+    }
+  }
+  return null;
 }
 
 // --- Side effects -----------------------------------------------------------
@@ -236,7 +283,12 @@ async function upsertContact(accountId: string, event: NormalizedEvent) {
   // Any inbound interaction refreshes the 24-hour messaging window.
   const windowExpiresAt = windowExpiryFrom(event.timestamp);
 
-  return prisma.contact.upsert({
+  const existing = await prisma.contact.findUnique({
+    where: { accountId_igsid: { accountId, igsid: event.igsid } },
+    select: { id: true },
+  });
+
+  const contact = await prisma.contact.upsert({
     where: { accountId_igsid: { accountId, igsid: event.igsid } },
     create: {
       accountId,
@@ -251,6 +303,23 @@ async function upsertContact(accountId: string, event: NormalizedEvent) {
       windowExpiresAt,
     },
   });
+
+  if (!existing) {
+    const account = await prisma.instagramAccount.findUnique({
+      where: { id: accountId },
+      select: { workspaceId: true },
+    });
+    if (account) {
+      void emitWebhook(account.workspaceId, "contact.created", {
+        contact_id: contact.id,
+        instagram_scoped_id: contact.igsid,
+        username: contact.username,
+        source: event.kind,
+      }).catch(() => undefined);
+    }
+  }
+
+  return contact;
 }
 
 async function upsertConversation(accountId: string, contactId: string, event: NormalizedEvent) {

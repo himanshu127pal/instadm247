@@ -8,7 +8,7 @@ export default async function TemplatesPage() {
   const workspace = await getActiveWorkspace();
   if (!workspace) return null;
 
-  const [templates, links, accounts, iceBreakers, pools] = await Promise.all([
+  const [templates, links, accounts, iceBreakers, pools, menus] = await Promise.all([
     prisma.template.findMany({
       where: { workspaceId: workspace.id },
       orderBy: { updatedAt: "desc" },
@@ -31,6 +31,9 @@ export default async function TemplatesPage() {
       where: { workspaceId: workspace.id },
       include: { _count: { select: { codes: true } } },
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.persistentMenu.findMany({
+      where: { account: { workspaceId: workspace.id } },
     }),
   ]);
 
@@ -80,6 +83,11 @@ export default async function TemplatesPage() {
           clickCount: l.clickCount,
         }))}
         pools={poolsWithStats}
+        menus={menus.map((m) => ({
+          accountId: m.accountId,
+          enabled: m.enabled,
+          items: (m.items as Array<{ type: string; title: string; url?: string; payload?: string }>) ?? [],
+        }))}
         iceBreakers={iceBreakers.map((i) => ({
           id: i.id,
           accountId: i.accountId,

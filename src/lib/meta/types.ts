@@ -14,6 +14,9 @@ export const REQUIRED_SCOPES: IgScope[] = [
   "instagram_business_basic",
   "instagram_business_manage_messages",
   "instagram_business_manage_comments",
+  // Needed by the content scheduler. Harmless to hold if scheduling is unused,
+  // and asking later would mean sending every creator back through OAuth.
+  "instagram_business_content_publish",
 ];
 
 /** Webhook fields we subscribe to. See docs/META_API.md §4. */

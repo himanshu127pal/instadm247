@@ -3,6 +3,7 @@ import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getAccountIds, getSkipBreakdown } from "@/lib/queries";
 import { SKIP_EXPLANATIONS, rateLimitStatus, type SkipReasonKey } from "@/lib/engine/guards";
+import { currentInboundRate } from "@/lib/engine/viral";
 import { PageHeader } from "@/components/dashboard/bits";
 import { SafetyView } from "@/components/dashboard/safety-view";
 
@@ -23,6 +24,8 @@ export default async function SafetyPage() {
         pausedReason: true,
         slowDownUntil: true,
         tokenExpiresAt: true,
+        viralProtection: true,
+        viralThresholdPerMin: true,
       },
       orderBy: { createdAt: "asc" },
     }),
@@ -55,6 +58,7 @@ export default async function SafetyPage() {
         account.id,
         Boolean(account.slowDownUntil && account.slowDownUntil > new Date()),
       ),
+      inboundRate: await currentInboundRate(account.id),
     })),
   );
 

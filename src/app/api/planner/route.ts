@@ -10,6 +10,9 @@ const createSchema = z.object({
   accountId: z.string().min(1),
   automationId: z.string().min(1),
   name: z.string().min(1).max(120),
+  /** DRAFT_CODE needs a code in the caption; NEXT_POST latches onto whatever
+   *  publishes next (LinkDM's "Next Post"). */
+  mode: z.enum(["DRAFT_CODE", "NEXT_POST"]).default("DRAFT_CODE"),
 });
 
 export const POST = route(async ({ workspace, request }) => {
@@ -27,6 +30,9 @@ export const POST = route(async ({ workspace, request }) => {
           accountId: body.accountId,
           automationId: body.automationId,
           name: body.name,
+          mode: body.mode,
+          // A NEXT_POST plan still gets a code so the row stays unique, but it
+          // is never shown or looked for in a caption.
           draftCode,
           // Give up watching after 30 days so stale plans don't linger forever.
           expiresAt: new Date(Date.now() + 30 * 86_400_000),

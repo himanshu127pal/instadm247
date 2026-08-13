@@ -24,12 +24,14 @@ are simulated.
 | | |
 |---|---|
 | **Triggers** | Comments (posts, Reels, ads, Live), story replies, story @mentions, DM keywords, conversation starters, button taps, referral links |
-| **Flows** | Visual builder, 15 step types — messages, carousels, delays, branches, follower gates, in-DM forms, AI replies, webhooks, human handoff |
+| **Flows** | Visual builder, 16 step types — messages, carousels, delays, branches, follower gates, in-DM forms, AI replies, webhooks, human handoff |
 | **Inbox** | Unified live chat with human takeover that pauses automation per thread |
 | **Audience** | Contacts CRM with tags, custom fields, segments, CSV + Excel export |
-| **Campaigns** | Broadcasts with eligibility preview, smart re-engagement, DM Planner |
+| **Campaigns** | Broadcasts with eligibility preview, smart re-engagement, DM Planner, Rewind, coupon pools |
+| **Publishing** | Schedule posts and Reels, switch automations on at publish, link-in-bio page with per-block clicks |
 | **AI** | Answers from your own knowledge base, hands off when unsure |
 | **Analytics** | Sent, opened, clicked, CTR, new followers, per-step funnels |
+| **Developers** | Scoped API keys, REST endpoints, signed outbound webhooks, Kit + Flodesk |
 | **Safety** | Every skipped send, with the reason, in a Safety Center |
 
 ## Why accounts stay safe
@@ -42,7 +44,8 @@ can send anything, and it enforces all of this before every message:
   can't double-send
 - The **7-day private-reply deadline** (Live: during the broadcast only)
 - **Per-account rate limits** well under Meta's published ceilings
-- **Slow Down mode** — auto-armed for 2 hours when Instagram throttles you
+- **Slow Down mode** — auto-armed for 2 hours when Instagram throttles you, and
+  **proactively** when a post starts going viral
 - **`HUMAN_AGENT` only on messages a human typed**, never on automation
 - **Opt-outs** honoured instantly across every automation
 
@@ -65,10 +68,13 @@ follow/unfollow tricks.
 Next.js 15 · TypeScript · PostgreSQL + Prisma · Redis + BullMQ · Tailwind v4 ·
 React Flow · Recharts
 
+Comic-book design system — ink outlines, halftone, sticker buttons — at full
+intensity on the marketing site, deliberately calmer where the data lives.
+
 ## Checks
 
 ```bash
 pnpm typecheck
 pnpm build
-pnpm e2e        # 66 engine + safety-rule checks against a live database
+pnpm e2e        # 85 engine + safety-rule checks against a live database
 ```

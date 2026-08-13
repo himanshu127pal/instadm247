@@ -17,6 +17,8 @@ type Account = {
   pausedReason: string | null;
   slowDownUntil: string | null;
   tokenExpiresAt: string | null;
+  viralProtection: boolean;
+  viralThresholdPerMin: number;
 };
 
 export function SafetyView({
@@ -32,6 +34,7 @@ export function SafetyView({
     accountId: string;
     username: string;
     classes: Array<{ rateClass: string; used: number; cap: number; unknown: boolean }>;
+    inboundRate: number | null;
   }>;
   skips: Array<{ reason: string; count: number; label: string; explanation: string }>;
   failures: Array<{ id: string; username: string | null; reason: string | null; createdAt: string }>;
@@ -141,6 +144,20 @@ export function SafetyView({
                           Slow Down mode
                         </span>
                       </label>
+
+                      <label className="flex items-center gap-2">
+                        <Switch
+                          checked={account.viralProtection}
+                          onCheckedChange={(v) =>
+                            update(account.id, { viralProtection: v })
+                          }
+                          disabled={busy === account.id}
+                          label="Viral post protection"
+                        />
+                        <span className="text-[12.5px] text-[var(--text-muted)]">
+                          Viral protection
+                        </span>
+                      </label>
                     </div>
                   </div>
 
@@ -153,6 +170,31 @@ export function SafetyView({
                         minute: "2-digit",
                       })}
                       , then it returns to normal by itself.
+                    </p>
+                  )}
+
+                  {account.viralProtection && (
+                    <p className="mt-2.5 text-[12px] font-medium text-[var(--text-muted)]">
+                      Slows down automatically above{" "}
+                      <strong className="text-[var(--text)]">
+                        {account.viralThresholdPerMin}
+                      </strong>{" "}
+                      interactions a minute
+                      {typeof accountLimits?.inboundRate === "number" && (
+                        <>
+                          {" "}
+                          · currently{" "}
+                          <strong
+                            className={
+                              accountLimits.inboundRate >= account.viralThresholdPerMin
+                                ? "text-[var(--color-zap-500)]"
+                                : "text-[var(--text)]"
+                            }
+                          >
+                            {accountLimits.inboundRate}/min
+                          </strong>
+                        </>
+                      )}
                     </p>
                   )}
 
@@ -265,6 +307,10 @@ export function SafetyView({
             [
               "The HUMAN_AGENT tag, used honestly",
               "It extends replies to 7 days and is only ever attached to messages you type yourself in the inbox. Never to automation — Meta detects that.",
+            ],
+            [
+              "Viral post protection",
+              "When a post takes off, we slow down before Instagram has a reason to throttle you — not after.",
             ],
             [
               "Opt-outs honoured everywhere",

@@ -15,6 +15,7 @@ import {
   releaseCommentReply,
 } from "./guards";
 import { recordEvent } from "./analytics";
+import { emitWebhook } from "./outbound-webhooks";
 
 /**
  * THE ONLY OUTBOUND PATH.
@@ -155,6 +156,11 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
       nodeId: req.nodeId,
     });
     await touchConversation(req);
+    void emitWebhook(account.workspaceId, "message.sent", {
+      message_id: record.id,
+      contact_id: req.contactId,
+      source: req.source,
+    }).catch(() => undefined);
 
     return { status: "sent", messageId: record.id, igMessageId: response.message_id ?? response.id };
   } catch (error) {
@@ -196,6 +202,11 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
       nodeId: req.nodeId,
       meta: { error: message, code: meta?.code },
     });
+    void emitWebhook(account.workspaceId, "message.failed", {
+      contact_id: req.contactId,
+      source: req.source,
+      error: message,
+    }).catch(() => undefined);
 
     return { status: "failed", error: message, retryable: meta?.isRetryable ?? false };
   }

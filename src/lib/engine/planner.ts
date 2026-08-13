@@ -34,8 +34,10 @@ export type PlannerScanResult = { checked: number; matched: number };
  * Runs every 5 minutes from the maintenance queue.
  */
 export async function scanPlannedAutomations(): Promise<PlannerScanResult> {
+  // NEXT_POST plans are attached at publish time by the scheduler, or by the
+  // media refresh below when the post was published outside the app.
   const planned = await prisma.plannedAutomation.findMany({
-    where: { status: "waiting" },
+    where: { status: "waiting", mode: "DRAFT_CODE" },
     include: { account: true },
   });
 

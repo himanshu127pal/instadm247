@@ -188,6 +188,54 @@ export class InstagramClient {
     return res.messages?.data ?? [];
   }
 
+  // --- Content publishing -------------------------------------------------
+
+  /**
+   * Step 1 of publishing: create a media container. Instagram then downloads
+   * and transcodes the file asynchronously — poll `getContainerStatus` before
+   * publishing. Requires `instagram_business_content_publish`.
+   */
+  createMediaContainer(input: {
+    mediaType: "IMAGE" | "VIDEO" | "REELS" | "CAROUSEL";
+    url?: string;
+    caption?: string;
+    thumbUrl?: string;
+    isCarouselItem?: boolean;
+    children?: string[];
+  }): Promise<{ id: string }> {
+    const body: Record<string, unknown> = {};
+
+    if (input.mediaType === "CAROUSEL") {
+      body.media_type = "CAROUSEL";
+      body.children = input.children;
+    } else if (input.mediaType === "IMAGE") {
+      body.image_url = input.url;
+    } else {
+      // Reels and video both upload as video; media_type distinguishes them.
+      body.media_type = input.mediaType;
+      body.video_url = input.url;
+      if (input.thumbUrl) body.thumb_offset = 0;
+    }
+
+    if (input.caption) body.caption = input.caption;
+    if (input.isCarouselItem) body.is_carousel_item = true;
+
+    return this.request(`/${this.igUserId}/media`, { method: "POST", body });
+  }
+
+  /** Step 2: how far along is Instagram with that container? */
+  getContainerStatus(creationId: string): Promise<{ status_code?: string; status?: string }> {
+    return this.request(`/${creationId}`, { params: { fields: "status_code,status" } });
+  }
+
+  /** Step 3: publish it for real. */
+  publishMediaContainer(creationId: string): Promise<{ id: string }> {
+    return this.request(`/${this.igUserId}/media_publish`, {
+      method: "POST",
+      body: { creation_id: creationId },
+    });
+  }
+
   // --- Profile configuration ---------------------------------------------
 
   /** Ice breakers = LinkDM's "Inbox Conversation Starters". Max 5, 80 chars. */

@@ -9,6 +9,8 @@ export const runtime = "nodejs";
 const patchSchema = z.object({
   automationPaused: z.boolean().optional(),
   slowDown: z.boolean().optional(),
+  viralProtection: z.boolean().optional(),
+  viralThresholdPerMin: z.number().int().min(5).max(1000).optional(),
 });
 
 export const PATCH = route<{ id: string }>(async ({ workspace, request, params }) => {
@@ -29,6 +31,23 @@ export const PATCH = route<{ id: string }>(async ({ workspace, request, params }
       data: {
         automationPaused: body.automationPaused,
         pausedReason: body.automationPaused ? "Paused manually." : null,
+      },
+    });
+  }
+
+  if (
+    typeof body.viralProtection === "boolean" ||
+    typeof body.viralThresholdPerMin === "number"
+  ) {
+    await prisma.instagramAccount.update({
+      where: { id: account.id },
+      data: {
+        ...(typeof body.viralProtection === "boolean"
+          ? { viralProtection: body.viralProtection }
+          : {}),
+        ...(typeof body.viralThresholdPerMin === "number"
+          ? { viralThresholdPerMin: body.viralThresholdPerMin }
+          : {}),
       },
     });
   }

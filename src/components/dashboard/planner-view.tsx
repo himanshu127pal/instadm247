@@ -12,6 +12,7 @@ import { timeAgo } from "@/lib/utils";
 type Planned = {
   id: string;
   name: string;
+  mode: string;
   draftCode: string;
   status: string;
   accountUsername: string;
@@ -37,6 +38,7 @@ export function PlannerView({
   const [accountId, setAccountId] = React.useState(accounts[0]?.id ?? "");
   const [automationId, setAutomationId] = React.useState("");
   const [name, setName] = React.useState("");
+  const [mode, setMode] = React.useState<"DRAFT_CODE" | "NEXT_POST">("DRAFT_CODE");
   const [saving, setSaving] = React.useState(false);
 
   const accountAutomations = automations.filter((a) => a.accountId === accountId);
@@ -51,12 +53,21 @@ export function PlannerView({
       const res = await fetch("/api/planner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accountId, automationId, name: name.trim() || "Planned automation" }),
+        body: JSON.stringify({
+          accountId,
+          automationId,
+          mode,
+          name: name.trim() || "Planned automation",
+        }),
       });
       const data = (await res.json()) as { error?: string; planned?: { draftCode: string } };
       if (!res.ok) throw new Error(data.error ?? "Could not create the plan");
 
-      toast.success(`Draft code ${data.planned?.draftCode} is ready — put it in your caption`);
+      toast.success(
+        mode === "NEXT_POST"
+          ? "Ready — it'll attach to your next post automatically"
+          : `Draft code ${data.planned?.draftCode} is ready — put it in your caption`,
+      );
       setCreating(false);
       setName("");
       router.refresh();
@@ -104,6 +115,7 @@ export function PlannerView({
             "Create a plan here and you get a short draft code like DM-K7QP2X.",
             "Paste that code anywhere in the caption of the post you're about to publish.",
             "Publish however you like — manually, Later, Buffer, Meta Suite. We spot the code within five minutes, attach the automation to that exact post, and switch it on.",
+            "No code to hand? Pick \"Next post\" instead and it latches onto whatever you publish next.",
           ].map((step, i) => (
             <li key={i} className="flex items-start gap-2.5 text-[13.5px] leading-relaxed">
               <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--accent)]/12 text-[11px] font-semibold text-[var(--accent)]">
@@ -175,6 +187,13 @@ export function PlannerView({
               </p>
             )}
 
+            <Field label="How should it attach?">
+              <Select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)}>
+                <option value="DRAFT_CODE">Draft code — I&apos;ll put a code in the caption</option>
+                <option value="NEXT_POST">Next post — attach to whatever I publish next</option>
+              </Select>
+            </Field>
+
             <Field label="Name this plan">
               <Input
                 value={name}
@@ -233,11 +252,17 @@ export function PlannerView({
                       : `created ${timeAgo(plan.createdAt)}`}
                   </p>
 
-                  {plan.status === "waiting" && (
-                    <div className="mt-3 max-w-xs">
-                      <CopyField label="Paste this in your caption" value={plan.draftCode} />
-                    </div>
-                  )}
+                  {plan.status === "waiting" &&
+                    (plan.mode === "NEXT_POST" ? (
+                      <p className="mt-3 rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] font-medium text-[var(--text-muted)]">
+                        Waiting for your next post — nothing to paste. It attaches
+                        automatically the moment you publish.
+                      </p>
+                    ) : (
+                      <div className="mt-3 max-w-xs">
+                        <CopyField label="Paste this in your caption" value={plan.draftCode} />
+                      </div>
+                    ))}
                 </div>
 
                 <Button

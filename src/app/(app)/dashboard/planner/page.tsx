@@ -40,6 +40,7 @@ export default async function PlannerPage() {
         planned={planned.map((p) => ({
           id: p.id,
           name: p.name,
+          mode: p.mode,
           draftCode: p.draftCode,
           status: p.status,
           accountUsername: p.account.username,
