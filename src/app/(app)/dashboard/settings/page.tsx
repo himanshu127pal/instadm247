@@ -74,9 +74,9 @@ export default async function SettingsPage() {
           {checks.map((check) => (
             <li key={check.label} className="flex items-start gap-2.5">
               {check.ok ? (
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-boom-500)]" />
               ) : (
-                <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-zonk-500)]" />
               )}
               <div>
                 <p className="text-[13.5px] font-medium">

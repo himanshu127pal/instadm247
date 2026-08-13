@@ -126,7 +126,7 @@ export function AutomationEditor({
   return (
     <div className="space-y-4">
       {graphRecovered && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] px-4 py-3 text-[13px] text-amber-300">
+        <div className="flex items-start gap-2.5 rounded-xl border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)]/40 shadow-[4px_4px_0_0_var(--shadow-ink)] px-4 py-3 text-[13px] text-[var(--text)]">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
             This flow&rsquo;s saved steps couldn&rsquo;t be read, so we&rsquo;ve started you
@@ -180,7 +180,7 @@ export function AutomationEditor({
       {tab === "flow" && (
         <>
           {flowDirty && (
-            <p className="text-[12px] text-amber-400">
+            <p className="text-[12px] text-[var(--color-zonk-500)]">
               You have unsaved changes — press ⌘S or the Save button.
             </p>
           )}
@@ -288,7 +288,7 @@ export function AutomationEditor({
                 />
               </Field>
 
-              <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-3">
+              <label className="flex items-center justify-between gap-3 rounded-xl border-2 border-[var(--border)] p-3">
                 <span>
                   <span className="block text-[13px] font-medium">Forgive typos</span>
                   <span className="block text-[11.5px] text-[var(--text-muted)]">

@@ -151,7 +151,7 @@ function TemplatesTab({ templates }: { templates: Template[] }) {
               />
             </Field>
             {text && (
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-sunken)] p-3">
+              <div className="rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3">
                 <p className="mb-1 text-[10.5px] uppercase tracking-wider text-[var(--text-faint)]">
                   Preview
                 </p>
@@ -190,7 +190,7 @@ function TemplatesTab({ templates }: { templates: Template[] }) {
                 </div>
                 <button
                   onClick={() => remove(template.id)}
-                  className="shrink-0 text-[var(--text-faint)] hover:text-red-400"
+                  className="shrink-0 text-[var(--text-faint)] hover:text-[var(--color-zap-500)]"
                   aria-label="Delete template"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -314,7 +314,7 @@ function LinksTab({ links, appUrl }: { links: TrackedLink[]; appUrl: string }) {
                   </div>
                   <button
                     onClick={() => remove(link.id)}
-                    className="text-[var(--text-faint)] hover:text-red-400"
+                    className="text-[var(--text-faint)] hover:text-[var(--color-zap-500)]"
                     aria-label="Delete link"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -417,7 +417,7 @@ function StartersTab({
               {questions.length > 1 && (
                 <button
                   onClick={() => setQuestions(questions.filter((_, j) => j !== i))}
-                  className="shrink-0 text-[var(--text-faint)] hover:text-red-400"
+                  className="shrink-0 text-[var(--text-faint)] hover:text-[var(--color-zap-500)]"
                   aria-label="Remove starter"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -432,7 +432,7 @@ function StartersTab({
           )}
         </div>
 
-        <p className="rounded-xl border border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] leading-relaxed text-[var(--text-muted)]">
+        <p className="rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] leading-relaxed text-[var(--text-muted)]">
           To answer a starter automatically, create an automation with the{" "}
           <strong className="text-[var(--text)]">Conversation starter tapped</strong> trigger.
         </p>

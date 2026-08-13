@@ -89,10 +89,10 @@ export function ContactsTable({
         {filtered.length.toLocaleString()} of {contacts.length.toLocaleString()} contacts
       </p>
 
-      <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)]">
+      <div className="overflow-hidden rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-[13px]">
-            <thead className="border-b border-[var(--border)] bg-[var(--bg-sunken)]">
+            <thead className="border-b-2 border-[var(--border-soft)] bg-[var(--bg-sunken)]">
               <tr>
                 {["Contact", "Tags", "Follows you", "Messaging window", "Last seen", "Account"].map(
                   (header) => (
@@ -112,7 +112,7 @@ export function ContactsTable({
                 return (
                   <tr
                     key={contact.id}
-                    className="border-b border-[var(--border)] last:border-0 transition-colors hover:bg-[var(--bg-subtle)]"
+                    className="border-b-2 border-[var(--border-soft)] last:border-0 transition-colors hover:bg-[var(--bg-subtle)]"
                   >
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2.5">
@@ -139,7 +139,7 @@ export function ContactsTable({
                           )}
                         </span>
                         {contact.optedOut && (
-                          <ShieldOff className="h-3.5 w-3.5 shrink-0 text-red-400" aria-label="Opted out" />
+                          <ShieldOff className="h-3.5 w-3.5 shrink-0 text-[var(--color-zap-500)]" aria-label="Opted out" />
                         )}
                       </div>
                     </td>
@@ -165,7 +165,7 @@ export function ContactsTable({
                       {contact.isFollower === null ? (
                         <span className="text-[var(--text-faint)]">Unknown</span>
                       ) : contact.isFollower ? (
-                        <span className="text-emerald-400">Yes</span>
+                        <span className="text-[var(--color-boom-500)]">Yes</span>
                       ) : (
                         <span className="text-[var(--text-muted)]">No</span>
                       )}
@@ -176,8 +176,8 @@ export function ContactsTable({
                           window.urgency === "closed"
                             ? "text-[var(--text-faint)]"
                             : window.urgency === "closing"
-                              ? "text-amber-400"
-                              : "text-emerald-400",
+                              ? "text-[var(--color-zonk-500)]"
+                              : "text-[var(--color-boom-500)]",
                         )}
                       >
                         {window.label}

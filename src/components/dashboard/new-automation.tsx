@@ -145,7 +145,7 @@ export function NewAutomationWizard({
               className={cn(
                 "grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold transition-colors",
                 i < step
-                  ? "bg-emerald-500 text-white"
+                  ? "bg-[var(--color-boom-400)] text-white"
                   : i === step
                     ? "bg-[var(--accent)] text-[var(--accent-contrast)]"
                     : "bg-[var(--bg-sunken)] text-[var(--text-faint)]",
@@ -171,7 +171,7 @@ export function NewAutomationWizard({
         initial={{ opacity: 0, x: 16 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.25 }}
-        className="space-y-5 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)] p-5"
+        className="space-y-5 rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)]"
       >
         {step === 0 && (
           <>
@@ -306,12 +306,12 @@ export function NewAutomationWizard({
                   </span>
                 </p>
                 {accountMedia.length === 0 ? (
-                  <p className="rounded-xl border border-dashed border-[var(--border-strong)] p-4 text-center text-[12.5px] text-[var(--text-muted)]">
+                  <p className="rounded-xl border-[2.5px] border-dashed border-[var(--border)] p-4 text-center text-[12.5px] text-[var(--text-muted)]">
                     No posts synced yet. Connect Instagram and sync, or choose &ldquo;All my
                     posts&rdquo; and it&rsquo;ll work on everything.
                   </p>
                 ) : (
-                  <div className="grid max-h-64 grid-cols-4 gap-2 overflow-y-auto rounded-xl border border-[var(--border)] p-2 sm:grid-cols-6">
+                  <div className="grid max-h-64 grid-cols-4 gap-2 overflow-y-auto rounded-xl border-2 border-[var(--border)] p-2 sm:grid-cols-6">
                     {accountMedia.map((item) => {
                       const selected = mediaIds.includes(item.id);
                       return (
@@ -404,7 +404,7 @@ export function NewAutomationWizard({
               </div>
             </div>
 
-            <p className="rounded-xl border border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] leading-relaxed text-[var(--text-muted)]">
+            <p className="rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] leading-relaxed text-[var(--text-muted)]">
               It&rsquo;ll be created switched off so you can finish the flow first. Turn it
               on from the builder when you&rsquo;re happy.
             </p>

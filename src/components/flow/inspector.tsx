@@ -34,16 +34,16 @@ export function NodeInspector({
   }
 
   return (
-    <aside className="flex h-full w-full flex-col border-l border-[var(--border)] bg-[var(--bg)]">
-      <header className="flex items-center gap-2.5 border-b border-[var(--border)] px-4 py-3">
+    <aside className="flex h-full w-full flex-col border-l-[3px] border-[var(--border)] bg-[var(--bg-raised)]">
+      <header className="flex items-center gap-2.5 border-b-[2.5px] border-[var(--border)] bg-[var(--bg-sunken)] px-4 py-3">
         <span
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border-2 border-[var(--border)] text-white"
           style={{ backgroundColor: meta.accent }}
         >
           <Icon className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13.5px] font-semibold">{meta.label}</p>
+          <p className="truncate text-[14px] font-extrabold">{meta.label}</p>
           <p className="truncate text-[11px] text-[var(--text-faint)]">{meta.description}</p>
         </div>
         <button
@@ -68,7 +68,7 @@ export function NodeInspector({
       </div>
 
       {node.type !== "TRIGGER" && (
-        <footer className="border-t border-[var(--border)] p-4">
+        <footer className="border-t-[2.5px] border-[var(--border)] p-4">
           <Button variant="danger" size="sm" className="w-full" onClick={onDelete}>
             <Trash2 className="h-3.5 w-3.5" />
             Delete this step

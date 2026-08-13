@@ -133,18 +133,45 @@ function BuilderInner({
     [graph.nodes, selectedId],
   );
 
-  // Surface per-node issues on the cards themselves.
+  /**
+   * Surface per-node issues on the cards themselves.
+   *
+   * `issues` is derived from `nodes`, so this effect writes to the very state it
+   * depends on. Two things stop that becoming an infinite loop:
+   *   1. the updater returns the SAME array reference when nothing changed, so
+   *      React bails out of the re-render entirely; and
+   *   2. the dependency is a stable string signature rather than the freshly
+   *      built `issues` array, whose identity changes on every render.
+   */
+  const issueSignature = React.useMemo(
+    () =>
+      issues
+        .filter((i) => i.nodeId)
+        .map((i) => `${i.nodeId}:${i.message}`)
+        .sort()
+        .join("|"),
+    [issues],
+  );
+
   React.useEffect(() => {
-    setNodes((current) =>
-      current.map((n) => {
-        const issue = issues.find((i) => i.nodeId === n.id);
+    const byNode = new Map<string, string>();
+    for (const issue of issues) {
+      if (issue.nodeId && !byNode.has(issue.nodeId)) byNode.set(issue.nodeId, issue.message);
+    }
+
+    setNodes((current) => {
+      let changed = false;
+      const next = current.map((n) => {
         const data = n.data as { node: FlowNode; issue?: string };
-        if (data.issue === issue?.message) return n;
-        return { ...n, data: { ...data, issue: issue?.message } };
-      }),
-    );
-    // `issues` is derived from nodes; guarding on the message list avoids a loop.
-  }, [issues, setNodes]);
+        const issue = byNode.get(n.id);
+        if (data.issue === issue) return n;
+        changed = true;
+        return { ...n, data: { ...data, issue } };
+      });
+      return changed ? next : current;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [issueSignature, setNodes]);
 
   const onConnect = React.useCallback(
     (connection: Connection) => {
@@ -261,7 +288,7 @@ function BuilderInner({
   });
 
   return (
-    <div className="flex h-[calc(100vh-13rem)] min-h-[560px] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)]">
+    <div className="flex h-[calc(100vh-13rem)] min-h-[560px] overflow-hidden rounded-[var(--radius-card)] border-[3px] border-[var(--border)] bg-[var(--bg)] shadow-[5px_5px_0_0_var(--shadow-ink)]">
       <div className="relative min-w-0 flex-1">
         {/* Toolbar */}
         <div className="absolute left-3 top-3 z-10 flex flex-wrap items-center gap-2">
@@ -272,7 +299,7 @@ function BuilderInner({
             </Button>
 
             {paletteOpen && (
-              <div className="absolute left-0 top-full z-20 mt-2 max-h-[420px] w-[280px] overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--bg-raised)] p-1.5 shadow-lift">
+              <div className="absolute left-0 top-full z-20 mt-2 max-h-[420px] w-[280px] overflow-y-auto rounded-2xl border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-1.5 shadow-[5px_5px_0_0_var(--shadow-ink)]">
                 {ADDABLE_TYPES.map((type) => {
                   const meta = NODE_META[type];
                   const Icon = meta.icon;
@@ -280,16 +307,16 @@ function BuilderInner({
                     <button
                       key={type}
                       onClick={() => addNode(type)}
-                      className="flex w-full items-start gap-2.5 rounded-xl p-2 text-left transition-colors hover:bg-[var(--bg-subtle)]"
+                      className="flex w-full items-start gap-2.5 rounded-xl p-2 text-left transition-colors hover:bg-[var(--color-pow-400)]/30"
                     >
                       <span
-                        className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg text-white"
+                        className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 border-[var(--border)] text-white"
                         style={{ backgroundColor: meta.accent }}
                       >
                         <Icon className="h-[14px] w-[14px]" />
                       </span>
                       <span className="min-w-0">
-                        <span className="block text-[13px] font-medium">{meta.label}</span>
+                        <span className="block text-[13px] font-extrabold">{meta.label}</span>
                         <span className="block text-[11px] leading-snug text-[var(--text-muted)]">
                           {meta.description}
                         </span>
@@ -344,10 +371,10 @@ function BuilderInner({
               <div
                 key={i}
                 className={cn(
-                  "rounded-xl border px-3 py-2 text-[11.5px] backdrop-blur-sm",
+                  "rounded-xl border-[2.5px] border-[var(--border)] px-3 py-2 text-[11.5px] font-bold shadow-[3px_3px_0_0_var(--shadow-ink)]",
                   issue.level === "error"
-                    ? "border-red-500/30 bg-red-500/10 text-red-300"
-                    : "border-amber-500/30 bg-amber-500/10 text-amber-300",
+                    ? "bg-[var(--color-zap-400)] text-white"
+                    : "bg-[var(--color-pow-400)] text-[#12110e]",
                 )}
               >
                 {issue.message}
@@ -391,7 +418,7 @@ function BuilderInner({
               return NODE_META[data.node.type].accent;
             }}
             maskColor="color-mix(in oklab, var(--bg) 70%, transparent)"
-            className="!bottom-3 !right-3 !h-24 !w-40 !rounded-xl !border !border-[var(--border)]"
+            className="!bottom-3 !right-3 !h-24 !w-40 !rounded-xl"
           />
         </ReactFlow>
       </div>

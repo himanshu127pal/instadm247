@@ -162,7 +162,7 @@ export function SpotlightCard({
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300"
         style={{
           opacity: active ? 1 : 0,
-          background: `radial-gradient(340px circle at ${pos.x}% ${pos.y}%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 70%)`,
+          background: `radial-gradient(300px circle at ${pos.x}% ${pos.y}%, color-mix(in oklab, var(--color-pow-400) 45%, transparent), transparent 68%)`,
         }}
       />
       {children}
@@ -208,7 +208,7 @@ export function ScrollProgress() {
   return (
     <motion.div
       style={{ scaleX }}
-      className="fixed inset-x-0 top-0 z-[60] h-0.5 origin-left bg-[linear-gradient(90deg,var(--color-brand-500),var(--color-flare-500),var(--color-ember-500))]"
+      className="fixed inset-x-0 top-0 z-[60] h-1 origin-left border-b-2 border-[var(--border)] bg-[linear-gradient(90deg,var(--color-zap-400),var(--color-pow-400),var(--color-bam-400))]"
     />
   );
 }
@@ -237,7 +237,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={toggle}
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
       className={cn(
-        "grid h-9 w-9 place-items-center rounded-xl border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]",
+        "grid h-9 w-9 place-items-center rounded-xl border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] text-[var(--text)] shadow-[2px_2px_0_0_var(--shadow-ink)] transition-transform duration-150 hover:-translate-x-[1px] hover:-translate-y-[1px] hover:bg-[var(--color-pow-400)] active:translate-x-[1px] active:translate-y-[1px]",
         className,
       )}
     >
@@ -248,8 +248,8 @@ export function ThemeToggle({ className }: { className?: string }) {
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-raised)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">
-      <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+    <span className="inline-flex -rotate-1 items-center gap-2 rounded-full border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)] px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#12110e] shadow-[3px_3px_0_0_var(--shadow-ink)]">
+      <span className="h-2 w-2 rounded-full border-2 border-[#12110e] bg-[var(--color-zap-400)]" />
       {children}
     </span>
   );
@@ -263,7 +263,7 @@ export function Accordion({
   const [open, setOpen] = React.useState<number | null>(0);
 
   return (
-    <div className="divide-y divide-[var(--border)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg-raised)]">
+    <div className="divide-y-[2.5px] divide-[var(--border)] overflow-hidden rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] shadow-[5px_5px_0_0_var(--shadow-ink)]">
       {items.map((item, i) => {
         const expanded = open === i;
         return (
@@ -271,9 +271,9 @@ export function Accordion({
             <button
               onClick={() => setOpen(expanded ? null : i)}
               aria-expanded={expanded}
-              className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--bg-subtle)]"
+              className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--color-pow-400)]/25"
             >
-              <span className="text-[14.5px] font-medium">{item.question}</span>
+              <span className="text-[15px] font-extrabold">{item.question}</span>
               <ChevronDown
                 className={cn(
                   "h-4 w-4 shrink-0 text-[var(--text-faint)] transition-transform duration-300",
@@ -287,7 +287,7 @@ export function Accordion({
               transition={{ duration: 0.28, ease: [0.21, 0.47, 0.32, 0.98] }}
               className="overflow-hidden"
             >
-              <div className="px-5 pb-5 text-[14px] leading-relaxed text-[var(--text-muted)]">
+              <div className="px-5 pb-5 text-[14px] font-medium leading-relaxed text-[var(--text-muted)]">
                 {item.answer}
               </div>
             </motion.div>
@@ -301,7 +301,7 @@ export function Accordion({
 export function Logo({ className, href = "/" }: { className?: string; href?: string }) {
   return (
     <Link href={href} className={cn("group inline-flex items-center gap-2.5", className)}>
-      <span className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-flare-500)_55%,var(--color-ember-500))]">
+      <span className="relative grid h-9 w-9 -rotate-3 place-items-center overflow-hidden rounded-[10px] border-[2.5px] border-[var(--border)] bg-[linear-gradient(135deg,var(--color-zap-400),var(--color-kapow-400)_55%,var(--color-bam-400))] shadow-[2px_2px_0_0_var(--shadow-ink)] transition-transform duration-200 group-hover:rotate-3">
         <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="none" aria-hidden>
           <path
             d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6A.5.5 0 0 1 5 19.2V16h-.5A2.5 2.5 0 0 1 2 13.5"
@@ -316,8 +316,8 @@ export function Logo({ className, href = "/" }: { className?: string; href?: str
         </svg>
         <span className="absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0" />
       </span>
-      <span className="text-[15px] font-semibold tracking-tight">
-        InstaDM<span className="text-gradient">247</span>
+      <span className="font-display text-[19px] tracking-wide">
+        InstaDM<span className="text-[var(--color-zap-400)]">247</span>
       </span>
     </Link>
   );

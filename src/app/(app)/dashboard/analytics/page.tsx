@@ -80,7 +80,7 @@ export default async function AnalyticsPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[680px] text-left text-[13px]">
-              <thead className="border-b border-[var(--border)]">
+              <thead className="border-b-2 border-[var(--border-soft)]">
                 <tr>
                   <th className="pb-2.5 text-[11.5px] font-medium uppercase tracking-wider text-[var(--text-faint)]">
                     Automation
@@ -101,7 +101,7 @@ export default async function AnalyticsPage() {
                   .map((automation) => (
                     <tr
                       key={automation.id}
-                      className="border-b border-[var(--border)] last:border-0"
+                      className="border-b-2 border-[var(--border-soft)] last:border-0"
                     >
                       <td className="py-2.5">
                         <Link
@@ -147,7 +147,7 @@ export default async function AnalyticsPage() {
             No tracked links yet. Create one from Templates to start measuring clicks.
           </p>
         ) : (
-          <ul className="divide-y divide-[var(--border)]">
+          <ul className="divide-y-2 divide-[var(--border-soft)]">
             {topLinks.map((link) => (
               <li key={link.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
                 <div className="min-w-0 flex-1">

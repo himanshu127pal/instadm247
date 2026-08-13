@@ -40,7 +40,7 @@ export function BroadcastsView({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)] p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)]">
         <div className="flex items-start gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)]">
             <Users className="h-5 w-5" />
@@ -83,7 +83,7 @@ export function BroadcastsView({
           {broadcasts.map((broadcast) => (
             <article
               key={broadcast.id}
-              className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)] p-5"
+              className="rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)]"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -313,7 +313,7 @@ function Composer({
                 onChange={(e) => setReengageAfterHours(Number(e.target.value) || 12)}
               />
             </Field>
-            <label className="flex items-center gap-3 self-end rounded-xl border border-[var(--border)] p-3">
+            <label className="flex items-center gap-3 self-end rounded-xl border-2 border-[var(--border)] p-3">
               <Switch checked={recurring} onCheckedChange={setRecurring} label="Repeat" />
               <span className="text-[13px]">Keep running on this schedule</span>
             </label>
@@ -321,7 +321,7 @@ function Composer({
         )}
 
         {audience && (
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-sunken)] p-3.5">
+          <div className="rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3.5">
             <p className="text-[13px]">
               <span className="font-semibold">{audience.eligible.toLocaleString()}</span> of{" "}
               {audience.total.toLocaleString()} matching contacts can receive this right now.

@@ -123,7 +123,7 @@ export function ActivityChart({ data }: { data: ActivityPoint[] }) {
       </div>
 
       {!hasData ? (
-        <div className="grid h-[260px] place-items-center rounded-xl border border-dashed border-[var(--border-strong)]">
+        <div className="grid h-[260px] place-items-center rounded-xl border-[2.5px] border-dashed border-[var(--border)]">
           <p className="text-[13px] text-[var(--text-muted)]">
             No activity yet — this fills in as your automations run.
           </p>
@@ -211,7 +211,7 @@ function ChartTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-raised)] px-3 py-2 shadow-lift">
+    <div className="rounded-xl border-2 border-[var(--border)] bg-[var(--bg-raised)] px-3 py-2 shadow-lift">
       <p className="mb-1.5 text-[11px] font-medium text-[var(--text-faint)]">
         {label ? formatDay(label) : ""}
       </p>
@@ -241,7 +241,7 @@ function ActivityTable({ data }: { data: ActivityPoint[] }) {
   const rows = [...data].reverse();
 
   return (
-    <div className="max-h-[260px] overflow-auto rounded-xl border border-[var(--border)]">
+    <div className="max-h-[260px] overflow-auto rounded-xl border-2 border-[var(--border)]">
       <table className="w-full text-left text-[12.5px]">
         <thead className="sticky top-0 bg-[var(--bg-sunken)]">
           <tr>
@@ -258,7 +258,7 @@ function ActivityTable({ data }: { data: ActivityPoint[] }) {
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.date} className="border-t border-[var(--border)]">
+            <tr key={row.date} className="border-t-2 border-[var(--border-soft)]">
               <td className="px-3 py-1.5">{formatDay(row.date)}</td>
               {SERIES.map((series) => (
                 <td key={series.key} className="px-3 py-1.5 text-right tabular-nums">
@@ -288,7 +288,7 @@ export function FunnelChart({
 }) {
   if (nodes.length === 0 || totalRuns === 0) {
     return (
-      <div className="grid h-[180px] place-items-center rounded-xl border border-dashed border-[var(--border-strong)]">
+      <div className="grid h-[180px] place-items-center rounded-xl border-[2.5px] border-dashed border-[var(--border)]">
         <p className="text-[13px] text-[var(--text-muted)]">
           Once this automation runs, you&rsquo;ll see where people drop off.
         </p>
@@ -367,7 +367,7 @@ export function SkipReasonChart({
 
   if (data.length === 0) {
     return (
-      <div className="grid h-[160px] place-items-center rounded-xl border border-dashed border-[var(--border-strong)]">
+      <div className="grid h-[160px] place-items-center rounded-xl border-[2.5px] border-dashed border-[var(--border)]">
         <p className="text-[13px] text-[var(--text-muted)]">
           Nothing was skipped in this period. That&rsquo;s the good outcome.
         </p>

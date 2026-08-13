@@ -13,7 +13,7 @@ export default async function DataDeletionPage({
   return (
     <LegalPage title="Deleting your data" updated="August 2026">
       {code && (
-        <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.07] p-5">
+        <div className="rounded-2xl border-[2.5px] border-[var(--border)] bg-[var(--color-boom-400)]/30 shadow-[4px_4px_0_0_var(--shadow-ink)] p-5">
           <p className="text-[var(--text)]">
             <strong>Your deletion request has been processed.</strong>
           </p>

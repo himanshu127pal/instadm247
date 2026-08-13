@@ -96,13 +96,13 @@ export function SafetyView({
               return (
                 <div
                   key={account.id}
-                  className="rounded-xl border border-[var(--border)] p-4"
+                  className="rounded-xl border-2 border-[var(--border)] p-4"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-[14px] font-medium">@{account.username}</p>
                       {account.pausedReason && (
-                        <p className="mt-0.5 flex items-center gap-1.5 text-[12px] text-amber-400">
+                        <p className="mt-0.5 flex items-center gap-1.5 text-[12px] text-[var(--color-zonk-500)]">
                           <AlertTriangle className="h-3 w-3" />
                           {account.pausedReason}
                         </p>
@@ -145,7 +145,7 @@ export function SafetyView({
                   </div>
 
                   {slowedDown && (
-                    <p className="mt-2.5 flex items-center gap-1.5 text-[12px] text-amber-400">
+                    <p className="mt-2.5 flex items-center gap-1.5 text-[12px] text-[var(--color-zonk-500)]">
                       <TimerReset className="h-3.5 w-3.5" />
                       Sending is halved until{" "}
                       {new Date(account.slowDownUntil!).toLocaleTimeString([], {
@@ -157,7 +157,7 @@ export function SafetyView({
                   )}
 
                   {accountLimits && (
-                    <div className="mt-3 grid gap-2.5 border-t border-[var(--border)] pt-3 sm:grid-cols-2">
+                    <div className="mt-3 grid gap-2.5 border-t-2 border-[var(--border-soft)] pt-3 sm:grid-cols-2">
                       {accountLimits.classes.map((rate) => {
                         const pct = rate.cap > 0 ? Math.min(100, (rate.used / rate.cap) * 100) : 0;
                         return (
@@ -177,7 +177,7 @@ export function SafetyView({
                               <div
                                 className={cn(
                                   "h-full rounded-full transition-all",
-                                  pct > 85 ? "bg-amber-400" : "bg-emerald-400",
+                                  pct > 85 ? "bg-[var(--color-pow-400)]" : "bg-[var(--color-boom-400)]",
                                 )}
                                 style={{ width: `${pct}%` }}
                               />
@@ -202,7 +202,7 @@ export function SafetyView({
           <SkipReasonChart data={skips} />
 
           {skips.length > 0 && (
-            <ul className="mt-4 space-y-2 border-t border-[var(--border)] pt-4">
+            <ul className="mt-4 space-y-2 border-t-2 border-[var(--border-soft)] pt-4">
               {skips.map((skip) => (
                 <li key={skip.reason} className="text-[12.5px]">
                   <span className="font-medium">{skip.label}</span>
@@ -222,7 +222,7 @@ export function SafetyView({
               No failed sends in the last 7 days.
             </p>
           ) : (
-            <ul className="divide-y divide-[var(--border)]">
+            <ul className="divide-y-2 divide-[var(--border-soft)]">
               {failures.map((failure) => (
                 <li key={failure.id} className="py-2.5 first:pt-0 last:pb-0">
                   <div className="flex items-baseline justify-between gap-3">
@@ -233,7 +233,7 @@ export function SafetyView({
                       {timeAgo(failure.createdAt)}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-[12px] leading-relaxed text-red-400">
+                  <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--color-zap-500)]">
                     {failure.reason ?? "Unknown error"}
                   </p>
                 </li>

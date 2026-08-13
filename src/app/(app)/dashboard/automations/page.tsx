@@ -82,7 +82,7 @@ export default async function AutomationsPage() {
           {automations.map((automation) => (
             <article
               key={automation.id}
-              className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)] p-5 transition-colors hover:border-[var(--border-strong)]"
+              className="rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)] transition-colors hover:border-[var(--border-strong)]"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
@@ -157,7 +157,7 @@ export default async function AutomationsPage() {
                 </div>
               </div>
 
-              <p className="mt-3 border-t border-[var(--border)] pt-3 text-[11.5px] text-[var(--text-faint)]">
+              <p className="mt-3 border-t-2 border-[var(--border-soft)] pt-3 text-[11.5px] text-[var(--text-faint)]">
                 Updated {timeAgo(automation.updatedAt)} · {automation._count.runs.toLocaleString()}{" "}
                 total run{automation._count.runs === 1 ? "" : "s"}
               </p>

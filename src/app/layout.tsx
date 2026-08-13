@@ -1,6 +1,21 @@
 import type { Metadata, Viewport } from "next";
+import { Bangers, Nunito } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
+
+/** Bangers for comic display type, Nunito for the rounded body face. */
+const display = Bangers({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-display-loaded",
+  display: "swap",
+});
+
+const body = Nunito({
+  subsets: ["latin"],
+  variable: "--font-sans-loaded",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -33,7 +48,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
       <head>
         {/* Apply the stored theme before paint so there's no flash. */}
         <script

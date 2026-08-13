@@ -64,10 +64,10 @@ export function AiAgentView({
   return (
     <div className="space-y-5">
       {!modelConfigured && (
-        <div className="flex items-start gap-3 rounded-[var(--radius-card)] border border-amber-500/25 bg-amber-500/[0.07] p-5">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+        <div className="flex items-start gap-3 rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)]/40 shadow-[4px_4px_0_0_var(--shadow-ink)] p-5">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-zonk-500)]" />
           <div>
-            <p className="text-[14px] font-medium text-amber-200">No model key configured</p>
+            <p className="text-[14px] font-medium text-[var(--text)]">No model key configured</p>
             <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-muted)]">
               Add <code className="font-mono">ANTHROPIC_API_KEY</code> to enable generated
               replies. Until then the AI step falls back to your knowledge base article
@@ -79,7 +79,7 @@ export function AiAgentView({
 
       <SectionCard title="Agent">
         <div className="space-y-4">
-          <label className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-3">
+          <label className="flex items-center justify-between gap-3 rounded-xl border-2 border-[var(--border)] p-3">
             <span>
               <span className="block text-[13.5px] font-medium">Enable the AI agent</span>
               <span className="block text-[12px] text-[var(--text-muted)]">
@@ -168,7 +168,7 @@ export function AiAgentView({
             />
           </Field>
 
-          <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3">
+          <label className="flex items-start gap-3 rounded-xl border-2 border-[var(--border)] p-3">
             <Switch
               checked={agent.handoffOnUnknown}
               onCheckedChange={(v) => patch({ handoffOnUnknown: v })}
@@ -216,7 +216,7 @@ export function AiAgentView({
             description="Add your shipping policy, sizing guide, FAQ — anything you'd otherwise retype in DMs."
           />
         ) : (
-          <ul className="divide-y divide-[var(--border)]">
+          <ul className="divide-y-2 divide-[var(--border-soft)]">
             {docs.map((doc) => (
               <li key={doc.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                 <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[var(--bg-sunken)] text-[var(--accent)]">
@@ -306,7 +306,7 @@ function DocEditor({ doc, onDone }: { doc: Doc | null; onDone: () => void }) {
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--bg-sunken)] p-4">
+    <div className="space-y-3 rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-4">
       <Field label="Title">
         <Input
           value={title}
@@ -330,7 +330,7 @@ function DocEditor({ doc, onDone }: { doc: Doc | null; onDone: () => void }) {
           Cancel
         </Button>
         {doc && (
-          <Button variant="ghost" size="sm" className="ml-auto text-red-400" onClick={remove}>
+          <Button variant="ghost" size="sm" className="ml-auto text-[var(--color-zap-500)]" onClick={remove}>
             <Trash2 className="h-3.5 w-3.5" /> Delete
           </Button>
         )}

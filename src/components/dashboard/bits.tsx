@@ -17,9 +17,9 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1 className="text-[22px] font-semibold tracking-tight">{title}</h1>
+        <h1 className="font-display text-[30px] leading-none tracking-wide">{title}</h1>
         {description && (
-          <p className="mt-1 max-w-2xl text-[13.5px] leading-relaxed text-[var(--text-muted)]">
+          <p className="mt-2 max-w-2xl text-[13.5px] font-medium leading-relaxed text-[var(--text-muted)]">
             {description}
           </p>
         )}
@@ -46,10 +46,10 @@ export function StatCard({
   tone?: "neutral" | "brand" | "success" | "warning";
 }) {
   const toneRing: Record<string, string> = {
-    neutral: "text-[var(--text-muted)] bg-[var(--bg-sunken)]",
-    brand: "text-[var(--accent)] bg-[var(--accent)]/10",
-    success: "text-emerald-400 bg-emerald-500/10",
-    warning: "text-amber-400 bg-amber-500/10",
+    neutral: "bg-[var(--bg-sunken)] text-[var(--text)]",
+    brand: "bg-[var(--color-kapow-400)] text-white",
+    success: "bg-[var(--color-boom-400)] text-[#12110e]",
+    warning: "bg-[var(--color-pow-400)] text-[#12110e]",
   };
 
   return (
@@ -57,14 +57,14 @@ export function StatCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)] p-5"
+      className="rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)]"
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[12.5px] font-medium text-[var(--text-muted)]">{label}</p>
+        <p className="text-[12px] font-extrabold uppercase tracking-wide text-[var(--text-muted)]">{label}</p>
         {icon && (
           <span
             className={cn(
-              "grid h-8 w-8 place-items-center rounded-xl [&_svg]:h-4 [&_svg]:w-4",
+              "grid h-9 w-9 place-items-center rounded-xl border-2 border-[var(--border)] [&_svg]:h-4 [&_svg]:w-4",
               toneRing[tone],
             )}
           >
@@ -73,7 +73,7 @@ export function StatCard({
         )}
       </div>
 
-      <p className="mt-3 text-[28px] font-semibold leading-none tracking-tight">
+      <p className="font-display mt-3 text-[34px] leading-none tracking-wide">
         {typeof value === "number" ? formatNumber(value) : value}
       </p>
 
@@ -82,7 +82,7 @@ export function StatCard({
           <span
             className={cn(
               "inline-flex items-center gap-0.5 text-[11.5px] font-medium",
-              delta >= 0 ? "text-emerald-400" : "text-red-400",
+              delta >= 0 ? "text-[var(--color-boom-500)]" : "text-[var(--color-zap-500)]",
             )}
           >
             {delta >= 0 ? (
@@ -93,7 +93,7 @@ export function StatCard({
             {Math.abs(delta).toFixed(0)}%
           </span>
         )}
-        {hint && <span className="text-[11.5px] text-[var(--text-faint)]">{hint}</span>}
+        {hint && <span className="text-[11.5px] font-semibold text-[var(--text-faint)]">{hint}</span>}
       </div>
     </motion.div>
   );
@@ -153,16 +153,16 @@ export function SectionCard({
   return (
     <section
       className={cn(
-        "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)]",
+        "rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] shadow-[4px_4px_0_0_var(--shadow-ink)]",
         className,
       )}
     >
       {(title || actions) && (
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-3.5">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b-[2.5px] border-[var(--border)] bg-[var(--bg-sunken)] px-5 py-3.5">
           <div>
-            {title && <h2 className="text-[14.5px] font-semibold">{title}</h2>}
+            {title && <h2 className="text-[15px] font-extrabold">{title}</h2>}
             {description && (
-              <p className="mt-0.5 text-[12.5px] text-[var(--text-muted)]">{description}</p>
+              <p className="mt-0.5 text-[12.5px] font-medium text-[var(--text-muted)]">{description}</p>
             )}
           </div>
           {actions && <div className="flex items-center gap-2">{actions}</div>}
@@ -188,16 +188,16 @@ export function CopyField({ value, label }: { value: string; label?: string }) {
           setCopied(false);
         }
       }}
-      className="group flex w-full items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-sunken)] px-3 py-2 text-left transition-colors hover:border-[var(--accent)]"
+      className="group flex w-full items-center gap-2 rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] px-3 py-2 text-left transition-colors hover:bg-[var(--color-pow-400)]/30"
     >
       <span className="min-w-0 flex-1">
-        {label && <span className="block text-[11px] text-[var(--text-faint)]">{label}</span>}
+        {label && <span className="block text-[11px] font-bold uppercase tracking-wide text-[var(--text-faint)]">{label}</span>}
         <span className="block truncate font-mono text-[12.5px]">{value}</span>
       </span>
       <span
         className={cn(
           "shrink-0 text-[11px] font-medium transition-colors",
-          copied ? "text-emerald-400" : "text-[var(--text-faint)] group-hover:text-[var(--accent)]",
+          copied ? "text-[var(--color-boom-500)]" : "text-[var(--text-faint)] group-hover:text-[var(--text)]",
         )}
       >
         {copied ? "Copied" : "Copy"}
@@ -216,7 +216,7 @@ export function Tabs({
   onChange: (id: string) => void;
 }) {
   return (
-    <div className="flex gap-1 overflow-x-auto border-b border-[var(--border)] no-scrollbar">
+    <div className="flex gap-1 overflow-x-auto border-b-[2.5px] border-[var(--border)] no-scrollbar">
       {tabs.map((tab) => {
         const isActive = tab.id === active;
         return (
@@ -224,20 +224,20 @@ export function Tabs({
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "relative shrink-0 px-3.5 py-2.5 text-[13.5px] transition-colors",
+              "relative shrink-0 px-3.5 py-2.5 text-[13.5px] font-extrabold transition-colors",
               isActive ? "text-[var(--text)]" : "text-[var(--text-muted)] hover:text-[var(--text)]",
             )}
           >
             {tab.label}
             {typeof tab.count === "number" && (
-              <span className="ml-1.5 rounded-full bg-[var(--bg-sunken)] px-1.5 py-0.5 text-[10.5px]">
+              <span className="ml-1.5 rounded-full border-2 border-[var(--border)] bg-[var(--bg-sunken)] px-1.5 py-0.5 text-[10.5px] font-extrabold">
                 {tab.count}
               </span>
             )}
             {isActive && (
               <motion.span
                 layoutId="tab-underline"
-                className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-[var(--accent)]"
+                className="absolute inset-x-1 -bottom-[3px] h-[4px] rounded-full bg-[var(--color-zap-400)]"
                 transition={{ type: "spring", stiffness: 400, damping: 34 }}
               />
             )}

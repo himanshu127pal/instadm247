@@ -39,73 +39,73 @@ export const NODE_META: Record<
   TRIGGER: {
     icon: CircleDot,
     label: "Trigger",
-    accent: "#16c47f",
+    accent: "#52d67a",
     description: "What starts this flow",
   },
   SEND_MESSAGE: {
     icon: MessageSquare,
     label: "Send DM",
-    accent: "#7222f5",
+    accent: "#9d4edd",
     description: "Send a message, buttons or carousel",
   },
   REPLY_TO_COMMENT: {
     icon: MessageSquareReply,
     label: "Reply publicly",
-    accent: "#8344ff",
+    accent: "#7b2cbf",
     description: "Reply in the comment thread too",
   },
-  DELAY: { icon: Clock, label: "Wait", accent: "#38bdf8", description: "Pause before the next step" },
+  DELAY: { icon: Clock, label: "Wait", accent: "#4cc9f0", description: "Pause before the next step" },
   CONDITION: {
     icon: GitBranch,
     label: "If / else",
-    accent: "#eda100",
+    accent: "#ffd23f",
     description: "Branch on tags, fields or follower status",
   },
   ASK_FOR_FOLLOW: {
     icon: UserPlus,
     label: "Ask for follow",
-    accent: "#f43ba6",
+    accent: "#ff5d73",
     description: "Nudge non-followers, then re-check",
   },
   FOLLOWER_CHECK: {
     icon: UserCheck,
     label: "Follower check",
-    accent: "#eda100",
+    accent: "#ffd23f",
     description: "Branch on whether they follow you",
   },
   COLLECT_INPUT: {
     icon: ListChecks,
     label: "Ask a question",
-    accent: "#1baf7a",
+    accent: "#2fb85c",
     description: "Capture an answer into a variable",
   },
-  AI_REPLY: { icon: Bot, label: "AI replies", accent: "#ff7a3d", description: "Answer from your knowledge base" },
-  TAG: { icon: Tag, label: "Tag contact", accent: "#5a6483", description: "Add or remove tags" },
+  AI_REPLY: { icon: Bot, label: "AI replies", accent: "#ff9f45", description: "Answer from your knowledge base" },
+  TAG: { icon: Tag, label: "Tag contact", accent: "#7d7563", description: "Add or remove tags" },
   SET_FIELD: {
     icon: Variable,
     label: "Set field",
-    accent: "#5a6483",
+    accent: "#7d7563",
     description: "Store a value on the contact",
   },
   RANDOMIZER: {
     icon: Shuffle,
     label: "Split test",
-    accent: "#9f76ff",
+    accent: "#c77dff",
     description: "Send people down different paths",
   },
   HTTP_REQUEST: {
     icon: Globe,
     label: "Call a webhook",
-    accent: "#5a6483",
+    accent: "#7d7563",
     description: "Send data to another system",
   },
   HUMAN_HANDOFF: {
     icon: UserCheck,
     label: "Hand to a human",
-    accent: "#e34948",
+    accent: "#f0435c",
     description: "Pause automation and open the inbox",
   },
-  END: { icon: Flag, label: "End", accent: "#5a6483", description: "Finish the flow" },
+  END: { icon: Flag, label: "End", accent: "#7d7563", description: "Finish the flow" },
 };
 
 /** One-line summary of what a configured node will actually do. */
@@ -180,11 +180,10 @@ function BaseNode({
   return (
     <div
       className={cn(
-        "w-[248px] rounded-2xl border bg-[var(--bg-raised)] shadow-lift transition-all",
-        selected
-          ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/25"
-          : "border-[var(--border)]",
-        issue && "border-amber-500/60",
+        "w-[248px] rounded-2xl border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] transition-all",
+        "shadow-[4px_4px_0_0_var(--shadow-ink)]",
+        selected && "shadow-[4px_4px_0_0_var(--color-zap-400)]",
+        issue && "shadow-[4px_4px_0_0_var(--color-pow-500)]",
       )}
     >
       {!isTrigger && (
@@ -196,15 +195,15 @@ function BaseNode({
         />
       )}
 
-      <div className="flex items-center gap-2.5 border-b border-[var(--border)] px-3 py-2.5">
+      <div className="flex items-center gap-2.5 border-b-2 border-[var(--border)] px-3 py-2.5">
         <span
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-white"
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 border-[var(--border)] text-white"
           style={{ backgroundColor: meta.accent }}
         >
           <Icon className="h-[14px] w-[14px]" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[12.5px] font-semibold">{node.data.label}</span>
+          <span className="block truncate text-[12.5px] font-extrabold">{node.data.label}</span>
           <span className="block truncate text-[10.5px] text-[var(--text-faint)]">
             {meta.label}
           </span>
@@ -212,10 +211,10 @@ function BaseNode({
       </div>
 
       <div className="px-3 py-2.5">
-        <p className="line-clamp-2 text-[11.5px] leading-relaxed text-[var(--text-muted)]">
+        <p className="line-clamp-2 text-[11.5px] font-medium leading-relaxed text-[var(--text-muted)]">
           {describeNode(node)}
         </p>
-        {issue && <p className="mt-1.5 text-[10.5px] text-amber-400">{issue}</p>}
+        {issue && <p className="mt-1.5 text-[10.5px] font-bold text-[var(--color-zonk-500)]">{issue}</p>}
       </div>
 
       {outputs.map((output) => (

@@ -1,200 +1,139 @@
-# Feature Matrix — Competitor Research & Phase 1 Scope
+# Feature Matrix — Competitor Coverage & Phase 1 Scope
 
-Researched August 2026. Sources are competitor marketing/help pages and third-party
-comparisons (their sites are not directly reachable from the build environment, so
-feature names below are quoted from their published help docs, blog posts and
-independent reviews — see "Sources" at the bottom).
+**The lists in §A and §B were supplied verbatim by the owner from the competitors'
+own sites.** They supersede the earlier search-derived research and are the
+authoritative checklist. Do not re-research these; do not drop items from them.
 
-**Phase 1 scope = the union of everything both competitors ship.** Anything marked
-`P2` is deferred and must not be built without the owner asking.
+Legend: **Done** shipped · **N/A** not a product feature for us · **P2** deferred
+to Phase 2 by an explicit decision recorded below.
 
 ---
 
-## A. LinkDM — researched feature set
+## A. LinkDM — official feature list (owner-supplied)
 
-| # | LinkDM feature | Their description (as published) | Our Phase 1 implementation |
+| # | LinkDM feature | Their description | Status | Where it lives |
+|---|---|---|---|---|
+| 1 | **Post AutoDM** | Auto-reply to Instagram Post comments with a DM | Done | `COMMENT` trigger |
+| 2 | **Reels AutoDM** | Auto-reply to Instagram Reel comments with a DM | Done | Same trigger; Reels are media |
+| 3 | **Facebook AutoDM** | Auto-reply to Facebook comments with a DM | **P2** | See "Facebook channel" below |
+| 4 | **Story AutoDM** | Auto-respond to story replies with a DM | Done | `STORY_REPLY` |
+| 5 | **Story Mentions** | Auto-reply to story @mentions | Done | `STORY_MENTION` |
+| 6 | **Inbox Starters** | Up to 4 conversation starters in your inbox | Done | Ice breakers manager |
+| 7 | **Next Post** | Draft your next linked post in advance | Done | Planner → "Next post" mode |
+| 8 | **Click Analytics** | Track link click analytics on DMs sent | Done | Tracked links + `/r/[code]` |
+| 9 | **Flow Automation** | Sequence of DMs and reminders after engagement | Done | Visual flow builder |
+| 10 | **Comment Auto-Reply** | Reply to the comment publicly once a DM is sent | Done | `REPLY_TO_COMMENT` node |
+| 11 | **White Label** | Remove LinkDM branding from DMs sent | **N/A** | We never brand outbound DMs. Applies only to the Link-in-Bio badge, which is toggleable. |
+| 12 | **Multiple Accounts** | Connect up to 3 Instagram accounts | Done | Unlimited in Phase 1 |
+| 13 | **Increased DM Send Limit** | 25,000 DMs/account/month | **P2** | Plan gating — `src/lib/plan.ts` |
+| 14 | **Universal Triggers** | Global triggers across multiple placements | Done | `scope: UNIVERSAL` |
+| 15 | **Rewind** | Backsend DMs to eligible comments | Done | Rewind, per automation |
+| 16 | **Advertising AutoDM** | Auto-reply to comments on sponsored content | Done | `AD_COMMENT` trigger |
+| 17 | **Inbox Automation** | Auto-reply to inbox messages | Done | `DM_KEYWORD` trigger |
+| 18 | **Referral Program** | Access our referral program and start earning | **N/A** | LinkDM's own affiliate scheme, not a creator-facing capability |
+| 19 | **Lead Generation** | Capture email addresses directly in chat | Done | Lead forms + `COLLECT_INPUT` |
+| 20 | **DM Planner** | Draft DMs for scheduled posts in advance | Done | Draft codes + scheduler linkage |
+| 21 | **DM Templates** | Save and re-use DMs | Done | Template library |
+| 22 | **DM Coupons** | Send coupons via DMs | Done | Coupon pools + `SEND_COUPON` node |
+| 23 | **API Integrations** | Connect lead forms to Kit and Flodesk | Done | Native Kit + Flodesk, plus generic webhook |
+| 24 | **DM Send Limit+** | 300,000 DMs/account/month | **P2** | Plan gating |
+| 25 | **Accounts+** | Up to 10 Instagram accounts | **P2** | Unlimited already; the cap is a plan concern |
+| 26 | **DM Queue** | Advance queue so a DM is never missed | Done | BullMQ dispatch queue + queue view in Safety Center |
+| 27 | **Slow Down Mode** | Slow automations when Reels blow up | Done | Manual, auto-on-throttle, and proactive spike detection |
+
+## B. SendDM — capabilities from their pricing page (owner-supplied)
+
+Filtered to actual product capabilities; quotas and support tiers are marked.
+
+| # | SendDM line item | Status | Where it lives |
 |---|---|---|---|
-| L1 | **Comment-to-DM** on posts & Reels | Auto-DM anyone who comments | `TRIGGER_COMMENT` + private-reply dispatch |
-| L2 | **Trigger types: "All Comments" / "Specific Keywords"** | DM everyone, or only those using a keyword | `matchMode: ALL \| KEYWORD` on the trigger |
-| L3 | **Story reply auto-reply** | Auto-DM users who reply to a story, keyword or all | `TRIGGER_STORY_REPLY` |
-| L4 | **Story mention auto-reply** | Auto-DM users who @mention you in their story (giveaway entries) | `TRIGGER_STORY_MENTION` |
-| L5 | **Inbox Conversation Starters** | Up to 5 starters, max 80 chars, 4 displayed; click sends Message / Button template / Video / Image | Ice Breakers manager + `TRIGGER_ICE_BREAKER` |
-| L6 | **Flow Automation** | Starter DM opens the 24h window, then a sequence of follow-ups | Visual flow graph; this is our core primitive |
-| L7 | **Custom DM steps** | Up to **8** custom DMs per flow, each delayed **1 min – 24 h** after the Starter DM | `DELAY` node, validated to the 24h window |
-| L8 | **Reminder DM** | Timed nudge inside the window | `DELAY` + `SEND_MESSAGE`, shipped as a preset |
-| L9 | **Follower Growth Tool** | On CTA click, check if the user follows; send the growth DM **only to non-followers**, skip if already following | `CONDITION` node, `is_follower` check via User Profile API |
-| L10 | **Multi-Slide Button Template** | Up to **10 slides** in one DM (outfit links, recipes, affiliate offers) | Generic-template carousel builder, max 10 elements |
-| L11 | **DM Planner** | Write AutoDMs in advance, drop a **draft code** in the caption; when the post goes live (manual or via Later/Buffer/Meta Suite) it detects the code and activates | `PlannedAutomation` + caption draft-code scanner |
-| L12 | **Universal Triggers** | One automation applies across posts / ads / boosted content | `scope: UNIVERSAL` on the automation |
-| L13 | **Advertising Automation** | DM automation on ads & boosted posts (`ad_id` / `ad_title` on the webhook) | Ad-scoped triggers; ad metadata captured on the event |
-| L14 | **Broadcasts** | "Send timely DMs to active contacts" | Broadcast composer + audience segment + window-safe batching |
-| L15 | **Slow Down Mode** | Account-safety throttle; stays on **2 hours** then resumes normal timing | Per-account throttle with auto-expiry, manual + automatic trigger |
-| L16 | **Public comment auto-reply** | Reply in the public comment thread as well as the DM | `REPLY_TO_COMMENT` node (separate API surface from private replies) |
-| L17 | **IG Live automation** | Auto-reply to Live comments | `TRIGGER_LIVE_COMMENT` (send only during the broadcast) |
-| L18 | **Performance analytics** | Sent, Open, Click, CTR, new followers; link-click analytics | Analytics module + tracked link redirector |
-| L19 | **Lead generation** | Capture leads from DM | Lead forms in DM + contact records |
-
-## B. SendDM — researched feature set
-
-| # | SendDM feature | Their description (as published) | Our Phase 1 implementation |
-|---|---|---|---|
-| S1 | **Auto Comment Reply** | Auto-reply + DM anyone commenting a keyword | Same engine as L1/L16 |
-| S2 | **Story Auto Reply** | Story reply automation | L3 |
-| S3 | **Live Auto Reply** | IG Live comment automation | L17 |
-| S4 | **DM Auto Reply** | Keyword triggers on inbound DMs | `TRIGGER_DM_KEYWORD` |
-| S5 | **Ask for Follow** | Timely prompt nudging engagers to follow before delivering the payload | `ASK_FOR_FOLLOW` node (gate + re-check) |
-| S6 | **Smart Re-engage** | Automatically send reminder messages at a scheduled time to re-engage and boost sales | Re-engagement scheduler over eligible contacts |
-| S7 | **Collect User Data** | Forms for data collection, surveys, orders, quizzes inside Instagram DM; responses downloadable as Excel | `COLLECT_INPUT` node + Form builder + CSV/XLSX export |
-| S8 | **Unlimited Message Templates** | Reusable saved messages | Template library |
-| S9 | **Basic + Advanced keyword triggers** | Exact / contains / multi-keyword / negative keywords | Full keyword matcher (see §D) |
-| S10 | **Multi Instagram accounts** | 1 / 5 / 10 accounts by tier | Many `InstagramAccount` per workspace, no cap in Phase 1 |
-| S11 | **Analytics dashboard** | Performance reporting | Shared with L18 |
-| S12 | **WhatsApp / Email redirect** | Push the conversation to WhatsApp or email | Link/CTA presets + tracked redirect |
-| S13 | **Lead captures** | Capture and store leads | Shared with L19/S7 |
-| S14 | **AI auto-reply** | AI answers DMs | AI Agent node + knowledge base |
-| S15 | **Meta-approved endpoints, respects rate limits** | Safety positioning | Dispatcher-enforced; Safety Center UI surfaces it |
+| 1 | Unlimited **DM Send Limit** | **P2** (quota) | Unlimited today |
+| 2 | 25,000/mo **AI Credits** | **P2** (quota) | AI is unmetered today |
+| 3 | **Viral Post Protection** | Done | Proactive comment-spike detection → Slow Down |
+| 4 | 20 **Instagram Accounts** | Done | Unlimited |
+| 5 | **Comment Auto-Reply** | Done | |
+| 6 | **Story Automation** | Done | |
+| 7 | **Story Mention Auto-Reply** | Done | |
+| 8 | Unlimited **Message Templates** | Done | |
+| 9 | Advanced **Keyword Triggers** | Done | contains/exact/starts-with/regex, negatives, typo tolerance |
+| 10 | **Analytics Dashboard** | Done | |
+| 11 | **Contact Management** | Done | |
+| 12 | **Contact Export** | Done | CSV + XLSX |
+| 13 | **WhatsApp/Email Redirect** | Done | One-click presets in the message editor |
+| 14 | **Priority Support** | **N/A** | Service tier, not software |
+| 15 | **API Access** | Done | Scoped API keys + outbound webhooks |
+| 16 | **Custom Integrations** | Done | `HTTP_REQUEST` node + outbound webhooks |
+| 17 | **Dedicated Account Manager** | **N/A** | Service tier |
+| 18 | **SLA Guarantee** | **N/A** | Contractual, not software |
+| 19 | Unlimited **Schedule & Auto-Post** | Done | Content scheduler (`instagram_business_content_publish`) |
+| 20 | 300MB **Large Video Uploads** | Done | Scheduler accepts video by URL; no artificial cap |
+| 21 | 4 **Conversation Starters** | Done | Ice breakers (5 stored, 4 shown — Instagram's limit) |
+| 22 | 20 items **DM Main Menu** | Done | Persistent menu manager |
+| 23 | Unlimited **Link in Bio Page** | Done | Hosted at `/l/[slug]` |
+| 24 | Full history **Link in Bio Analytics** | Done | Per-block click tracking |
+| 25 | **Remove Link in Bio Badge** | Done | Toggle on the page (the only real white-label surface) |
 
 ---
 
-## C. Phase 1 — consolidated build checklist
+## C. Deferred by explicit decision
 
-### 1. Account & connection
-- [x] Email/password auth, workspaces, multi-user seam
-- [x] **Business Login for Instagram** OAuth (`instagram_business_basic`,
-      `instagram_business_manage_messages`, `instagram_business_manage_comments`)
-- [x] Long-lived token exchange + automatic refresh before 60-day expiry
-- [x] Connect **multiple** Instagram accounts per workspace
-- [x] Webhook subscription management + signature verification
-- [x] Deauthorize + data-deletion callbacks (Meta App Review requirement)
+### Facebook channel (LinkDM #3)
+Owner decision, this session: **skip for now.** It requires the Facebook Login
+path, Page access tokens, `pages_messaging`, a Page-shaped data model and a
+second App Review track — a large parallel integration for one line item.
+`src/lib/meta/` keeps the adapter seam. Revisit as a focused piece of work.
 
-### 2. Triggers (all of them)
-- [x] Comment on post
-- [x] Comment on Reel
-- [x] Comment on **ad / boosted** post (captures `ad_id`, `ad_title`)
-- [x] **Live** comment
-- [x] Story reply
-- [x] Story mention
-- [x] Inbound DM keyword
-- [x] Ice breaker / conversation starter click
-- [x] Button postback click
-- [x] `ig.me` / referral link entry
-- [x] **Universal** trigger (any media, incl. future posts)
-- [x] Per-media trigger with media picker
-- [x] **DM Planner** draft-code trigger for not-yet-published posts
+### Plan gating (LinkDM #13, #24, #25; SendDM #1, #2)
+Owner's standing instruction: build every feature ungated first. `Workspace.planKey`
+and `src/lib/plan.ts` are the only places that change when pricing lands. No
+feature code may hardcode a quota.
 
-### 3. Keyword matching
-- [x] All comments (no keyword)
-- [x] Contains / exact / starts-with / regex
-- [x] Multiple keywords per trigger
-- [x] **Negative keywords** (exclusions)
-- [x] Case & accent insensitive, emoji-safe
-- [x] Fuzzy/typo tolerance toggle
-
-### 4. Flow engine nodes
-- [x] Send message (text)
-- [x] Send image / video / audio
-- [x] Send **button template** (CTA buttons: URL / postback)
-- [x] Send **multi-slide carousel**, up to 10 slides
-- [x] Public comment reply
-- [x] Delay (1 min – 24 h, window-validated)
-- [x] Condition / branch (follower status, tag, custom field, time, previous answer)
-- [x] **Ask for follow** gate
-- [x] **Follower growth** check (skip if already following)
-- [x] Collect input (lead form / survey / quiz step)
-- [x] AI agent reply
-- [x] Add / remove tag
-- [x] Set custom field
-- [x] Randomizer (A/B split)
-- [x] HTTP request / webhook out
-- [x] Hand off to human (opens Inbox, `HUMAN_AGENT` only on real human replies)
-- [x] End / goal reached
-
-### 5. Messaging & safety
-- [x] 24-hour messaging window tracking per contact
-- [x] One private reply per comment id, ever
-- [x] 7-day private-reply deadline (broadcast-only for Live)
-- [x] Per-account rate limiting with token bucket + queue
-- [x] **Slow Down mode** — manual and auto, 2-hour expiry
-- [x] Retry with backoff, dead-letter queue, error surfacing
-- [x] Opt-out / STOP keyword handling + suppression list
-- [x] Duplicate-webhook idempotency
-
-### 6. Inbox
-- [x] Unified live chat across connected accounts
-- [x] Conversation list, search, filters, unread state
-- [x] Human reply (correctly tagged), automation pause per conversation
-- [x] Contact profile panel with tags, fields, flow history
-
-### 7. Contacts / CRM
-- [x] Auto-created contacts from every interaction
-- [x] Tags, custom fields, notes
-- [x] Segments (saved filters)
-- [x] CSV + XLSX export
-- [x] Lead form responses attached to the contact
-
-### 8. Broadcasts & re-engagement
-- [x] Broadcast composer targeting a segment
-- [x] Window-eligibility preview (who can legally receive it)
-- [x] Scheduled send
-- [x] **Smart re-engage** recurring campaign
-
-### 9. Templates & assets
-- [x] Reusable message templates
-- [x] Ice breakers manager (max 5, 80 chars, 4 shown)
-- [x] Persistent menu manager
-- [x] Tracked links with click attribution
-- [x] WhatsApp / email redirect presets
-
-### 10. AI
-- [x] AI agent with per-account persona + tone
-- [x] Knowledge base (docs/FAQ) with retrieval
-- [x] Guardrails: fallback to human, banned topics, max turns
-- [x] AI used as a flow node, not a bypass of the dispatcher
-
-### 11. Analytics
-- [x] Per-automation: triggered, sent, delivered, opened, clicked, CTR
-- [x] New followers attributed to automations
-- [x] Link click analytics
-- [x] Funnel / drop-off per flow node
-- [x] Time-series charts + date range
-- [x] Account health: rate-limit headroom, errors, window misses
-
-### 12. Marketing site
-- [x] Interactive, animated landing page (explicitly not "plain AI generated")
-- [x] Live comment→DM demo, flow-builder preview, feature deep-dives
-- [x] Legal pages required for Meta App Review (privacy, terms, data deletion)
+### Not software (LinkDM #18; SendDM #14, #17, #18)
+Referral programme, priority support, dedicated account manager, SLA. These are
+commercial arrangements, not things to build.
 
 ---
 
-## D. Phase 2 — deferred, DO NOT BUILD YET
+## D. Everything we ship beyond both competitors
 
-- Pricing, plans, quota enforcement, Stripe billing (seam exists, inert)
-- Team seats, roles & permissions
-- Additional channels (WhatsApp Business, Messenger, TikTok)
-- Native e-commerce catalogue / checkout in DM
-- Zapier / Make / native CRM integrations
-- White-label & agency multi-client mode
-- A/B testing suite with statistical significance
-- Advanced AI: autonomous sales agent, voice notes, image understanding
-- Public API + developer webhooks for customers
+Neither competitor offers these; they're why the product wins on merit rather
+than parity.
+
+- **Visual drag-and-drop flow builder** with 16 step types and live validation
+  against Meta's real messaging rules
+- **Unified live-chat inbox** with per-thread human takeover that pauses
+  automation for that person only
+- **Safety Center** — every skipped send, with a plain-language reason
+- **Funnel analytics per flow step**, showing exactly where people drop off
+- **AI grounded in your knowledge base**, with an honest handoff instead of a
+  hallucinated answer
+- **Follower-growth gate** and **ask-for-follow** as first-class flow steps
+- **In-DM forms, surveys and quizzes** with CSV *and* Excel export
+- **Broadcast eligibility preview** — the reachable count before you send
+
+---
+
+## E. Phase 2 — do not build without being asked
+
+- Pricing, plans, quota enforcement, billing
+- Team seats, roles and permissions
+- Facebook / WhatsApp / Messenger / TikTok channels
+- Catalogue and checkout inside the DM
+- White-label and agency multi-client mode
+- A/B testing with statistical significance
 - Mobile app
 
 ---
 
-## Sources
+## F. Design direction
 
-- LinkDM: trigger types, flow automation (starter DM + up to 8 custom DMs, 1 min–24 h),
-  follower growth tool, slow-down mode (2 h), DM planner (draft codes), universal
-  triggers, multi-slide button template (10 slides), inbox conversation starters
-  (5 max / 80 chars / 4 shown), broadcasts, boosted-post automation, performance
-  analytics (Sent, Open, Click, CTR, new followers) — from linkdm.com help & blog pages
-  surfaced via search, plus independent comparisons (creatorflow.so, inro.social,
-  jotform.com, dmly.io).
-- SendDM: auto comment reply, story auto reply, live auto reply, DM auto reply, ask for
-  follow, smart re-engage, collect user data (forms/surveys/orders/quizzes, Excel
-  export), unlimited message templates, basic+advanced keyword triggers, multi-account,
-  analytics dashboard, WhatsApp/email redirect, lead captures, "only Meta-approved
-  endpoints, respects rate limits" — from senddm.ai home/pricing surfaced via search,
-  plus liffio.com and flowgent.ai comparisons.
-- Meta API constraints: `docs/META_API.md` (sourced from developers.facebook.com via the
-  Meta Developer Tools MCP — authoritative).
+**Comic / cartoon**, chosen by the owner this session, replacing the original
+dark "precision SaaS" look. Ink outlines, halftone and Ben-Day dot overlays,
+hard offset shadows, burst animations on button hover, speech-bubble surfaces,
+action lines, heavy display type.
+
+Applied at **full intensity on the marketing site and auth**, and **restrained in
+dense dashboard UI** — analytics tables, charts, the inbox and the flow canvas
+keep the comic identity (ink borders, halftone, sticker buttons, bold type) but
+drop the loud overlays so the data stays readable. This split is deliberate;
+don't "fix" it by making the flow builder louder.

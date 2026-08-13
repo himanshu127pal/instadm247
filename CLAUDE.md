@@ -23,9 +23,13 @@ and must respect published rate limits. See `docs/META_API.md`.
 - **LinkDM** — https://www.linkdm.com/
 - **SendDM** — https://senddm.ai/
 
-`docs/FEATURES.md` holds the researched feature-by-feature matrix and the authoritative
-Phase 1 / Phase 2 split. **Phase 1 = the union of both competitors' features.** Phase 2
-is explicitly out of scope for now.
+`docs/FEATURES.md` holds the feature-by-feature matrix and the authoritative Phase 1 /
+Phase 2 split. **Phase 1 = the union of both competitors' features.** Phase 2 is
+explicitly out of scope for now.
+
+**The competitor lists in `docs/FEATURES.md` §A and §B came from the owner, copied from
+the competitors' own sites.** They are authoritative — don't re-research them, don't
+drop items from them, and don't "helpfully" add features that aren't on them.
 
 ## Key product decisions already made (do not re-litigate)
 
@@ -36,7 +40,9 @@ is explicitly out of scope for now.
 | Pricing / plans | **Deliberately NOT implemented yet** | Owner's instruction: build every feature unplanned/ungated first. A `Plan` seam exists in the schema but nothing is enforced. See "Plan gating seam" below. |
 | Stack | Next.js 15 App Router + TypeScript, Postgres + Prisma, Redis + BullMQ, Tailwind v4 | Single deployable repo, real durable queue for delayed flow steps. |
 | Flow builder | `@xyflow/react` (React Flow) node graph | Matches "automation flows" as the core primitive. |
+| Visual design | **Comic / cartoon** — ink outlines, halftone, burst hovers | Owner's choice. Full intensity on marketing + auth; deliberately restrained in dense dashboard UI (tables, charts, flow canvas) so data stays readable. Don't "fix" that split. |
 | Landing page | Heavily animated, interactive, custom | Owner explicitly rejected "plain AI generated" look. |
+| Facebook channel | **Deferred** | Owner's decision. Needs Facebook Login, Page tokens, `pages_messaging` and a second App Review. The adapter seam in `src/lib/meta/` stays. |
 
 ## Architecture in one paragraph
 

@@ -206,7 +206,7 @@ export function PlannerView({
           {planned.map((plan) => (
             <article
               key={plan.id}
-              className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)] p-5"
+              className="rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)]"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">

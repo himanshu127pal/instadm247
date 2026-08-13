@@ -129,11 +129,11 @@ export function DashboardShell({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[248px] flex-col border-r border-[var(--border)] bg-[var(--bg)] transition-transform duration-300 lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[248px] flex-col border-r-[3px] border-[var(--border)] bg-[var(--bg-raised)] transition-transform duration-300 lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="flex h-16 items-center justify-between border-b border-[var(--border)] px-5">
+        <div className="flex h-16 items-center justify-between border-b-[3px] border-[var(--border)] px-5">
           <Logo href="/dashboard" />
           <button
             onClick={() => setMobileOpen(false)}
@@ -163,21 +163,21 @@ export function DashboardShell({
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        "relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13.5px] transition-colors",
+                        "relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13.5px] font-bold transition-colors",
                         active
-                          ? "text-[var(--text)]"
-                          : "text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]",
+                          ? "text-[#12110e]"
+                          : "text-[var(--text-muted)] hover:bg-[var(--bg-sunken)] hover:text-[var(--text)]",
                       )}
                     >
                       {active && (
                         <motion.span
                           layoutId="nav-active"
-                          className="absolute inset-0 -z-10 rounded-xl bg-[var(--accent)]/10 ring-1 ring-inset ring-[var(--accent)]/20"
+                          className="absolute inset-0 -z-10 rounded-xl border-2 border-[var(--border)] bg-[var(--color-pow-400)] shadow-[2px_2px_0_0_var(--shadow-ink)]"
                           transition={{ type: "spring", stiffness: 400, damping: 34 }}
                         />
                       )}
                       <Icon
-                        className={cn("h-[16px] w-[16px]", active && "text-[var(--accent)]")}
+                        className={cn("h-[16px] w-[16px]", active && "text-[#12110e]")}
                       />
                       {item.label}
                     </Link>
@@ -201,10 +201,10 @@ export function DashboardShell({
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col lg:pl-[248px]">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-[var(--border)] bg-[var(--bg)]/85 px-5 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b-[3px] border-[var(--border)] bg-[var(--bg-raised)]/90 px-5 backdrop-blur-xl">
           <button
             onClick={() => setMobileOpen(true)}
-            className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--border)] lg:hidden"
+            className="grid h-9 w-9 place-items-center rounded-xl border-[2.5px] border-[var(--border)] shadow-[2px_2px_0_0_var(--shadow-ink)] lg:hidden"
             aria-label="Open menu"
           >
             <Menu className="h-4 w-4" />
@@ -227,10 +227,10 @@ export function DashboardShell({
                 key={i}
                 href={warning.href}
                 className={cn(
-                  "flex items-start gap-2.5 rounded-xl border px-4 py-2.5 text-[13px] transition-colors",
+                  "flex items-start gap-2.5 rounded-xl border-[2.5px] border-[var(--border)] px-4 py-2.5 text-[13px] font-bold text-[#12110e] shadow-[3px_3px_0_0_var(--shadow-ink)] transition-transform hover:-translate-y-[1px]",
                   warning.tone === "danger"
-                    ? "border-red-500/25 bg-red-500/[0.07] text-red-300 hover:bg-red-500/10"
-                    : "border-amber-500/25 bg-amber-500/[0.07] text-amber-300 hover:bg-amber-500/10",
+                    ? "bg-[var(--color-zap-400)] text-white"
+                    : "bg-[var(--color-pow-400)]",
                 )}
               >
                 <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -249,10 +249,10 @@ export function DashboardShell({
 function AccountSwitcher({ accounts }: { accounts: Account[] }) {
   if (accounts.length === 0) {
     return (
-      <div className="border-t border-[var(--border)] p-3">
+      <div className="border-t-[3px] border-[var(--border)] p-3">
         <Link
           href="/dashboard/accounts"
-          className="flex items-center gap-2.5 rounded-xl border border-dashed border-[var(--border-strong)] px-3 py-2.5 text-[13px] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
+          className="flex items-center gap-2.5 rounded-xl border-[2.5px] border-dashed border-[var(--border)] px-3 py-2.5 text-[13px] font-bold text-[var(--text-muted)] transition-colors hover:bg-[var(--color-pow-400)] hover:text-[#12110e]"
         >
           <Aperture className="h-4 w-4" />
           Connect Instagram
@@ -262,8 +262,8 @@ function AccountSwitcher({ accounts }: { accounts: Account[] }) {
   }
 
   return (
-    <div className="border-t border-[var(--border)] p-3">
-      <p className="mb-1.5 px-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[var(--text-faint)]">
+    <div className="border-t-[3px] border-[var(--border)] p-3">
+      <p className="mb-1.5 px-1 text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[var(--text-faint)]">
         Accounts
       </p>
       <div className="space-y-0.5">
@@ -282,7 +282,7 @@ function AccountSwitcher({ accounts }: { accounts: Account[] }) {
                   className="h-6 w-6 rounded-full object-cover"
                 />
               ) : (
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-flare-500))] text-[10px] font-semibold text-white">
+                <span className="grid h-6 w-6 place-items-center rounded-full border-2 border-[var(--border)] bg-[var(--color-kapow-400)] text-[10px] font-extrabold text-white">
                   {initials(account.username)}
                 </span>
               )}
@@ -290,8 +290,8 @@ function AccountSwitcher({ accounts }: { accounts: Account[] }) {
                 className={cn(
                   "absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ring-2 ring-[var(--bg)]",
                   account.status === "connected" && !account.automationPaused
-                    ? "bg-emerald-400"
-                    : "bg-amber-400",
+                    ? "bg-[var(--color-boom-400)]"
+                    : "bg-[var(--color-pow-400)]",
                 )}
               />
             </span>
@@ -320,12 +320,12 @@ function UserMenu({
   }
 
   return (
-    <div className="relative border-t border-[var(--border)] p-3">
+    <div className="relative border-t-[3px] border-[var(--border)] p-3">
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-[var(--bg-subtle)]"
       >
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--bg-sunken)] text-[11px] font-semibold">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--border)] bg-[var(--color-bam-400)] text-[11px] font-extrabold text-[#12110e]">
           {initials(user.name ?? user.email)}
         </span>
         <span className="min-w-0 flex-1">
@@ -342,7 +342,7 @@ function UserMenu({
       </button>
 
       {open && (
-        <div className="absolute inset-x-3 bottom-full mb-1 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-raised)] shadow-lift">
+        <div className="absolute inset-x-3 bottom-full mb-1 overflow-hidden rounded-xl border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] shadow-[4px_4px_0_0_var(--shadow-ink)]">
           <Link
             href="/dashboard/settings"
             onClick={() => setOpen(false)}
@@ -352,7 +352,7 @@ function UserMenu({
           </Link>
           <button
             onClick={logout}
-            className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] text-red-400 hover:bg-[var(--bg-subtle)]"
+            className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] text-[var(--color-zap-500)] hover:bg-[var(--bg-subtle)]"
           >
             <LogOut className="h-3.5 w-3.5" /> Sign out
           </button>

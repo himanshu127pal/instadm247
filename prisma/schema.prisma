@@ -50,15 +50,20 @@ model Workspace {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  memberships   Membership[]
-  accounts      InstagramAccount[]
-  templates     Template[]
-  trackedLinks  TrackedLink[]
-  leadForms     LeadForm[]
-  segments      Segment[]
-  broadcasts    Broadcast[]
-  aiAgents      AiAgent[]
-  knowledgeDocs KnowledgeDoc[]
+  memberships      Membership[]
+  accounts         InstagramAccount[]
+  templates        Template[]
+  trackedLinks     TrackedLink[]
+  leadForms        LeadForm[]
+  segments         Segment[]
+  broadcasts       Broadcast[]
+  aiAgents         AiAgent[]
+  knowledgeDocs    KnowledgeDoc[]
+  couponPools      CouponPool[]
+  bioPages         BioPage[]
+  apiKeys          ApiKey[]
+  webhookEndpoints WebhookEndpoint[]
+  integrations     Integration[]
 }
 
 model Membership {
@@ -98,56 +103,64 @@ model InstagramAccount {
   lastRefreshAt  DateTime?
   scopes         String[]  @default([])
 
-  status          String    @default("connected") // connected | token_expired | revoked | demo
-  webhookSubbed   Boolean   @default(false)
-  lastSyncAt      DateTime?
+  status               String    @default("connected") // connected | token_expired | revoked | demo
+  webhookSubbed        Boolean   @default(false)
+  lastSyncAt           DateTime?
   // Safety
-  slowDownUntil   DateTime?
-  automationPaused Boolean  @default(false)
-  pausedReason    String?
+  slowDownUntil        DateTime?
+  automationPaused     Boolean   @default(false)
+  pausedReason         String?
+  /// Viral Post Protection: arm Slow Down proactively when inbound comments
+  /// spike, instead of waiting for Instagram to throttle us.
+  viralProtection      Boolean   @default(true)
+  viralThresholdPerMin Int       @default(40)
+  lastViralTriggerAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workspace     Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  automations   Automation[]
-  contacts      Contact[]
-  conversations Conversation[]
-  media         Media[]
-  iceBreakers   IceBreaker[]
-  persistentMenu PersistentMenu?
-  webhookEvents WebhookEvent[]
-  flowRuns      FlowRun[]
-  analytics     AnalyticsEvent[]
-  dailyStats    DailyStat[]
-  suppressions  SuppressionEntry[]
+  workspace          Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  automations        Automation[]
+  contacts           Contact[]
+  conversations      Conversation[]
+  media              Media[]
+  iceBreakers        IceBreaker[]
+  persistentMenu     PersistentMenu?
+  webhookEvents      WebhookEvent[]
+  flowRuns           FlowRun[]
+  analytics          AnalyticsEvent[]
+  dailyStats         DailyStat[]
+  suppressions       SuppressionEntry[]
   plannedAutomations PlannedAutomation[]
-  commentReplies CommentReplyLog[]
-  broadcasts    Broadcast[]
+  commentReplies     CommentReplyLog[]
+  broadcasts         Broadcast[]
+  scheduledPosts     ScheduledPost[]
+  rewindJobs         RewindJob[]
+  bioPages           BioPage[]
 
   @@index([workspaceId])
 }
 
 /// Cached Instagram media so the media picker and analytics don't hammer the API.
 model Media {
-  id           String    @id @default(cuid())
-  accountId    String
-  igMediaId    String
-  caption      String?
-  mediaType    String? // IMAGE | VIDEO | CAROUSEL_ALBUM | REELS
-  mediaUrl     String?
-  thumbnailUrl String?
-  permalink    String?
-  timestamp    DateTime?
-  commentsCount Int      @default(0)
-  likeCount     Int      @default(0)
+  id            String    @id @default(cuid())
+  accountId     String
+  igMediaId     String
+  caption       String?
+  mediaType     String? // IMAGE | VIDEO | CAROUSEL_ALBUM | REELS
+  mediaUrl      String?
+  thumbnailUrl  String?
+  permalink     String?
+  timestamp     DateTime?
+  commentsCount Int       @default(0)
+  likeCount     Int       @default(0)
   // Ads / boosted content (from the comments webhook)
-  adId         String?
-  adTitle      String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  adId          String?
+  adTitle       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  account     InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account     InstagramAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   automations AutomationMedia[]
 
   @@unique([accountId, igMediaId])
@@ -159,7 +172,7 @@ model Media {
 // ---------------------------------------------------------------------------
 
 model Automation {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   accountId   String
   name        String
   description String?
@@ -199,13 +212,14 @@ model Automation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  account  InstagramAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  flow     Flow?
-  media    AutomationMedia[]
-  runs     FlowRun[]
-  analytics AnalyticsEvent[]
+  account    InstagramAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  flow       Flow?
+  media      AutomationMedia[]
+  runs       FlowRun[]
+  analytics  AnalyticsEvent[]
   dailyStats DailyStat[]
-  planned  PlannedAutomation[]
+  planned    PlannedAutomation[]
+  rewinds    RewindJob[]
 
   @@index([accountId, triggerType, enabled])
 }
@@ -240,17 +254,20 @@ model Flow {
 /// LinkDM's "DM Planner": a draft automation attached to a caption draft-code,
 /// activated automatically when the post carrying that code goes live.
 model PlannedAutomation {
-  id           String    @id @default(cuid())
-  accountId    String
-  automationId String?
-  name         String
-  draftCode    String
-  status       String    @default("waiting") // waiting | matched | expired | cancelled
+  id             String    @id @default(cuid())
+  accountId      String
+  automationId   String?
+  name           String
+  /// DRAFT_CODE — look for the code in a caption · NEXT_POST — attach to
+  /// whatever publishes next (LinkDM's "Next Post")
+  mode           String    @default("DRAFT_CODE")
+  draftCode      String
+  status         String    @default("waiting") // waiting | matched | expired | cancelled
   matchedMediaId String?
-  matchedAt    DateTime?
-  expiresAt    DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  matchedAt      DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   account    InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   automation Automation?      @relation(fields: [automationId], references: [id], onDelete: SetNull)
@@ -268,13 +285,13 @@ model Contact {
   accountId String
 
   /// Instagram-scoped ID (IGSID) — unique per app+account, not a public IG id.
-  igsid         String
-  username      String?
-  name          String?
-  profilePicUrl String?
-  followerCount Int?
+  igsid             String
+  username          String?
+  name              String?
+  profilePicUrl     String?
+  followerCount     Int?
   /// From the User Profile API — powers the Follower Growth Tool
-  isFollower    Boolean?
+  isFollower        Boolean?
   followerCheckedAt DateTime?
 
   tags         String[] @default([])
@@ -299,6 +316,7 @@ model Contact {
   leadResponses LeadResponse[]
   analytics     AnalyticsEvent[]
   linkClicks    LinkClick[]
+  couponCodes   CouponCode[]
 
   @@unique([accountId, igsid])
   @@index([accountId, lastInteractionAt])
@@ -310,15 +328,15 @@ model Conversation {
   accountId String
   contactId String
 
-  igConversationId String?
-  lastMessageAt    DateTime?
+  igConversationId   String?
+  lastMessageAt      DateTime?
   lastMessagePreview String?
-  unreadCount      Int      @default(0)
-  status           String   @default("open") // open | closed | snoozed
+  unreadCount        Int       @default(0)
+  status             String    @default("open") // open | closed | snoozed
   /// Set when a human takes over — pauses automation for this thread
-  humanTakeover    Boolean  @default(false)
-  takeoverAt       DateTime?
-  assignedToUserId String?
+  humanTakeover      Boolean   @default(false)
+  takeoverAt         DateTime?
+  assignedToUserId   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -337,15 +355,15 @@ model Message {
   conversationId String
   contactId      String
 
-  igMessageId String?  @unique
+  igMessageId String? @unique
   direction   String // inbound | outbound
   /// text | image | video | audio | template | story_reply | story_mention | share | reaction
-  kind        String   @default("text")
+  kind        String  @default("text")
   text        String?
   payload     Json?
 
   /// automation | human | ai | broadcast
-  source      String   @default("automation")
+  source        String  @default("automation")
   /// Only ever true for messages a real human typed. See docs/META_API.md §6.
   humanAgentTag Boolean @default(false)
 
@@ -371,12 +389,12 @@ model Message {
 
 /// Enforces "one private reply per comment id, ever" (docs/META_API.md §5).
 model CommentReplyLog {
-  id         String   @id @default(cuid())
-  accountId  String
+  id          String   @id @default(cuid())
+  accountId   String
   igCommentId String
-  kind       String   @default("private") // private | public
-  status     String   @default("sent")    // sent | failed
-  createdAt  DateTime @default(now())
+  kind        String   @default("private") // private | public
+  status      String   @default("sent") // sent | failed
+  createdAt   DateTime @default(now())
 
   account InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
@@ -413,7 +431,7 @@ model FlowRun {
   triggerType    String
   triggerPayload Json?
   /// Variables collected during the run (lead form answers, etc.)
-  variables      Json     @default("{}")
+  variables      Json   @default("{}")
 
   currentNodeId String?
   resumeAt      DateTime?
@@ -423,12 +441,12 @@ model FlowRun {
   startedAt   DateTime  @default(now())
   completedAt DateTime?
 
-  account      InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  automation   Automation       @relation(fields: [automationId], references: [id], onDelete: Cascade)
-  contact      Contact          @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  conversation Conversation?    @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-  steps        FlowRunStep[]
-  messages     Message[]
+  account       InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  automation    Automation       @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  contact       Contact          @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  conversation  Conversation?    @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  steps         FlowRunStep[]
+  messages      Message[]
   leadResponses LeadResponse[]
 
   @@index([accountId, status])
@@ -439,14 +457,14 @@ model FlowRun {
 
 /// One row per node entered — this is what the funnel/drop-off chart reads.
 model FlowRunStep {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   flowRunId String
   nodeId    String
   nodeType  String
   status    String // entered | completed | skipped | failed | waiting
   detail    Json?
   error     String?
-  enteredAt DateTime @default(now())
+  enteredAt DateTime  @default(now())
   endedAt   DateTime?
 
   flowRun FlowRun @relation(fields: [flowRunId], references: [id], onDelete: Cascade)
@@ -460,10 +478,10 @@ model FlowRunStep {
 // ---------------------------------------------------------------------------
 
 model Template {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   workspaceId String
   name        String
-  category    String @default("general")
+  category    String   @default("general")
   /// A serialized message payload (text / buttons / carousel)
   payload     Json
   createdAt   DateTime @default(now())
@@ -475,16 +493,16 @@ model Template {
 }
 
 model IceBreaker {
-  id        String @id @default(cuid())
-  accountId String
+  id           String   @id @default(cuid())
+  accountId    String
   /// Max 80 chars, max 5 per account, Instagram displays 4 (docs/META_API.md §8)
-  question  String
-  order     Int    @default(0)
+  question     String
+  order        Int      @default(0)
   /// Which automation answers this starter
   automationId String?
-  payload   Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  payload      Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   account InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
@@ -502,12 +520,12 @@ model PersistentMenu {
 }
 
 model TrackedLink {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   workspaceId String
-  code        String @unique
+  code        String   @unique
   destination String
   label       String?
-  clickCount  Int    @default(0)
+  clickCount  Int      @default(0)
   createdAt   DateTime @default(now())
 
   workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -535,16 +553,16 @@ model LinkClick {
 // ---------------------------------------------------------------------------
 
 model LeadForm {
-  id          String @id @default(cuid())
-  workspaceId String
-  name        String
+  id             String   @id @default(cuid())
+  workspaceId    String
+  name           String
   /// FORM | SURVEY | QUIZ | ORDER
-  kind        String @default("FORM")
+  kind           String   @default("FORM")
   /// [{ id, label, type, required, options[], validation }]
-  fields      Json   @default("[]")
+  fields         Json     @default("[]")
   successMessage String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   responses LeadResponse[]
@@ -553,13 +571,13 @@ model LeadForm {
 }
 
 model LeadResponse {
-  id        String @id @default(cuid())
+  id        String   @id @default(cuid())
   formId    String
   contactId String
   flowRunId String?
-  answers   Json   @default("{}")
+  answers   Json     @default("{}")
   score     Int?
-  completed Boolean @default(false)
+  completed Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -576,11 +594,11 @@ model LeadResponse {
 // ---------------------------------------------------------------------------
 
 model Segment {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   workspaceId String
   name        String
   /// Serialized filter: tags, fields, window eligibility, activity recency
-  filter      Json   @default("{}")
+  filter      Json     @default("{}")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -591,7 +609,7 @@ model Segment {
 }
 
 model Broadcast {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   workspaceId String
   accountId   String
   segmentId   String?
@@ -599,8 +617,8 @@ model Broadcast {
   payload     Json
 
   /// BROADCAST | REENGAGE — SendDM's "Smart Re-engage" is a recurring broadcast
-  kind        String @default("BROADCAST")
-  status      String @default("draft") // draft | scheduled | sending | sent | failed | cancelled
+  kind        String    @default("BROADCAST")
+  status      String    @default("draft") // draft | scheduled | sending | sent | failed | cancelled
   scheduledAt DateTime?
   startedAt   DateTime?
   completedAt DateTime?
@@ -610,11 +628,11 @@ model Broadcast {
   recurring          Boolean @default(false)
   cronExpression     String?
 
-  targetCount    Int @default(0)
-  eligibleCount  Int @default(0)
-  sentCount      Int @default(0)
-  failedCount    Int @default(0)
-  skippedCount   Int @default(0)
+  targetCount   Int @default(0)
+  eligibleCount Int @default(0)
+  sentCount     Int @default(0)
+  failedCount   Int @default(0)
+  skippedCount  Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -632,19 +650,19 @@ model Broadcast {
 // ---------------------------------------------------------------------------
 
 model AiAgent {
-  id          String @id @default(cuid())
-  workspaceId String
-  name        String  @default("Assistant")
-  enabled     Boolean @default(false)
-  persona     String  @default("A friendly, concise assistant for an Instagram creator.")
-  tone        String  @default("friendly")
-  language    String  @default("auto")
+  id               String   @id @default(cuid())
+  workspaceId      String
+  name             String   @default("Assistant")
+  enabled          Boolean  @default(false)
+  persona          String   @default("A friendly, concise assistant for an Instagram creator.")
+  tone             String   @default("friendly")
+  language         String   @default("auto")
   /// Guardrails
-  maxTurns        Int      @default(6)
-  bannedTopics    String[] @default([])
-  fallbackMessage String   @default("Let me get a human to help with that — one moment!")
-  handoffOnUnknown Boolean @default(true)
-  model           String   @default("claude-sonnet-5")
+  maxTurns         Int      @default(6)
+  bannedTopics     String[] @default([])
+  fallbackMessage  String   @default("Let me get a human to help with that — one moment!")
+  handoffOnUnknown Boolean  @default(true)
+  model            String   @default("claude-sonnet-5")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -656,7 +674,7 @@ model AiAgent {
 }
 
 model KnowledgeDoc {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   workspaceId String
   agentId     String?
   title       String
@@ -678,17 +696,17 @@ model KnowledgeDoc {
 // ---------------------------------------------------------------------------
 
 model WebhookEvent {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   accountId String?
 
   /// Idempotency key derived from the provider payload (comment id / message id)
-  dedupeKey String  @unique
-  field     String
-  payload   Json
-  processed Boolean @default(false)
+  dedupeKey   String    @unique
+  field       String
+  payload     Json
+  processed   Boolean   @default(false)
   processedAt DateTime?
-  error     String?
-  createdAt DateTime @default(now())
+  error       String?
+  createdAt   DateTime  @default(now())
 
   account InstagramAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
@@ -697,7 +715,7 @@ model WebhookEvent {
 }
 
 model AnalyticsEvent {
-  id           String @id @default(cuid())
+  id           String  @id @default(cuid())
   accountId    String
   automationId String?
   contactId    String?
@@ -724,19 +742,264 @@ model DailyStat {
   automationId String?
   date         DateTime @db.Date
 
-  triggered  Int @default(0)
-  sent       Int @default(0)
-  delivered  Int @default(0)
-  opened     Int @default(0)
-  clicked    Int @default(0)
-  failed     Int @default(0)
-  skipped    Int @default(0)
+  triggered    Int @default(0)
+  sent         Int @default(0)
+  delivered    Int @default(0)
+  opened       Int @default(0)
+  clicked      Int @default(0)
+  failed       Int @default(0)
+  skipped      Int @default(0)
   newFollowers Int @default(0)
-  leads      Int @default(0)
+  leads        Int @default(0)
 
   account    InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   automation Automation?      @relation(fields: [automationId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, automationId, date])
   @@index([accountId, date])
+}
+
+// ---------------------------------------------------------------------------
+// Coupons (LinkDM "DM Coupons")
+// ---------------------------------------------------------------------------
+
+/// A pool of codes. `mode` decides whether everyone gets the same code or each
+/// person gets their own from the pool — the latter is why `CouponCode` exists.
+model CouponPool {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  /// SHARED — one code for everyone · UNIQUE — one code per contact
+  mode        String    @default("UNIQUE")
+  /// Used when mode = SHARED
+  sharedCode  String?
+  description String?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  codes     CouponCode[]
+
+  @@index([workspaceId])
+}
+
+model CouponCode {
+  id        String    @id @default(cuid())
+  poolId    String
+  code      String
+  /// Set the moment it's handed out, so a code is never issued twice.
+  contactId String?
+  issuedAt  DateTime?
+  createdAt DateTime  @default(now())
+
+  pool    CouponPool @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  contact Contact?   @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  @@unique([poolId, code])
+  /// One code per contact per pool — enforced by the database, not by hope.
+  @@unique([poolId, contactId])
+  @@index([poolId, issuedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Link in Bio (SendDM)
+// ---------------------------------------------------------------------------
+
+model BioPage {
+  id          String  @id @default(cuid())
+  workspaceId String
+  accountId   String?
+
+  slug      String  @unique
+  title     String
+  bio       String?
+  avatarUrl String?
+  theme     String  @default("comic")
+  published Boolean @default(true)
+  /// The only genuine white-label surface we have.
+  showBadge Boolean @default(true)
+
+  viewCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  account   InstagramAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  blocks    BioBlock[]
+  views     BioPageView[]
+
+  @@index([workspaceId])
+}
+
+model BioBlock {
+  id         String   @id @default(cuid())
+  pageId     String
+  /// LINK | HEADING | TEXT | SOCIAL | EMAIL | WHATSAPP | PRODUCT
+  kind       String   @default("LINK")
+  label      String
+  url        String?
+  subtitle   String?
+  imageUrl   String?
+  order      Int      @default(0)
+  enabled    Boolean  @default(true)
+  clickCount Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  page   BioPage         @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  clicks BioBlockClick[]
+
+  @@index([pageId, order])
+}
+
+model BioBlockClick {
+  id        String   @id @default(cuid())
+  blockId   String
+  referrer  String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  block BioBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+
+  @@index([blockId, createdAt])
+}
+
+model BioPageView {
+  id        String   @id @default(cuid())
+  pageId    String
+  referrer  String?
+  createdAt DateTime @default(now())
+
+  page BioPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Content scheduling (SendDM "Schedule & Auto-Post")
+// ---------------------------------------------------------------------------
+
+model ScheduledPost {
+  id        String @id @default(cuid())
+  accountId String
+
+  /// IMAGE | VIDEO | REELS | CAROUSEL
+  mediaType String   @default("IMAGE")
+  caption   String?
+  /// Public HTTPS URLs Instagram can fetch. Multiple = carousel.
+  mediaUrls String[] @default([])
+  thumbUrl  String?
+
+  scheduledAt DateTime
+  status      String    @default("scheduled") // scheduled | publishing | published | failed | cancelled
+  publishedAt DateTime?
+  igMediaId   String?
+  error       String?
+  attempts    Int       @default(0)
+
+  /// Automations to switch on and attach the moment this post goes live.
+  attachAutomationIds String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  account InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, status])
+  @@index([status, scheduledAt])
+}
+
+// ---------------------------------------------------------------------------
+// Public API & integrations
+// ---------------------------------------------------------------------------
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  /// Only a hash is stored — the plaintext key is shown once at creation.
+  keyHash     String    @unique
+  /// First 12 chars, for recognising a key in the list.
+  prefix      String
+  scopes      String[]  @default(["read"])
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+}
+
+/// Outbound webhooks for the customer's own systems.
+model WebhookEndpoint {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  url          String
+  /// Events to deliver: contact.created, lead.captured, flow.completed, …
+  events       String[]  @default([])
+  secret       String
+  enabled      Boolean   @default(true)
+  lastStatus   Int?
+  lastFiredAt  DateTime?
+  failureCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+}
+
+/// Native lead destinations (LinkDM's "Connect lead forms to Kit and Flodesk").
+model Integration {
+  id          String    @id @default(cuid())
+  workspaceId String
+  /// kit | flodesk
+  provider    String
+  name        String
+  /// Encrypted at rest, like every other credential.
+  apiKeyEnc   String
+  /// Provider-specific target: a Kit form id, a Flodesk segment id.
+  targetId    String?
+  targetName  String?
+  enabled     Boolean   @default(true)
+  lastSyncAt  DateTime?
+  lastError   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, provider, targetId])
+  @@index([workspaceId])
+}
+
+// ---------------------------------------------------------------------------
+// Rewind (LinkDM "Backsend DMs to eligible comments")
+// ---------------------------------------------------------------------------
+
+model RewindJob {
+  id           String  @id @default(cuid())
+  accountId    String
+  automationId String
+  mediaId      String?
+
+  status String @default("pending") // pending | running | completed | failed | cancelled
+
+  eligibleCount Int @default(0)
+  sentCount     Int @default(0)
+  skippedCount  Int @default(0)
+  failedCount   Int @default(0)
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  error       String?
+  createdAt   DateTime  @default(now())
+
+  account    InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  automation Automation       @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, status])
 }

@@ -1,60 +1,63 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   InstaDM247 design system
-   Dark-first. One accent ramp (violet → fuchsia → coral) used sparingly so the
-   product surfaces stay calm and the marketing surfaces can go loud.
+   InstaDM247 — comic book design system
+
+   Ink outlines, halftone, hard offset shadows, burst hovers.
+   Two intensities, and the split is deliberate (see CLAUDE.md):
+
+     .comic-loud   marketing + auth — overlays, action lines, big type
+     .comic-calm   dashboard — keeps ink borders and sticker buttons, drops
+                   the loud overlays so tables, charts and the flow canvas
+                   stay readable
+
+   Do not "fix" the dashboard by making it louder.
    ========================================================================== */
 
 @theme {
-  --font-sans: "InterVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", sans-serif;
+  /* The *-loaded vars come from next/font in layout.tsx; the stacks after them
+     are the fallback if font loading is blocked at build time. */
+  --font-sans: var(--font-sans-loaded), ui-rounded, "Hiragino Maru Gothic ProN",
+    "Segoe UI Rounded", system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-display-loaded), "Impact", "Haettenschweiler",
+    ui-rounded, system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
-  --font-display: "InterVariable", ui-sans-serif, system-ui, sans-serif;
 
-  /* Neutral ramp — slightly blue-cool so the accent reads warm against it */
-  --color-ink-50: #f6f7fb;
-  --color-ink-100: #eceef6;
-  --color-ink-200: #d6dae8;
-  --color-ink-300: #b0b7cd;
-  --color-ink-400: #7d87a6;
-  --color-ink-500: #5a6483;
-  --color-ink-600: #414a66;
-  --color-ink-700: #2e3550;
-  --color-ink-800: #1c2138;
-  --color-ink-900: #131728;
-  --color-ink-950: #0b0e1a;
+  /* Ink — the outline colour everything is drawn with */
+  --color-ink-50: #f7f6f2;
+  --color-ink-100: #ebe8df;
+  --color-ink-200: #d6d1c2;
+  --color-ink-300: #b0a993;
+  --color-ink-400: #7d7563;
+  --color-ink-500: #565043;
+  --color-ink-600: #3b372e;
+  --color-ink-700: #2a2721;
+  --color-ink-800: #1b1915;
+  --color-ink-900: #12110e;
+  --color-ink-950: #0a0a08;
 
-  --color-brand-50: #f4f1ff;
-  --color-brand-100: #ebe4ff;
-  --color-brand-200: #d9ceff;
-  --color-brand-300: #bfa8ff;
-  --color-brand-400: #9f76ff;
-  --color-brand-500: #8344ff;
-  --color-brand-600: #7222f5;
-  --color-brand-700: #6014d8;
-  --color-brand-800: #5014b0;
-  --color-brand-900: #43148f;
+  /* Primary comic palette — saturated, printed-ink flat */
+  --color-pow-400: #ffd23f;   /* yellow  */
+  --color-pow-500: #ffc107;
+  --color-zap-400: #ff5d73;   /* red-pink */
+  --color-zap-500: #f0435c;
+  --color-bam-400: #4cc9f0;   /* cyan    */
+  --color-bam-500: #22b8e8;
+  --color-kapow-400: #9d4edd; /* purple  */
+  --color-kapow-500: #7b2cbf;
+  --color-boom-400: #52d67a;  /* green   */
+  --color-boom-500: #2fb85c;
+  --color-zonk-400: #ff9f45;  /* orange  */
+  --color-zonk-500: #ff7f11;
 
-  --color-flare-400: #ff6ec7;
-  --color-flare-500: #f43ba6;
-  --color-flare-600: #db1f87;
-
-  --color-ember-400: #ff9a62;
-  --color-ember-500: #ff7a3d;
-
-  --color-mint-400: #4ade9f;
-  --color-mint-500: #16c47f;
-
-  --color-sky-450: #38bdf8;
-
-  --radius-card: 1.125rem;
+  --radius-card: 0.875rem;
 
   --animate-marquee: marquee 42s linear infinite;
-  --animate-shimmer: shimmer 2.6s linear infinite;
   --animate-float: float 7s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-typing: typing 1.2s ease-in-out infinite;
+  --animate-wobble: wobble 0.6s ease-in-out;
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes marquee {
@@ -66,7 +69,7 @@
   to { background-position: 200% 0; }
 }
 @keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
   50% { transform: translateY(-14px) rotate(1.5deg); }
 }
 @keyframes pulse-ring {
@@ -78,66 +81,105 @@
   0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
   30% { transform: translateY(-4px); opacity: 1; }
 }
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2.5deg); }
+  75% { transform: rotate(2.5deg); }
+}
+@keyframes pop {
+  0% { transform: scale(0.6) rotate(-12deg); opacity: 0; }
+  60% { transform: scale(1.12) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes burst {
+  0% { transform: scale(0.3) rotate(-18deg); opacity: 0; }
+  40% { transform: scale(1.15) rotate(6deg); opacity: 1; }
+  100% { transform: scale(1.6) rotate(14deg); opacity: 0; }
+}
+@keyframes speed-lines {
+  from { background-position: 0 0; }
+  to { background-position: 60px 0; }
+}
 
 /* --- Theme tokens ---------------------------------------------------------
-   Light palette on bare :root, dark redefined in both the media query and the
-   [data-theme] selector so an explicit toggle wins in both directions.        */
+   Light is the default — comics are printed on paper. Dark is a "midnight
+   issue": same ink language, inverted stock.                                */
 
 :root {
-  --bg: #ffffff;
-  --bg-subtle: #f6f7fb;
+  --bg: #fffdf7;
+  --bg-subtle: #fdf6e3;
   --bg-raised: #ffffff;
-  --bg-sunken: #eef0f7;
-  --border: #e2e5ef;
-  --border-strong: #cdd2e2;
-  --text: #131728;
-  --text-muted: #5a6483;
-  --text-faint: #7d87a6;
-  --accent: #7222f5;
+  --bg-sunken: #f4ecd8;
+  --paper: #fffdf7;
+
+  --ink: #12110e;
+  --border: #12110e;          /* ink outlines are the border */
+  --border-soft: #d6d1c2;     /* for dense UI where full ink is too heavy */
+  --border-strong: #12110e;
+
+  --text: #12110e;
+  --text-muted: #565043;
+  --text-faint: #7d7563;
+
+  --accent: #7b2cbf;
   --accent-contrast: #ffffff;
-  --shadow-color: 220 40% 40%;
-  --grid-line: rgba(19, 23, 40, 0.055);
+
+  --halftone: rgba(18, 17, 14, 0.14);
+  --shadow-ink: #12110e;
+  --shadow-color: 45 20% 20%;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0b0e1a;
-    --bg-subtle: #101426;
-    --bg-raised: #151a30;
-    --bg-sunken: #080a14;
-    --border: #232a45;
-    --border-strong: #333b5e;
-    --text: #eceef6;
-    --text-muted: #a3abc6;
-    --text-faint: #7d87a6;
-    --accent: #9f76ff;
-    --accent-contrast: #0b0e1a;
-    --shadow-color: 250 60% 4%;
-    --grid-line: rgba(236, 238, 246, 0.05);
+    --bg: #14131a;
+    --bg-subtle: #1c1a24;
+    --bg-raised: #232130;
+    --bg-sunken: #100f16;
+    --paper: #1c1a24;
+
+    --ink: #f7f6f2;
+    --border: #000000;
+    --border-soft: #3b3849;
+    --border-strong: #000000;
+
+    --text: #f7f6f2;
+    --text-muted: #b8b3c7;
+    --text-faint: #8b869c;
+
+    --accent: #c77dff;
+    --accent-contrast: #14131a;
+
+    --halftone: rgba(255, 255, 255, 0.09);
+    --shadow-ink: #000000;
+    --shadow-color: 260 40% 3%;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0b0e1a;
-  --bg-subtle: #101426;
-  --bg-raised: #151a30;
-  --bg-sunken: #080a14;
-  --border: #232a45;
-  --border-strong: #333b5e;
-  --text: #eceef6;
-  --text-muted: #a3abc6;
-  --text-faint: #7d87a6;
-  --accent: #9f76ff;
-  --accent-contrast: #0b0e1a;
-  --shadow-color: 250 60% 4%;
-  --grid-line: rgba(236, 238, 246, 0.05);
+  --bg: #14131a;
+  --bg-subtle: #1c1a24;
+  --bg-raised: #232130;
+  --bg-sunken: #100f16;
+  --paper: #1c1a24;
+
+  --ink: #f7f6f2;
+  --border: #000000;
+  --border-soft: #3b3849;
+  --border-strong: #000000;
+
+  --text: #f7f6f2;
+  --text-muted: #b8b3c7;
+  --text-faint: #8b869c;
+
+  --accent: #c77dff;
+  --accent-contrast: #14131a;
+
+  --halftone: rgba(255, 255, 255, 0.09);
+  --shadow-ink: #000000;
+  --shadow-color: 260 40% 3%;
 }
 
 @layer base {
-  * {
-    border-color: var(--border);
-  }
-
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
@@ -147,40 +189,43 @@
     background-color: var(--bg);
     color: var(--text);
     font-family: var(--font-sans);
-    font-feature-settings: "cv02", "cv03", "cv04", "ss03";
+    font-weight: 600;
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
     overflow-x: hidden;
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--accent) 32%, transparent);
-    color: var(--text);
+    background: var(--color-pow-400);
+    color: #12110e;
   }
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.028em;
+    font-weight: 400;
+    letter-spacing: 0.012em;
+    line-height: 1.02;
     text-wrap: balance;
   }
+
+  /* Bangers is all-caps by design; keep casing honest where it's used. */
+  .font-display { font-family: var(--font-display); font-weight: 400; }
 
   p { text-wrap: pretty; }
 
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--color-pow-400);
     outline-offset: 2px;
     border-radius: 4px;
   }
 
-  /* Scrollbars — subtle, themed */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: var(--bg-sunken); }
   ::-webkit-scrollbar-thumb {
-    background: var(--border-strong);
+    background: var(--text-faint);
     border-radius: 999px;
-    border: 3px solid var(--bg);
+    border: 3px solid var(--bg-sunken);
   }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -193,62 +238,200 @@
 }
 
 @layer utilities {
-  .surface {
+  /* --- Ink & panels ------------------------------------------------------ */
+
+  /** The core comic surface: thick ink outline + hard offset shadow. */
+  .ink {
+    border: 2.5px solid var(--border);
+    box-shadow: 4px 4px 0 0 var(--shadow-ink);
+  }
+  .ink-sm {
+    border: 2px solid var(--border);
+    box-shadow: 3px 3px 0 0 var(--shadow-ink);
+  }
+  .ink-lg {
+    border: 3px solid var(--border);
+    box-shadow: 7px 7px 0 0 var(--shadow-ink);
+  }
+  /** Dense UI: keep the outline, drop the shadow so rows don't vibrate. */
+  .ink-flat {
+    border: 2px solid var(--border);
+  }
+  /** Softest tier — internal dividers inside an already-inked panel. */
+  .ink-soft {
+    border: 1.5px solid var(--border-soft);
+  }
+
+  /** Lifts on hover like a sticker being peeled. */
+  .ink-lift {
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.15s ease;
+  }
+  .ink-lift:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0 0 var(--shadow-ink);
+  }
+  .ink-lift:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 0 var(--shadow-ink);
+  }
+
+  /* --- Halftone & print texture ------------------------------------------ */
+
+  /** Ben-Day dots. The signature comic texture. */
+  .halftone {
+    background-image: radial-gradient(var(--halftone) 1.4px, transparent 1.5px);
+    background-size: 8px 8px;
+  }
+  .halftone-lg {
+    background-image: radial-gradient(var(--halftone) 2.2px, transparent 2.3px);
+    background-size: 14px 14px;
+  }
+
+  /** Overlay version — sits on top of a coloured panel. */
+  .halftone-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(rgba(0, 0, 0, 0.16) 1.6px, transparent 1.7px);
+    background-size: 7px 7px;
+  }
+
+  /** Diagonal speed/action lines behind a focal element. */
+  .action-lines {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--halftone) 0px,
+      var(--halftone) 2px,
+      transparent 2px,
+      transparent 10px
+    );
+  }
+
+  /** Radiating "impact" rays from the centre. */
+  .impact-rays {
+    background: repeating-conic-gradient(
+      from 0deg at 50% 50%,
+      var(--halftone) 0deg 4deg,
+      transparent 4deg 12deg
+    );
+  }
+
+  /* --- Speech bubbles ---------------------------------------------------- */
+
+  .bubble {
+    position: relative;
+    border: 2.5px solid var(--border);
+    border-radius: 1.25rem;
     background: var(--bg-raised);
-    border: 1px solid var(--border);
+    box-shadow: 4px 4px 0 0 var(--shadow-ink);
+  }
+  /* Tail, drawn as two stacked triangles so the ink outline reads correctly. */
+  .bubble-tail-l::after,
+  .bubble-tail-l::before {
+    content: "";
+    position: absolute;
+    left: 26px;
+    bottom: -14px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 14px solid transparent;
+  }
+  .bubble-tail-l::before {
+    border-top: 16px solid var(--border);
+    bottom: -16px;
+  }
+  .bubble-tail-l::after {
+    border-top: 13px solid var(--bg-raised);
+    bottom: -12px;
+  }
+  .bubble-tail-r::after,
+  .bubble-tail-r::before {
+    content: "";
+    position: absolute;
+    right: 26px;
+    bottom: -14px;
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 10px solid transparent;
+  }
+  .bubble-tail-r::before {
+    border-top: 16px solid var(--border);
+    bottom: -16px;
+  }
+  .bubble-tail-r::after {
+    border-top: 13px solid var(--bg-raised);
+    bottom: -12px;
+  }
+
+  /* --- Type -------------------------------------------------------------- */
+
+  /** Chunky outlined display text, the way a cover title is drawn. */
+  .text-outline {
+    -webkit-text-stroke: 2.5px var(--border);
+    paint-order: stroke fill;
+  }
+  .text-outline-thin {
+    -webkit-text-stroke: 1.5px var(--border);
+    paint-order: stroke fill;
+  }
+
+  /** Stacked colour offset, like misregistered printing. */
+  .text-pop {
+    color: var(--color-pow-400);
+    text-shadow:
+      3px 3px 0 var(--shadow-ink),
+      -1px -1px 0 var(--shadow-ink),
+      1px -1px 0 var(--shadow-ink),
+      -1px 1px 0 var(--shadow-ink);
   }
 
   .text-gradient {
     background: linear-gradient(
       100deg,
-      var(--color-brand-400) 0%,
-      var(--color-flare-400) 46%,
-      var(--color-ember-400) 100%
+      var(--color-zap-400) 0%,
+      var(--color-kapow-400) 45%,
+      var(--color-bam-400) 100%
     );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
-  /* Animated gradient border. Uses a masked pseudo-element so the fill stays
-     independent of the stroke. */
-  .gradient-ring {
-    position: relative;
-    isolation: isolate;
+  /* --- Burst (the button-hover payoff) ----------------------------------- */
+
+  /** A starburst that pops out from behind an element on hover. */
+  .burst-host { position: relative; }
+  .burst {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    clip-path: polygon(
+      50% 0%, 61% 22%, 84% 12%, 79% 37%, 100% 50%, 79% 63%, 84% 88%,
+      61% 78%, 50% 100%, 39% 78%, 16% 88%, 21% 63%, 0% 50%, 21% 37%,
+      16% 12%, 39% 22%
+    );
   }
-  .gradient-ring::before {
+  .burst-host:hover .burst {
+    animation: burst 0.5s ease-out forwards;
+  }
+
+  /* --- Misc -------------------------------------------------------------- */
+
+  .paper {
+    background-color: var(--paper);
+  }
+
+  .grain::after {
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      135deg,
-      color-mix(in oklab, var(--color-brand-400) 70%, transparent),
-      color-mix(in oklab, var(--color-flare-400) 50%, transparent) 45%,
-      transparent 75%
-    );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask-composite: exclude;
     pointer-events: none;
-    z-index: -1;
-  }
-
-  .glass {
-    background: color-mix(in oklab, var(--bg-raised) 72%, transparent);
-    backdrop-filter: blur(18px) saturate(1.4);
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
-    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
-  }
-
-  /* Faint blueprint grid used behind hero sections */
-  .grid-bg {
-    background-image:
-      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-    background-size: 56px 56px;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .radial-fade {
@@ -256,33 +439,6 @@
     -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
   }
 
-  /* Film grain — kills the flat "template" look on large gradient areas */
-  .grain::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.035;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  .shadow-lift {
-    box-shadow:
-      0 1px 2px hsl(var(--shadow-color) / 0.08),
-      0 8px 24px -8px hsl(var(--shadow-color) / 0.16),
-      0 24px 56px -24px hsl(var(--shadow-color) / 0.24);
-  }
-
-  .shadow-glow {
-    box-shadow:
-      0 0 0 1px color-mix(in oklab, var(--color-brand-400) 22%, transparent),
-      0 12px 48px -12px color-mix(in oklab, var(--color-brand-500) 45%, transparent);
-  }
-
-  .mask-fade-r {
-    mask-image: linear-gradient(to right, #000 76%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, #000 76%, transparent 100%);
-  }
   .mask-fade-x {
     mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
@@ -290,31 +446,58 @@
 
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { scrollbar-width: none; }
+
+  /** Slight rotation, so panels feel hand-placed rather than CSS-gridded. */
+  .tilt-l { transform: rotate(-1.2deg); }
+  .tilt-r { transform: rotate(1.2deg); }
+
+  /* Legacy aliases kept so existing markup doesn't need rewriting. */
+  .surface { background: var(--bg-raised); border: 2px solid var(--border); }
+  .glass {
+    background: color-mix(in oklab, var(--bg-raised) 88%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 2.5px solid var(--border);
+  }
+  .shadow-lift { box-shadow: 4px 4px 0 0 var(--shadow-ink); }
+  .shadow-glow { box-shadow: 4px 4px 0 0 var(--shadow-ink); }
+  .gradient-ring { border: 2.5px solid var(--border); }
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, var(--halftone) 1.5px, transparent 1.5px),
+      linear-gradient(to bottom, var(--halftone) 1.5px, transparent 1.5px);
+    background-size: 48px 48px;
+  }
 }
 
-/* --- React Flow theming --------------------------------------------------- */
+/* --- React Flow theming ----------------------------------------------------
+   The canvas is where people spend real time, so this is the calm tier: ink
+   outlines on nodes, but no halftone behind the graph.                       */
 
 .react-flow {
   --xy-background-color: var(--bg-subtle);
-  --xy-edge-stroke: var(--border-strong);
+  --xy-edge-stroke: var(--border);
   --xy-edge-stroke-selected: var(--accent);
   --xy-handle-background-color: var(--accent);
-  --xy-handle-border-color: var(--bg-raised);
+  --xy-handle-border-color: var(--border);
 }
 .react-flow__attribution { display: none; }
-.react-flow__edge-path { stroke-width: 2; }
-.react-flow__edge.selected .react-flow__edge-path { stroke-width: 2.5; }
+.react-flow__edge-path { stroke-width: 2.5; }
+.react-flow__edge.selected .react-flow__edge-path { stroke-width: 3.5; }
 .react-flow__handle {
-  width: 10px;
-  height: 10px;
-  border: 2px solid var(--bg-raised);
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
 }
 .react-flow__controls-button {
   background: var(--bg-raised);
-  border-color: var(--border);
-  fill: var(--text-muted);
+  border: 2px solid var(--border) !important;
+  fill: var(--text);
 }
-.react-flow__controls-button:hover { background: var(--bg-subtle); }
-.react-flow__minimap { background: var(--bg-subtle); }
+.react-flow__controls-button:hover { background: var(--color-pow-400); }
+.react-flow__minimap {
+  background: var(--bg-subtle);
+  border: 2px solid var(--border);
+}
 .react-flow__node { cursor: grab; }
 .react-flow__node:active { cursor: grabbing; }

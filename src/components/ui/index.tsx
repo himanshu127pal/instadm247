@@ -5,28 +5,45 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Comic UI kit.
+ *
+ * Everything is drawn with an ink outline and a hard offset shadow, and presses
+ * like a physical sticker. Buttons get a starburst on hover — the payoff the
+ * whole theme is built around.
+ */
+
 // --- Button -----------------------------------------------------------------
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] select-none",
+  [
+    "burst-host relative inline-flex items-center justify-center gap-2 whitespace-nowrap",
+    "rounded-xl font-extrabold tracking-tight select-none",
+    "border-[2.5px] border-[var(--border)]",
+    "shadow-[3px_3px_0_0_var(--shadow-ink)]",
+    "transition-[transform,box-shadow,background-color] duration-150",
+    "hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[5px_5px_0_0_var(--shadow-ink)]",
+    "active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--shadow-ink)]",
+    "disabled:pointer-events-none disabled:opacity-50",
+    "disabled:translate-x-0 disabled:translate-y-0",
+  ].join(" "),
   {
     variants: {
       variant: {
-        primary:
-          "bg-[var(--accent)] text-[var(--accent-contrast)] hover:brightness-110 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_8px_24px_-12px_var(--accent)]",
+        primary: "bg-[var(--color-kapow-400)] text-white",
         gradient:
-          "text-white bg-[linear-gradient(100deg,var(--color-brand-600),var(--color-flare-500)_55%,var(--color-ember-500))] bg-[length:200%_auto] hover:bg-[position:100%_center] shadow-[0_8px_32px_-12px_var(--color-brand-500)]",
-        secondary:
-          "bg-[var(--bg-sunken)] text-[var(--text)] hover:bg-[var(--bg-subtle)] border border-[var(--border)]",
-        outline:
-          "border border-[var(--border-strong)] text-[var(--text)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent)]",
-        ghost: "text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text)]",
-        danger: "bg-red-500/90 text-white hover:bg-red-500",
+          "bg-[linear-gradient(100deg,var(--color-zap-400),var(--color-kapow-400)_55%,var(--color-bam-400))] text-white",
+        pow: "bg-[var(--color-pow-400)] text-[#12110e]",
+        secondary: "bg-[var(--bg-raised)] text-[var(--text)]",
+        outline: "bg-transparent text-[var(--text)]",
+        ghost:
+          "border-transparent shadow-none bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-sunken)] hover:text-[var(--text)] hover:translate-x-0 hover:translate-y-0 hover:shadow-none active:translate-x-0 active:translate-y-0",
+        danger: "bg-[var(--color-zap-400)] text-white",
       },
       size: {
         sm: "h-8 px-3 text-[13px]",
-        md: "h-10 px-4",
-        lg: "h-12 px-6 text-[15px]",
+        md: "h-10 px-4 text-[14px]",
+        lg: "h-12 px-6 text-[16px]",
         icon: "h-9 w-9",
       },
     },
@@ -38,16 +55,31 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   loading?: boolean;
+  /** Set false to suppress the starburst (dense toolbars, icon-only rows). */
+  burst?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, loading, children, disabled, ...props }, ref) => (
+  ({ className, variant, size, loading, burst = true, children, disabled, ...props }, ref) => (
     <button
       ref={ref}
       className={cn(buttonVariants({ variant, size }), className)}
       disabled={disabled || loading}
       {...props}
     >
+      {burst && variant !== "ghost" && (
+        <>
+          <span
+            aria-hidden
+            className="burst -left-2 -top-2 h-5 w-5 bg-[var(--color-pow-400)]"
+          />
+          <span
+            aria-hidden
+            className="burst -bottom-2 -right-3 h-4 w-4 bg-[var(--color-bam-400)]"
+            style={{ animationDelay: "0.06s" }}
+          />
+        </>
+      )}
       {loading && <Loader2 className="h-4 w-4 animate-spin" />}
       {children}
     </button>
@@ -61,7 +93,8 @@ export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElemen
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg-raised)]",
+        "rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)]",
+        "shadow-[4px_4px_0_0_var(--shadow-ink)]",
         className,
       )}
       {...props}
@@ -74,7 +107,7 @@ export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDiv
 }
 
 export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn("text-[15px] font-semibold tracking-tight", className)} {...props} />;
+  return <h3 className={cn("text-[16px] font-extrabold tracking-tight", className)} {...props} />;
 }
 
 export function CardDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
@@ -87,19 +120,18 @@ export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDi
 
 // --- Inputs -----------------------------------------------------------------
 
+const fieldBase = [
+  "w-full rounded-xl bg-[var(--bg)] font-semibold text-[var(--text)]",
+  "border-2 border-[var(--border)]",
+  "placeholder:font-medium placeholder:text-[var(--text-faint)]",
+  "transition-shadow duration-150",
+  "focus:outline-none focus:shadow-[3px_3px_0_0_var(--color-pow-400)]",
+  "disabled:opacity-60",
+].join(" ");
+
 export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   ({ className, ...props }, ref) => (
-    <input
-      ref={ref}
-      className={cn(
-        "h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm",
-        "placeholder:text-[var(--text-faint)] transition-colors",
-        "focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20",
-        "disabled:opacity-60",
-        className,
-      )}
-      {...props}
-    />
+    <input ref={ref} className={cn(fieldBase, "h-10 px-3 text-sm", className)} {...props} />
   ),
 );
 Input.displayName = "Input";
@@ -110,12 +142,7 @@ export const Textarea = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <textarea
     ref={ref}
-    className={cn(
-      "w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 text-sm leading-relaxed",
-      "placeholder:text-[var(--text-faint)] transition-colors resize-y min-h-[88px]",
-      "focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20",
-      className,
-    )}
+    className={cn(fieldBase, "min-h-[88px] resize-y px-3 py-2.5 text-sm leading-relaxed", className)}
     {...props}
   />
 ));
@@ -128,9 +155,9 @@ export const Select = React.forwardRef<
   <select
     ref={ref}
     className={cn(
-      "h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 pr-8 text-sm",
-      "focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20",
-      "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke=%22%237d87a6%22 stroke-width=%222%22><path stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19 9l-7 7-7-7%22/></svg>')] bg-[length:16px] bg-[right_0.6rem_center] bg-no-repeat",
+      fieldBase,
+      "h-10 appearance-none px-3 pr-8 text-sm",
+      "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 24 24%22 stroke=%22currentColor%22 stroke-width=%223%22><path stroke-linecap=%22round%22 stroke-linejoin=%22round%22 d=%22M19 9l-7 7-7-7%22/></svg>')] bg-[length:15px] bg-[right_0.6rem_center] bg-no-repeat",
       className,
     )}
     {...props}
@@ -143,7 +170,7 @@ Select.displayName = "Select";
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return (
     <label
-      className={cn("mb-1.5 block text-[13px] font-medium text-[var(--text)]", className)}
+      className={cn("mb-1.5 block text-[13px] font-extrabold text-[var(--text)]", className)}
       {...props}
     />
   );
@@ -166,8 +193,12 @@ export function Field({
     <div className={cn("space-y-1", className)}>
       {label && <Label>{label}</Label>}
       {children}
-      {hint && !error && <p className="text-xs text-[var(--text-faint)]">{hint}</p>}
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {hint && !error && (
+        <p className="text-xs font-medium text-[var(--text-faint)]">{hint}</p>
+      )}
+      {error && (
+        <p className="text-xs font-bold text-[var(--color-zap-500)]">{error}</p>
+      )}
     </div>
   );
 }
@@ -194,16 +225,19 @@ export function Switch({
       disabled={disabled}
       onClick={() => onCheckedChange(!checked)}
       className={cn(
-        "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40",
-        checked ? "bg-[var(--accent)]" : "bg-[var(--border-strong)]",
+        "relative inline-flex h-7 w-12 shrink-0 items-center rounded-full",
+        "border-[2.5px] border-[var(--border)] transition-colors duration-200",
+        "shadow-[2px_2px_0_0_var(--shadow-ink)]",
+        "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--color-pow-400)]",
+        checked ? "bg-[var(--color-boom-400)]" : "bg-[var(--bg-sunken)]",
         disabled && "opacity-50",
       )}
     >
       <span
         className={cn(
-          "inline-block h-4.5 w-4.5 h-[18px] w-[18px] transform rounded-full bg-white shadow transition-transform duration-200",
-          checked ? "translate-x-[23px]" : "translate-x-[3px]",
+          "inline-block h-[18px] w-[18px] rounded-full border-2 border-[var(--border)] bg-white",
+          "transition-transform duration-200",
+          checked ? "translate-x-[22px]" : "translate-x-[3px]",
         )}
       />
     </button>
@@ -213,16 +247,20 @@ export function Switch({
 // --- Badge ------------------------------------------------------------------
 
 const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium leading-5",
+  [
+    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5",
+    "text-[11px] font-extrabold uppercase leading-5 tracking-wide",
+    "border-2 border-[var(--border)]",
+  ].join(" "),
   {
     variants: {
       tone: {
-        neutral: "bg-[var(--bg-sunken)] text-[var(--text-muted)] border border-[var(--border)]",
-        brand: "bg-[var(--accent)]/12 text-[var(--accent)] border border-[var(--accent)]/25",
-        success: "bg-emerald-500/12 text-emerald-400 border border-emerald-500/25",
-        warning: "bg-amber-500/12 text-amber-400 border border-amber-500/25",
-        danger: "bg-red-500/12 text-red-400 border border-red-500/25",
-        info: "bg-sky-500/12 text-sky-400 border border-sky-500/25",
+        neutral: "bg-[var(--bg-sunken)] text-[var(--text)]",
+        brand: "bg-[var(--color-kapow-400)] text-white",
+        success: "bg-[var(--color-boom-400)] text-[#12110e]",
+        warning: "bg-[var(--color-pow-400)] text-[#12110e]",
+        danger: "bg-[var(--color-zap-400)] text-white",
+        info: "bg-[var(--color-bam-400)] text-[#12110e]",
       },
     },
     defaultVariants: { tone: "neutral" },
@@ -243,10 +281,10 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-lg bg-[linear-gradient(90deg,var(--bg-sunken),var(--bg-subtle),var(--bg-sunken))] bg-[length:200%_100%]",
+        "rounded-lg border-2 border-dashed border-[var(--border-soft)] bg-[var(--bg-sunken)]",
+        "animate-pulse",
         className,
       )}
-      style={{ animation: "shimmer 1.8s linear infinite" }}
     />
   );
 }
@@ -267,19 +305,28 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-dashed border-[var(--border-strong)] px-6 py-14 text-center">
+    <div
+      className={cn(
+        "relative flex flex-col items-center justify-center gap-3 overflow-hidden",
+        "rounded-[var(--radius-card)] border-[3px] border-dashed border-[var(--border)]",
+        "bg-[var(--bg-raised)] px-6 py-14 text-center",
+      )}
+    >
+      <div aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-40" />
       {icon && (
-        <div className="grid h-12 w-12 place-items-center rounded-2xl text-[var(--text-faint)] bg-[var(--bg-sunken)] [&_svg]:h-5 [&_svg]:w-5">
+        <div className="relative grid h-14 w-14 place-items-center rounded-2xl border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)] text-[#12110e] shadow-[3px_3px_0_0_var(--shadow-ink)] [&_svg]:h-6 [&_svg]:w-6">
           {icon}
         </div>
       )}
-      <div className="space-y-1">
-        <p className="text-sm font-medium">{title}</p>
+      <div className="relative space-y-1">
+        <p className="font-display text-[20px] tracking-wide">{title}</p>
         {description && (
-          <p className="mx-auto max-w-sm text-[13px] text-[var(--text-muted)]">{description}</p>
+          <p className="mx-auto max-w-sm text-[13.5px] font-medium text-[var(--text-muted)]">
+            {description}
+          </p>
         )}
       </div>
-      {action}
+      {action && <div className="relative">{action}</div>}
     </div>
   );
 }
@@ -290,9 +337,50 @@ export function Tooltip({ label, children }: { label: string; children: React.Re
       {children}
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-[var(--border)] bg-[var(--bg-raised)] px-2.5 py-1.5 text-[11px] text-[var(--text)] opacity-0 shadow-lift transition-opacity duration-150 group-hover/tt:opacity-100"
+        className={cn(
+          "pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap",
+          "rounded-lg border-2 border-[var(--border)] bg-[var(--color-pow-400)] px-2.5 py-1",
+          "text-[11px] font-bold text-[#12110e] opacity-0 shadow-[2px_2px_0_0_var(--shadow-ink)]",
+          "transition-opacity duration-150 group-hover/tt:opacity-100",
+        )}
       >
         {label}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * A comic sound-effect burst — "POW!", "ZAP!". Used sparingly on the marketing
+ * page as a focal accent.
+ */
+export function SoundEffect({
+  children,
+  color = "var(--color-pow-400)",
+  className,
+  rotate = -8,
+}: {
+  children: React.ReactNode;
+  color?: string;
+  className?: string;
+  rotate?: number;
+}) {
+  return (
+    <span
+      className={cn("relative inline-grid place-items-center", className)}
+      style={{ transform: `rotate(${rotate}deg)` }}
+    >
+      <span
+        aria-hidden
+        className="absolute inset-0 -m-3"
+        style={{
+          background: color,
+          clipPath:
+            "polygon(50% 0%, 61% 22%, 84% 12%, 79% 37%, 100% 50%, 79% 63%, 84% 88%, 61% 78%, 50% 100%, 39% 78%, 16% 88%, 21% 63%, 0% 50%, 21% 37%, 16% 12%, 39% 22%)",
+        }}
+      />
+      <span className="font-display relative px-2 text-[#12110e] [-webkit-text-stroke:1px_var(--border)]">
+        {children}
       </span>
     </span>
   );

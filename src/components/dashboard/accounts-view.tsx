@@ -108,11 +108,11 @@ export function AccountsView({
   return (
     <div className="space-y-5">
       {!configured && (
-        <div className="rounded-[var(--radius-card)] border border-amber-500/25 bg-amber-500/[0.07] p-5">
+        <div className="rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)]/40 shadow-[4px_4px_0_0_var(--shadow-ink)] p-5">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-zonk-500)]" />
             <div className="space-y-2">
-              <p className="text-[14px] font-medium text-amber-200">
+              <p className="text-[14px] font-medium text-[var(--text)]">
                 Instagram isn&rsquo;t configured on this server yet
               </p>
               <p className="text-[13px] leading-relaxed text-[var(--text-muted)]">
@@ -145,7 +145,7 @@ export function AccountsView({
             <article
               key={account.id}
               id={account.id}
-              className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)] p-5"
+              className="rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)]"
             >
               <div className="flex flex-wrap items-start gap-4">
                 {account.profilePictureUrl ? (
@@ -156,7 +156,7 @@ export function AccountsView({
                     className="h-12 w-12 rounded-full object-cover"
                   />
                 ) : (
-                  <span className="grid h-12 w-12 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-flare-500))] text-[15px] font-semibold text-white">
+                  <span className="grid h-12 w-12 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-kapow-400),var(--color-zap-500))] text-[15px] font-semibold text-white">
                     {initials(account.username)}
                   </span>
                 )}
@@ -209,15 +209,15 @@ export function AccountsView({
               </div>
 
               {(account.pausedReason || !account.webhookSubbed) && (
-                <div className="mt-4 space-y-2 border-t border-[var(--border)] pt-3">
+                <div className="mt-4 space-y-2 border-t-2 border-[var(--border-soft)] pt-3">
                   {account.pausedReason && (
-                    <p className="flex items-start gap-2 text-[12.5px] text-amber-400">
+                    <p className="flex items-start gap-2 text-[12.5px] text-[var(--color-zonk-500)]">
                       <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                       {account.pausedReason}
                     </p>
                   )}
                   {!account.webhookSubbed && account.status === "connected" && (
-                    <p className="flex items-start gap-2 text-[12.5px] text-amber-400">
+                    <p className="flex items-start gap-2 text-[12.5px] text-[var(--color-zonk-500)]">
                       <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                       Webhooks aren&rsquo;t subscribed for this account, so nothing will
                       trigger. Reconnect it to fix this.
@@ -227,7 +227,7 @@ export function AccountsView({
               )}
 
               {(account.status === "token_expired" || account.status === "revoked") && (
-                <div className="mt-4 border-t border-[var(--border)] pt-3">
+                <div className="mt-4 border-t-2 border-[var(--border-soft)] pt-3">
                   <a href="/api/instagram/connect">
                     <Button variant="primary" size="sm">
                       Reconnect @{account.username}
@@ -280,8 +280,8 @@ export function AccountsView({
             </div>
           </div>
 
-          <div className="flex items-start gap-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-sunken)] p-3">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+          <div className="flex items-start gap-2.5 rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-boom-500)]" />
             <p className="text-[12.5px] leading-relaxed text-[var(--text-muted)]">
               Use <strong className="text-[var(--text)]">API setup with Instagram login</strong> in
               the Instagram use case — no Facebook Page needed. Advanced Access for the

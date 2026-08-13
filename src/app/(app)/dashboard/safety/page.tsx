@@ -65,8 +65,8 @@ export default async function SafetyPage() {
         description="Everything the dispatcher checks before a message goes out — and every message it decided not to send, with the reason."
       />
 
-      <div className="flex items-start gap-3 rounded-[var(--radius-card)] border border-emerald-500/25 bg-emerald-500/[0.06] p-5">
-        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+      <div className="flex items-start gap-3 rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--color-boom-400)]/30 shadow-[4px_4px_0_0_var(--shadow-ink)] p-5">
+        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-boom-500)]" />
         <div>
           <p className="text-[14px] font-medium">Only official Instagram endpoints are used</p>
           <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-muted)]">

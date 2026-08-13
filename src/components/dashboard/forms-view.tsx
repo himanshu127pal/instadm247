@@ -49,7 +49,7 @@ export function FormsView({ forms }: { forms: LeadForm[] }) {
           {forms.map((form) => (
             <article
               key={form.id}
-              className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)] p-5"
+              className="rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)]"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -189,13 +189,13 @@ function FormEditor({ form, onDone }: { form: LeadForm | null; onDone: () => voi
           <p className="mb-2 text-[13px] font-medium">Questions</p>
           <div className="space-y-2">
             {fields.map((field, i) => (
-              <div key={i} className="space-y-2 rounded-xl border border-[var(--border)] p-3">
+              <div key={i} className="space-y-2 rounded-xl border-2 border-[var(--border)] p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] text-[var(--text-faint)]">Question {i + 1}</span>
                   {fields.length > 1 && (
                     <button
                       onClick={() => setFields(fields.filter((_, j) => j !== i))}
-                      className="text-[var(--text-faint)] hover:text-red-400"
+                      className="text-[var(--text-faint)] hover:text-[var(--color-zap-500)]"
                       aria-label="Remove question"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -308,7 +308,7 @@ function FormEditor({ form, onDone }: { form: LeadForm | null; onDone: () => voi
             Cancel
           </Button>
           {form && (
-            <Button variant="ghost" className="ml-auto text-red-400" onClick={remove}>
+            <Button variant="ghost" className="ml-auto text-[var(--color-zap-500)]" onClick={remove}>
               <Trash2 className="h-4 w-4" /> Delete
             </Button>
           )}

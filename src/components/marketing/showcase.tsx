@@ -102,31 +102,32 @@ export function TriggerShowcase() {
               onClick={() => setActive(i)}
               className={cn(
                 "group relative flex shrink-0 items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all duration-200 lg:w-full",
+                "border-[2.5px] border-[var(--border)]",
                 isActive
-                  ? "border-[var(--accent)]/40 bg-[var(--bg-raised)]"
-                  : "border-[var(--border)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-subtle)]",
+                  ? "bg-[var(--color-pow-400)] text-[#12110e] shadow-[4px_4px_0_0_var(--shadow-ink)]"
+                  : "bg-[var(--bg-raised)] shadow-[2px_2px_0_0_var(--shadow-ink)] hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-[4px_4px_0_0_var(--shadow-ink)]",
               )}
             >
               {isActive && (
                 <motion.span
                   layoutId="trigger-active"
-                  className="absolute inset-0 -z-10 rounded-2xl bg-[var(--accent)]/8"
+                  className="absolute inset-0 -z-10 rounded-2xl"
                   transition={{ type: "spring", stiffness: 380, damping: 32 }}
                 />
               )}
               <span
                 className={cn(
-                  "grid h-9 w-9 shrink-0 place-items-center rounded-xl transition-colors",
+                  "grid h-9 w-9 shrink-0 place-items-center rounded-xl border-2 border-[var(--border)] transition-colors",
                   isActive
-                    ? "bg-[var(--accent)] text-[var(--accent-contrast)]"
-                    : "bg-[var(--bg-sunken)] text-[var(--text-muted)]",
+                    ? "bg-[var(--color-zap-400)] text-white"
+                    : "bg-[var(--bg-sunken)] text-[var(--text)]",
                 )}
               >
                 <Icon className="h-[17px] w-[17px]" />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-[13.5px] font-medium">{item.name}</span>
-                <span className="block truncate text-[11.5px] text-[var(--text-faint)]">
+                <span className="block truncate text-[13.5px] font-extrabold">{item.name}</span>
+                <span className="block truncate text-[11.5px] font-semibold opacity-70">
                   {item.tagline}
                 </span>
               </span>
@@ -136,11 +137,8 @@ export function TriggerShowcase() {
       </div>
 
       {/* Detail panel */}
-      <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg-raised)] p-6 sm:p-8">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[var(--accent)] opacity-[0.07] blur-3xl"
-        />
+      <div className="relative overflow-hidden rounded-[var(--radius-card)] border-[3px] border-[var(--border)] bg-[var(--bg-raised)] p-6 shadow-[6px_6px_0_0_var(--shadow-ink)] sm:p-8">
+        <div aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-40" />
         <AnimatePresence mode="wait">
           <motion.div
             key={trigger.id}
@@ -151,23 +149,23 @@ export function TriggerShowcase() {
             className="relative space-y-5"
           >
             <div className="flex flex-wrap items-center gap-3">
-              <h3 className="text-xl font-semibold">{trigger.name}</h3>
-              <span className="rounded-full border border-[var(--accent)]/25 bg-[var(--accent)]/10 px-2.5 py-0.5 text-[11px] font-medium text-[var(--accent)]">
+              <h3 className="font-display text-[26px] tracking-wide">{trigger.name}</h3>
+              <span className="rounded-full border-2 border-[var(--border)] bg-[var(--color-bam-400)] px-2.5 py-0.5 text-[11px] font-extrabold uppercase text-[#12110e]">
                 {trigger.stat}
               </span>
             </div>
 
-            <p className="max-w-xl text-[15px] leading-relaxed text-[var(--text-muted)]">
+            <p className="max-w-xl text-[15px] font-semibold leading-relaxed text-[var(--text-muted)]">
               {trigger.detail}
             </p>
 
             {/* Mini conversation */}
-            <div className="space-y-2.5 rounded-2xl border border-[var(--border)] bg-[var(--bg-sunken)] p-4">
+            <div className="space-y-2.5 rounded-2xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-4">
               <div className="flex items-start gap-2.5">
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[var(--bg-raised)] text-[11px] font-semibold">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 border-[var(--border)] bg-[var(--color-pow-400)] text-[11px] font-extrabold text-[#12110e]">
                   {trigger.example.from[0].toUpperCase()}
                 </span>
-                <div className="rounded-2xl rounded-tl-md bg-[var(--bg-raised)] px-3.5 py-2">
+                <div className="rounded-2xl rounded-tl-md border-2 border-[var(--border)] bg-[var(--bg-raised)] px-3.5 py-2">
                   <p className="text-[10px] text-[var(--text-faint)]">@{trigger.example.from}</p>
                   <p className="text-[13px]">{trigger.example.text}</p>
                 </div>
@@ -179,7 +177,7 @@ export function TriggerShowcase() {
                 transition={{ delay: 0.25, type: "spring", stiffness: 280, damping: 24 }}
                 className="flex justify-end"
               >
-                <div className="max-w-[80%] rounded-2xl rounded-tr-md bg-[linear-gradient(100deg,var(--color-brand-600),var(--color-flare-500))] px-3.5 py-2 text-white">
+                <div className="max-w-[80%] rounded-2xl rounded-tr-md border-2 border-[var(--border)] bg-[var(--color-kapow-400)] px-3.5 py-2 text-white shadow-[3px_3px_0_0_var(--shadow-ink)]">
                   <p className="text-[13px]">{trigger.example.reply}</p>
                 </div>
               </motion.div>
@@ -204,11 +202,11 @@ const FLOW_STEPS = [
 ] as const;
 
 const TONE_STYLES: Record<string, string> = {
-  trigger: "from-emerald-500/90 to-emerald-400/70",
-  action: "from-[var(--color-brand-500)] to-[var(--color-brand-400)]",
-  branch: "from-amber-500/90 to-amber-400/70",
-  wait: "from-sky-500/90 to-sky-400/70",
-  ai: "from-[var(--color-flare-500)] to-[var(--color-ember-500)]",
+  trigger: "bg-[var(--color-boom-400)] !text-[#12110e]",
+  action: "bg-[var(--color-kapow-400)]",
+  branch: "bg-[var(--color-pow-400)] !text-[#12110e]",
+  wait: "bg-[var(--color-bam-400)] !text-[#12110e]",
+  ai: "bg-[var(--color-zonk-400)] !text-[#12110e]",
 };
 
 export function FlowPreview() {
@@ -224,7 +222,7 @@ export function FlowPreview() {
   }, [built]);
 
   return (
-    <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg-sunken)] p-6">
+    <div className="relative overflow-hidden rounded-[var(--radius-card)] border-[3px] border-[var(--border)] bg-[var(--bg-sunken)] p-6 shadow-[6px_6px_0_0_var(--shadow-ink)]">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-60"
@@ -246,7 +244,7 @@ export function FlowPreview() {
                   initial={{ scaleY: 0 }}
                   animate={{ scaleY: visible ? 1 : 0 }}
                   transition={{ duration: 0.3 }}
-                  className="ml-[22px] h-6 w-0.5 origin-top bg-[var(--border-strong)]"
+                  className="ml-[23px] h-6 w-[3px] origin-top bg-[var(--border)]"
                 />
               )}
               <motion.div
@@ -257,24 +255,24 @@ export function FlowPreview() {
                     : { opacity: 0, x: -18, scale: 0.96 }
                 }
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-raised)] p-2.5 pr-4 shadow-sm"
+                className="flex items-center gap-3 rounded-2xl border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-2.5 pr-4 shadow-[3px_3px_0_0_var(--shadow-ink)]"
               >
                 <span
                   className={cn(
-                    "grid h-[34px] w-[34px] shrink-0 place-items-center rounded-xl bg-gradient-to-br text-white",
+                    "grid h-[34px] w-[34px] shrink-0 place-items-center rounded-xl border-2 border-[var(--border)] text-white",
                     TONE_STYLES[step.tone],
                   )}
                 >
                   <Icon className="h-[15px] w-[15px]" />
                 </span>
-                <span className="text-[13px] font-medium">{step.label}</span>
+                <span className="text-[13px] font-extrabold">{step.label}</span>
               </motion.div>
             </div>
           );
         })}
       </div>
 
-      <div className="relative mt-5 flex items-center gap-2 text-[11px] text-[var(--text-faint)]">
+      <div className="relative mt-5 flex items-center gap-2 text-[11.5px] font-bold text-[var(--text-muted)]">
         <GitBranch className="h-3.5 w-3.5" />
         Drag, drop, done — no code, no flowchart degree.
       </div>
@@ -323,16 +321,15 @@ export function SafetyGuards() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.5, delay: i * 0.06 }}
-          className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-raised)] p-5"
+          className="group relative overflow-hidden rounded-2xl border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)] transition-transform duration-200 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[7px_7px_0_0_var(--shadow-ink)]"
         >
           <div className="mb-2.5 flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-500/12 text-emerald-400">
+            <span className="grid h-9 w-9 place-items-center rounded-xl border-2 border-[var(--border)] bg-[var(--color-boom-400)] text-[#12110e]">
               <ShieldCheck className="h-4 w-4" />
             </span>
-            <h4 className="text-[14px] font-semibold">{guard.title}</h4>
+            <h4 className="text-[14.5px] font-extrabold">{guard.title}</h4>
           </div>
-          <p className="text-[13.5px] leading-relaxed text-[var(--text-muted)]">{guard.body}</p>
-          <div className="absolute inset-x-0 bottom-0 h-px scale-x-0 bg-[linear-gradient(90deg,transparent,var(--color-mint-500),transparent)] transition-transform duration-500 group-hover:scale-x-100" />
+          <p className="text-[13.5px] font-medium leading-relaxed text-[var(--text-muted)]">{guard.body}</p>
         </motion.div>
       ))}
     </div>
@@ -363,7 +360,7 @@ const COMPARISON = [
 function Cell({ value }: { value: boolean | string }) {
   if (value === true)
     return (
-      <span className="mx-auto grid h-6 w-6 place-items-center rounded-full bg-emerald-500/15 text-emerald-400">
+      <span className="mx-auto grid h-6 w-6 place-items-center rounded-full bg-[var(--color-boom-400)]/15 text-emerald-400">
         <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" aria-label="Yes">
           <path d="M4 10.5l4 4 8-9" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -371,7 +368,7 @@ function Cell({ value }: { value: boolean | string }) {
     );
   if (value === false)
     return (
-      <span className="mx-auto grid h-6 w-6 place-items-center rounded-full bg-[var(--bg-sunken)] text-[var(--text-faint)]">
+      <span className="mx-auto grid h-6 w-6 place-items-center rounded-full border-2 border-[var(--border-soft)] bg-[var(--bg-sunken)] text-[var(--text-faint)]">
         <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none" aria-label="No">
           <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
         </svg>
@@ -384,16 +381,16 @@ function Cell({ value }: { value: boolean | string }) {
 
 export function ComparisonTable() {
   return (
-    <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg-raised)]">
+    <div className="overflow-hidden rounded-[var(--radius-card)] border-[3px] border-[var(--border)] bg-[var(--bg-raised)] shadow-[6px_6px_0_0_var(--shadow-ink)]">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[620px] border-collapse text-left">
           <thead>
-            <tr className="border-b border-[var(--border)]">
+            <tr className="border-b-[2.5px] border-[var(--border)] bg-[var(--bg-sunken)]">
               <th className="px-5 py-4 text-[12px] font-medium uppercase tracking-wider text-[var(--text-faint)]">
                 Feature
               </th>
               <th className="px-3 py-4 text-center">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[linear-gradient(100deg,var(--color-brand-600),var(--color-flare-500))] px-3 py-1 text-[12px] font-semibold text-white">
+                <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-[var(--border)] bg-[var(--color-zap-400)] px-3 py-1 text-[12px] font-extrabold uppercase text-white shadow-[2px_2px_0_0_var(--shadow-ink)]">
                   <Sparkles className="h-3 w-3" /> InstaDM247
                 </span>
               </th>
@@ -410,11 +407,10 @@ export function ComparisonTable() {
               <tr
                 key={row.feature}
                 className={cn(
-                  "border-b border-[var(--border)] last:border-0 transition-colors hover:bg-[var(--bg-subtle)]",
-                  i % 2 === 1 && "bg-[var(--bg-sunken)]/40",
+                  "border-b-2 border-[var(--border-soft)] last:border-0 transition-colors hover:bg-[var(--color-pow-400)]/25",
                 )}
               >
-                <td className="px-5 py-3 text-[13.5px]">{row.feature}</td>
+                <td className="px-5 py-3 text-[13.5px] font-semibold">{row.feature}</td>
                 <td className="px-3 py-3 text-center">
                   <Cell value={row.us} />
                 </td>
@@ -429,7 +425,7 @@ export function ComparisonTable() {
           </tbody>
         </table>
       </div>
-      <p className="border-t border-[var(--border)] px-5 py-3 text-[11.5px] text-[var(--text-faint)]">
+      <p className="border-t-[2.5px] border-[var(--border)] bg-[var(--bg-sunken)] px-5 py-3 text-[11.5px] font-medium text-[var(--text-muted)]">
         Competitor capabilities compiled from their public product and help pages, August 2026.
         Plans and features change — check their sites for the current picture.
       </p>

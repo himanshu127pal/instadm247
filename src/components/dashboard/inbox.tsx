@@ -92,15 +92,15 @@ export function InboxView({ conversations: initial }: { conversations: Conversat
   }
 
   return (
-    <div className="flex h-[calc(100vh-13rem)] min-h-[560px] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)]">
+    <div className="flex h-[calc(100vh-13rem)] min-h-[560px] overflow-hidden rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)]">
       {/* Thread list */}
       <div
         className={cn(
-          "flex w-full flex-col border-r border-[var(--border)] md:w-[320px] md:shrink-0",
+          "flex w-full flex-col border-r-[2.5px] border-[var(--border)] md:w-[320px] md:shrink-0",
           active && "hidden md:flex",
         )}
       >
-        <div className="space-y-2.5 border-b border-[var(--border)] p-3">
+        <div className="space-y-2.5 border-b-2 border-[var(--border-soft)] p-3">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-faint)]" />
             <Input
@@ -150,7 +150,7 @@ export function InboxView({ conversations: initial }: { conversations: Conversat
                     updateConversation(conversation.id, { unreadCount: 0 });
                   }}
                   className={cn(
-                    "flex w-full items-start gap-2.5 border-b border-[var(--border)] p-3 text-left transition-colors",
+                    "flex w-full items-start gap-2.5 border-b-2 border-[var(--border-soft)] p-3 text-left transition-colors",
                     conversation.id === activeId
                       ? "bg-[var(--accent)]/8"
                       : "hover:bg-[var(--bg-subtle)]",
@@ -176,7 +176,7 @@ export function InboxView({ conversations: initial }: { conversations: Conversat
                         </span>
                       )}
                       {conversation.humanTakeover && (
-                        <span className="text-[10px] text-amber-400">You&rsquo;re handling this</span>
+                        <span className="text-[10px] text-[var(--color-zonk-500)]">You&rsquo;re handling this</span>
                       )}
                       <span
                         className={cn(
@@ -184,8 +184,8 @@ export function InboxView({ conversations: initial }: { conversations: Conversat
                           window.urgency === "closed"
                             ? "text-[var(--text-faint)]"
                             : window.urgency === "closing"
-                              ? "text-amber-400"
-                              : "text-emerald-400",
+                              ? "text-[var(--color-zonk-500)]"
+                              : "text-[var(--color-boom-500)]",
                         )}
                       >
                         {window.label}
@@ -229,7 +229,7 @@ function Avatar({ contact }: { contact: Contact }) {
     );
   }
   return (
-    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-flare-500))] text-[12px] font-semibold text-white">
+    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-kapow-400),var(--color-zap-500))] text-[12px] font-semibold text-white">
       {initials(contact.username ?? contact.name, "?")}
     </span>
   );
@@ -317,7 +317,7 @@ function Thread({
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
-      <header className="flex flex-wrap items-center gap-3 border-b border-[var(--border)] px-4 py-3">
+      <header className="flex flex-wrap items-center gap-3 border-b-2 border-[var(--border-soft)] px-4 py-3">
         <button onClick={onBack} className="text-[13px] text-[var(--text-muted)] md:hidden">
           ← Back
         </button>
@@ -347,7 +347,7 @@ function Thread({
       </header>
 
       {conversation.contact.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 border-b border-[var(--border)] px-4 py-2">
+        <div className="flex flex-wrap gap-1.5 border-b-2 border-[var(--border-soft)] px-4 py-2">
           {conversation.contact.tags.map((tag) => (
             <Badge key={tag} tone="brand">
               {tag}
@@ -373,8 +373,8 @@ function Thread({
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-[var(--border)] p-3">
-        <label className="mb-2.5 flex items-center gap-2.5 rounded-xl border border-[var(--border)] px-3 py-2">
+      <div className="border-t-2 border-[var(--border-soft)] p-3">
+        <label className="mb-2.5 flex items-center gap-2.5 rounded-xl border-2 border-[var(--border)] px-3 py-2">
           <Switch
             checked={conversation.humanTakeover}
             onCheckedChange={toggleTakeover}
@@ -388,7 +388,7 @@ function Thread({
         </label>
 
         {!window.open ? (
-          <p className="rounded-xl border border-amber-500/25 bg-amber-500/[0.07] px-3 py-2.5 text-[12.5px] text-amber-300">
+          <p className="rounded-xl border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)]/40 shadow-[4px_4px_0_0_var(--shadow-ink)] px-3 py-2.5 text-[12.5px] text-[var(--text)]">
             Instagram&rsquo;s messaging window has closed for this person. They&rsquo;ll need
             to message you again before you can reply.
           </p>
@@ -431,8 +431,8 @@ function MessageBubble({ message }: { message: Message }) {
             "rounded-2xl px-3.5 py-2",
             outbound
               ? skipped || failed
-                ? "border border-dashed border-[var(--border-strong)] bg-transparent"
-                : "rounded-tr-md bg-[linear-gradient(100deg,var(--color-brand-600),var(--color-flare-500))] text-white"
+                ? "border-[2.5px] border-dashed border-[var(--border)] bg-transparent"
+                : "rounded-tr-md bg-[linear-gradient(100deg,var(--color-kapow-500),var(--color-zap-500))] text-white"
               : "rounded-tl-md bg-[var(--bg-sunken)]",
           )}
         >
@@ -464,12 +464,12 @@ function MessageBubble({ message }: { message: Message }) {
         </div>
 
         {skipped && message.skipReason && (
-          <p className={cn("px-1 text-[10.5px] text-amber-400", outbound && "text-right")}>
+          <p className={cn("px-1 text-[10.5px] text-[var(--color-zonk-500)]", outbound && "text-right")}>
             Not sent — {humanizeSkip(message.skipReason)}
           </p>
         )}
         {failed && message.failReason && (
-          <p className={cn("px-1 text-[10.5px] text-red-400", outbound && "text-right")}>
+          <p className={cn("px-1 text-[10.5px] text-[var(--color-zap-500)]", outbound && "text-right")}>
             Failed — {message.failReason}
           </p>
         )}

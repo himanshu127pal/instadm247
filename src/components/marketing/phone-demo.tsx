@@ -36,7 +36,7 @@ const SCENARIOS: Scenario[] = [
     dm: "Hey Alex! Here's the full miso ramen recipe — it's the one I make every Sunday 🍜",
     cta: "Get the recipe",
     followUp: "Made it yet? Reply with a pic, I repost my favourites every Friday ✨",
-    accent: "var(--color-ember-500)",
+    accent: "var(--color-zonk-500)",
   },
   {
     keyword: "LINK",
@@ -47,7 +47,7 @@ const SCENARIOS: Scenario[] = [
     dm: "It's the Arc lounge chair — link below, and the code ARC15 takes 15% off this week.",
     cta: "Shop the chair",
     followUp: "Heads up — the walnut finish is down to the last few.",
-    accent: "var(--color-brand-500)",
+    accent: "var(--color-kapow-400)",
   },
   {
     keyword: "GUIDE",
@@ -58,7 +58,7 @@ const SCENARIOS: Scenario[] = [
     dm: "Sent! The full 12-week plan is yours — start with week 1, don't skip the deloads 😉",
     cta: "Open the plan",
     followUp: "Quick one: training 3x or 4x a week? I'll tailor the next tip.",
-    accent: "var(--color-flare-500)",
+    accent: "var(--color-zap-500)",
   },
 ];
 
@@ -138,15 +138,15 @@ export function PhoneDemo({ className }: { className?: string }) {
 
       <div className="relative mx-auto w-full max-w-[330px]">
         {/* Device frame */}
-        <div className="relative rounded-[2.6rem] border border-[var(--border-strong)] bg-[var(--bg-sunken)] p-2.5 shadow-lift">
+        <div className="relative rounded-[2.6rem] border-[3px] border-[var(--border)] bg-[var(--bg-sunken)] p-2.5 shadow-[8px_8px_0_0_var(--shadow-ink)]">
           <div className="absolute left-1/2 top-3.5 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-[var(--bg-sunken)]" />
 
-          <div className="relative h-[600px] overflow-hidden rounded-[2.1rem] bg-[var(--bg)]">
+          <div className="relative h-[600px] overflow-hidden rounded-[2.1rem] border-2 border-[var(--border)] bg-[var(--bg)]">
             {/* Status bar */}
             <div className="flex items-center justify-between px-6 pb-1 pt-4 text-[11px] font-medium text-[var(--text-muted)]">
               <span>9:41</span>
               <span className="flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--mint-500,#16c47f)]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-boom-400)]" />
                 <span className="tracking-tight">InstaDM247</span>
               </span>
             </div>
@@ -168,19 +168,19 @@ export function PhoneDemo({ className }: { className?: string }) {
             {!showDm && (
               <form
                 onSubmit={runUserComment}
-                className="absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-[var(--border)] bg-[var(--bg-raised)] px-3 py-3"
+                className="absolute inset-x-0 bottom-0 flex items-center gap-2 border-t-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] px-3 py-3"
               >
                 <input
                   value={typed}
                   onChange={(e) => setTyped(e.target.value)}
                   placeholder={`Try commenting "${scenario.keyword}"…`}
                   aria-label="Try a comment"
-                  className="h-9 flex-1 rounded-full border border-[var(--border)] bg-[var(--bg)] px-3.5 text-[13px] outline-none transition-colors placeholder:text-[var(--text-faint)] focus:border-[var(--accent)]"
+                  className="h-9 flex-1 rounded-full border-2 border-[var(--border)] bg-[var(--bg)] px-3.5 text-[13px] font-semibold outline-none transition-shadow placeholder:font-medium placeholder:text-[var(--text-faint)] focus:shadow-[2px_2px_0_0_var(--color-pow-400)]"
                 />
                 <button
                   type="submit"
                   aria-label="Post comment"
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--accent-contrast)] transition-transform active:scale-90"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[var(--border)] bg-[var(--color-zap-400)] text-white shadow-[2px_2px_0_0_var(--shadow-ink)] transition-transform active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                 >
                   <Send className="h-4 w-4" />
                 </button>
@@ -197,15 +197,15 @@ export function PhoneDemo({ className }: { className?: string }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ type: "spring", stiffness: 320, damping: 22 }}
-              className="glass absolute -right-4 top-[46%] z-30 rounded-2xl px-3.5 py-2.5 shadow-lift sm:-right-16"
+              className="absolute -right-4 top-[46%] z-30 rotate-2 rounded-2xl border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)] px-3.5 py-2.5 text-[#12110e] shadow-[4px_4px_0_0_var(--shadow-ink)] sm:-right-16"
             >
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-[pulse-ring_1.6s_ease-out_infinite] rounded-full bg-emerald-400" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="absolute inline-flex h-full w-full animate-[pulse-ring_1.6s_ease-out_infinite] rounded-full bg-[var(--color-boom-400)]" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full border border-[#12110e] bg-[var(--color-boom-400)]" />
                 </span>
-                <span className="text-[11px] font-medium">
-                  Keyword <span className="text-gradient font-semibold">{scenario.keyword}</span> matched
+                <span className="text-[11px] font-extrabold uppercase">
+                  Keyword <span className="rounded bg-[#12110e] px-1 text-[var(--color-pow-400)]">{scenario.keyword}</span> matched!
                 </span>
               </div>
               <p className="mt-0.5 text-[10px] text-[var(--text-faint)]">
@@ -229,8 +229,11 @@ export function PhoneDemo({ className }: { className?: string }) {
             }}
             aria-label={`Show the ${s.keyword} example`}
             className={cn(
-              "h-1.5 rounded-full transition-all duration-300",
-              i === index ? "w-7 bg-[var(--accent)]" : "w-1.5 bg-[var(--border-strong)] hover:bg-[var(--text-faint)]",
+              "h-2.5 rounded-full transition-all duration-300",
+              "border-2 border-[var(--border)]",
+              i === index
+                ? "w-8 bg-[var(--color-zap-400)]"
+                : "w-2.5 bg-[var(--bg-raised)] hover:bg-[var(--color-pow-400)]",
             )}
           />
         ))}
@@ -257,7 +260,7 @@ function PostView({
       className="flex h-full flex-col"
     >
       <div className="flex items-center gap-2.5 px-4 py-3">
-        <div className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-flare-500))] text-sm">
+        <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-[var(--border)] bg-[var(--color-pow-400)] text-sm shadow-[2px_2px_0_0_var(--shadow-ink)]">
           {scenario.avatar}
         </div>
         <div className="min-w-0">
@@ -268,9 +271,9 @@ function PostView({
 
       {/* Post artwork — a generated gradient, no external assets */}
       <div
-        className="grain relative mx-4 h-[220px] overflow-hidden rounded-2xl"
+        className="halftone-overlay relative mx-4 h-[220px] overflow-hidden rounded-2xl border-2 border-[var(--border)]"
         style={{
-          background: `radial-gradient(120% 90% at 20% 15%, ${scenario.accent}, transparent 60%), linear-gradient(150deg, var(--color-brand-700), var(--color-ink-900))`,
+          background: `radial-gradient(120% 90% at 20% 15%, ${scenario.accent}, transparent 60%), linear-gradient(150deg, var(--color-kapow-500), var(--color-ink-900))`,
         }}
       >
         <div className="absolute inset-0 grid place-items-center text-6xl opacity-90">
@@ -305,12 +308,12 @@ function PostView({
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
               className="flex items-start gap-2"
             >
-              <div className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-flare-500),var(--color-ember-500))] text-[10px]">
+              <div className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-zap-500),var(--color-zonk-500))] text-[10px]">
                 ✨
               </div>
               <p className="text-[12px] leading-relaxed">
                 <span className="font-semibold">alex.rivera</span>{" "}
-                <span className={cn(stage === "matched" && "rounded bg-emerald-400/20 px-1")}>
+                <span className={cn(stage === "matched" && "rounded bg-[var(--color-boom-400)]/20 px-1")}>
                   {comment}
                 </span>
               </p>
@@ -331,15 +334,15 @@ function DmView({ scenario, stage }: { scenario: Scenario; stage: Stage }) {
       transition={{ type: "spring", stiffness: 260, damping: 26 }}
       className="flex h-full flex-col"
     >
-      <div className="flex items-center gap-2.5 border-b border-[var(--border)] px-4 py-3">
-        <div className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-flare-500))] text-sm">
+      <div className="flex items-center gap-2.5 border-b-[2.5px] border-[var(--border)] px-4 py-3">
+        <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-[var(--border)] bg-[var(--color-pow-400)] text-sm shadow-[2px_2px_0_0_var(--shadow-ink)]">
           {scenario.avatar}
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-semibold">{scenario.handle}</p>
-          <p className="text-[10px] text-emerald-400">Active now</p>
+          <p className="text-[10px] font-bold text-[var(--color-boom-500)]">Active now</p>
         </div>
-        <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[9px] text-[var(--text-faint)]">
+        <span className="rounded-full border-2 border-[var(--border)] bg-[var(--color-boom-400)] px-2 py-0.5 text-[9px] font-extrabold uppercase text-[#12110e]">
           24h window open
         </span>
       </div>
@@ -351,21 +354,21 @@ function DmView({ scenario, stage }: { scenario: Scenario; stage: Stage }) {
           transition={{ type: "spring", stiffness: 300, damping: 24 }}
           className="max-w-[86%] space-y-2"
         >
-          <div className="rounded-2xl rounded-tl-md bg-[var(--bg-sunken)] px-3.5 py-2.5">
-            <p className="text-[12.5px] leading-relaxed">{scenario.dm}</p>
+          <div className="rounded-2xl rounded-tl-md border-2 border-[var(--border)] bg-[var(--bg-sunken)] px-3.5 py-2.5">
+            <p className="text-[12.5px] font-semibold leading-relaxed">{scenario.dm}</p>
           </div>
 
           <button
-            className="w-full rounded-xl px-3.5 py-2.5 text-[12.5px] font-semibold text-white transition-transform active:scale-[0.98]"
+            className="w-full rounded-xl border-2 border-[var(--border)] px-3.5 py-2.5 text-[12.5px] font-extrabold text-white shadow-[3px_3px_0_0_var(--shadow-ink)] transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
             style={{
-              background: `linear-gradient(100deg, ${scenario.accent}, var(--color-brand-500))`,
+              background: `linear-gradient(100deg, ${scenario.accent}, var(--color-kapow-400))`,
             }}
           >
             {scenario.cta} →
           </button>
 
           <p className="flex items-center gap-1 pl-1 text-[9.5px] text-[var(--text-faint)]">
-            <CheckCheck className="h-3 w-3 text-sky-400" /> Delivered · sent 1.2s after the comment
+            <CheckCheck className="h-3 w-3 text-[var(--color-bam-500)]" /> Delivered · sent 1.2s after the comment
           </p>
         </motion.div>
 
@@ -377,8 +380,8 @@ function DmView({ scenario, stage }: { scenario: Scenario; stage: Stage }) {
               transition={{ type: "spring", stiffness: 300, damping: 24, delay: 0.15 }}
               className="max-w-[86%] space-y-1.5"
             >
-              <div className="rounded-2xl rounded-tl-md bg-[var(--bg-sunken)] px-3.5 py-2.5">
-                <p className="text-[12.5px] leading-relaxed">{scenario.followUp}</p>
+              <div className="rounded-2xl rounded-tl-md border-2 border-[var(--border)] bg-[var(--bg-sunken)] px-3.5 py-2.5">
+                <p className="text-[12.5px] font-semibold leading-relaxed">{scenario.followUp}</p>
               </div>
               <p className="pl-1 text-[9.5px] text-[var(--text-faint)]">
                 Follow-up step · sent 20 min later

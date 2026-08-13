@@ -108,7 +108,7 @@ export default async function DashboardPage() {
               description="As soon as someone comments or replies, their journey shows up here."
             />
           ) : (
-            <ul className="divide-y divide-[var(--border)]">
+            <ul className="divide-y-2 divide-[var(--border-soft)]">
               {recentRuns.map((run) => (
                 <li key={run.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
                   <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--bg-sunken)] text-[11px] font-semibold">
@@ -233,7 +233,7 @@ function FirstRun() {
   return (
     <div className="mx-auto max-w-3xl py-8">
       <div className="text-center">
-        <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-flare-500))] text-white">
+        <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--color-kapow-400),var(--color-zap-500))] text-white">
           <Sparkles className="h-6 w-6" />
         </span>
         <h1 className="mt-5 text-[26px] font-semibold tracking-tight">
@@ -251,7 +251,7 @@ function FirstRun() {
           return (
             <li
               key={step.title}
-              className="flex flex-wrap items-center gap-4 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg)] p-5"
+              className="flex flex-wrap items-center gap-4 rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)]"
             >
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[var(--bg-sunken)] text-[var(--accent)]">
                 <Icon className="h-5 w-5" />
