@@ -42,6 +42,7 @@ drop items from them, and don't "helpfully" add features that aren't on them.
 | Flow builder | `@xyflow/react` (React Flow) node graph | Matches "automation flows" as the core primitive. |
 | Visual design | **Comic / cartoon** — ink outlines, halftone, burst hovers | Owner's choice. Full intensity on marketing + auth; deliberately restrained in dense dashboard UI (tables, charts, flow canvas) so data stays readable. Don't "fix" that split. |
 | Landing page | Heavily animated, interactive, custom | Owner explicitly rejected "plain AI generated" look. |
+| Logo | **Owner-supplied** gradient-ring paper-plane mark + lowercase `instadm247` wordmark, redrawn as SVG in `src/components/brand/logo.tsx` | Vector so it's sharp from a 16px favicon to a hero lockup. Do not replace it or invent a different mark. |
 | Facebook channel | **Deferred** | Owner's decision. Needs Facebook Login, Page tokens, `pages_messaging` and a second App Review. The adapter seam in `src/lib/meta/` stays. |
 
 ## Architecture in one paragraph

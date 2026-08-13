@@ -109,6 +109,31 @@ Comic/cartoon system, chosen by the owner. Full intensity on marketing and
 auth; restrained in dense dashboard UI. See `docs/FEATURES.md` §F — the split is
 deliberate.
 
+### Brand
+
+The owner's logo — a gradient ring with a paper plane flying through it, and a
+lowercase `instadm247` wordmark — lives in `src/components/brand/logo.tsx` as
+SVG:
+
+- `LogoMark` — the ring on its own, for tight spaces
+- `LogoWordmark` — the type on its own
+- `Logo` / `LogoLink` — the lockup; `LogoLink` is what the nav, footer, auth
+  pages and dashboard rail use
+
+Two details worth not undoing. The plane's silhouette is punched out of the ring
+with an SVG **mask**, not painted in a background colour, so the mark is correct
+on any surface — cream footer, dark theme, a customer's own link-in-bio colour.
+And the plane gradient reads from `--brand-plane-from` / `--brand-plane-to`
+(`src/app/globals.css`), which lighten in dark themes; the supplied dark violet
+disappears against a near-black header. The ring gradient is fixed brand colour
+and never themed.
+
+Derived assets live next to the root layout and are wired up by Next's file
+conventions — `src/app/icon.svg` (favicon), `apple-icon.png`,
+`opengraph-image.png`, `twitter-image.png`. The favicon carries a paper-white
+disc under the ring because the plane is dark and browser chrome may not be.
+Regenerate the PNGs from the same artwork if the mark ever changes.
+
 ## Phase 2 — not started
 
 Do not build these without the owner asking. See `docs/FEATURES.md` §D.

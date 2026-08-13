@@ -112,6 +112,11 @@
   --bg-sunken: #f4ecd8;
   --paper: #fffdf7;
 
+  /* Logo plane. The ring is fixed brand gradient; only the plane is themed,
+     because dark violet on a near-black header is unreadable. */
+  --brand-plane-from: #4c2a86;
+  --brand-plane-to: #6b3aa0;
+
   --ink: #12110e;
   --border: #12110e;          /* ink outlines are the border */
   --border-soft: #d6d1c2;     /* for dense UI where full ink is too heavy */
@@ -137,6 +142,9 @@
     --bg-sunken: #100f16;
     --paper: #1c1a24;
 
+    --brand-plane-from: #7b4fd1;
+    --brand-plane-to: #a274f5;
+
     --ink: #f7f6f2;
     --border: #000000;
     --border-soft: #3b3849;
@@ -161,6 +169,9 @@
   --bg-raised: #232130;
   --bg-sunken: #100f16;
   --paper: #1c1a24;
+
+  --brand-plane-from: #7b4fd1;
+  --brand-plane-to: #a274f5;
 
   --ink: #f7f6f2;
   --border: #000000;

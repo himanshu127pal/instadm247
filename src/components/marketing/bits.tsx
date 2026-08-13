@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import {
   animate,
   motion,
@@ -298,27 +297,9 @@ export function Accordion({
   );
 }
 
-export function Logo({ className, href = "/" }: { className?: string; href?: string }) {
-  return (
-    <Link href={href} className={cn("group inline-flex items-center gap-2.5", className)}>
-      <span className="relative grid h-9 w-9 -rotate-3 place-items-center overflow-hidden rounded-[10px] border-[2.5px] border-[var(--border)] bg-[linear-gradient(135deg,var(--color-zap-400),var(--color-kapow-400)_55%,var(--color-bam-400))] shadow-[2px_2px_0_0_var(--shadow-ink)] transition-transform duration-200 group-hover:rotate-3">
-        <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="none" aria-hidden>
-          <path
-            d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6A.5.5 0 0 1 5 19.2V16h-.5A2.5 2.5 0 0 1 2 13.5"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <circle cx="9" cy="10" r="1.15" fill="currentColor" />
-          <circle cx="13" cy="10" r="1.15" fill="currentColor" />
-          <circle cx="17" cy="10" r="1.15" fill="currentColor" />
-        </svg>
-        <span className="absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0" />
-      </span>
-      <span className="font-display text-[19px] tracking-wide">
-        InstaDM<span className="text-[var(--color-zap-400)]">247</span>
-      </span>
-    </Link>
-  );
-}
+/**
+ * Re-exported so every existing `import { Logo } from "./bits"` picks up the
+ * real brand lockup. The lockup itself lives in `@/components/brand/logo` and
+ * is a server component — nothing about it needs to ship to the client.
+ */
+export { LogoLink as Logo } from "@/components/brand/logo";

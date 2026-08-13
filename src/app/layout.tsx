@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bangers, Nunito } from "next/font/google";
 import { Toaster } from "sonner";
+import { env } from "@/lib/env";
 import "./globals.css";
 
 /** Bangers for comic display type, Nunito for the rounded body face. */
@@ -18,6 +19,11 @@ const body = Nunito({
 });
 
 export const metadata: Metadata = {
+  /**
+   * Without this the `opengraph-image` / `twitter-image` file conventions emit
+   * localhost URLs, which no crawler can fetch. `APP_URL` is set at deploy time.
+   */
+  metadataBase: new URL(env.appUrl),
   title: {
     default: "InstaDM247 — Instagram DM automation that never risks your account",
     template: "%s · InstaDM247",
@@ -36,13 +42,20 @@ export const metadata: Metadata = {
     description:
       "Comment-to-DM, story replies, mentions, Lives and keyword DMs — automated on Meta's official API.",
     type: "website",
+    siteName: "InstaDM247",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "InstaDM247 — Instagram DM automation that never risks your account",
+    description:
+      "Comment-to-DM, story replies, mentions, Lives and keyword DMs — automated on Meta's official API.",
   },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0e1a" },
+    { media: "(prefers-color-scheme: light)", color: "#fffdf7" },
+    { media: "(prefers-color-scheme: dark)", color: "#14131a" },
   ],
 };
 

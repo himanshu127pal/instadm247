@@ -3,6 +3,7 @@
 import * as React from "react";
 import { motion } from "motion/react";
 import { ArrowUpRight, Mail, MessageCircle } from "lucide-react";
+import { LogoMark } from "@/components/brand/logo";
 import { cn, initials } from "@/lib/utils";
 
 /**
@@ -64,7 +65,16 @@ export function BioPageView({ page, blocks }: { page: BioPageData; blocks: BioBl
   return (
     <main
       className="relative min-h-screen overflow-hidden px-5 py-14"
-      style={{ background: theme.bg, color: theme.ink }}
+      style={
+        {
+          background: theme.bg,
+          color: theme.ink,
+          // A bio page picks its own ground, so pin the logo's plane to whichever
+          // violet stays readable on it rather than inheriting the site theme.
+          "--brand-plane-from": theme.ink === "#f7f6f2" ? "#7b4fd1" : "#4c2a86",
+          "--brand-plane-to": theme.ink === "#f7f6f2" ? "#a274f5" : "#6b3aa0",
+        } as React.CSSProperties
+      }
     >
       {/* Halftone wash, so the page reads as printed rather than flat */}
       <div
@@ -137,9 +147,15 @@ export function BioPageView({ page, blocks }: { page: BioPageData; blocks: BioBl
         )}
 
         {page.showBadge && (
-          <p className="mt-12 text-center text-[11.5px] font-bold opacity-50">
+          <a
+            href="https://instadm247.com"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-12 flex items-center justify-center gap-1.5 text-[11.5px] font-bold opacity-50 transition-opacity hover:opacity-90"
+          >
+            <LogoMark className="h-4 w-4" title="" />
             Made with InstaDM247
-          </p>
+          </a>
         )}
       </div>
     </main>
