@@ -15,6 +15,7 @@ export const AVAILABLE_TOKENS = [
   { token: "keyword", description: "The keyword that triggered this automation" },
   { token: "trigger_text", description: "The comment or message they sent" },
   { token: "account_username", description: "Your Instagram @username" },
+  { token: "coupon", description: "The coupon code they were issued" },
 ] as const;
 
 export function renderTemplate(input: string, ctx: RunContext): string {
@@ -78,6 +79,7 @@ export function previewTemplate(input: string, sample: Record<string, string> = 
     account_username: "yourbrand",
     keyword: "LINK",
     trigger_text: "LINK please!",
+    coupon: "SAVE20-K7QP",
     ...sample,
   };
   return input.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_m, key: string) => defaults[key.trim()] ?? "");

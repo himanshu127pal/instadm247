@@ -15,6 +15,7 @@ import {
   MessageSquareReply,
   Shuffle,
   Tag,
+  Ticket,
   UserCheck,
   UserPlus,
   Variable,
@@ -80,6 +81,12 @@ export const NODE_META: Record<
     description: "Capture an answer into a variable",
   },
   AI_REPLY: { icon: Bot, label: "AI replies", accent: "#ff9f45", description: "Answer from your knowledge base" },
+  SEND_COUPON: {
+    icon: Ticket,
+    label: "Send a coupon",
+    accent: "#ff9f45",
+    description: "Issue a unique code from a pool",
+  },
   TAG: { icon: Tag, label: "Tag contact", accent: "#7d7563", description: "Add or remove tags" },
   SET_FIELD: {
     icon: Variable,
@@ -141,6 +148,8 @@ export function describeNode(node: FlowNode): string {
       return `Saves their answer as {{${node.data.variable}}}`;
     case "AI_REPLY":
       return node.data.handoffOnUnknown ? "Hands off when unsure" : "Always answers";
+    case "SEND_COUPON":
+      return "Issues a code, then sends it as {{coupon}}";
     case "TAG":
       return `${node.data.action === "add" ? "Add" : "Remove"} ${node.data.tags.join(", ")}`;
     case "SET_FIELD":
@@ -250,6 +259,11 @@ function outputsFor(node: FlowNode): Array<{ id: string; label: string; left: st
         { id: "next", label: "answered", left: "30%" },
         { id: "timeout", label: "no reply", left: "70%" },
       ];
+    case "SEND_COUPON":
+      return [
+        { id: "next", label: "sent", left: "30%" },
+        { id: "empty", label: "ran out", left: "70%" },
+      ];
     case "RANDOMIZER": {
       const branches = node.data.branches;
       return branches.map((branch, i) => ({
@@ -288,6 +302,7 @@ export const ADDABLE_TYPES: FlowNodeType[] = [
   "FOLLOWER_CHECK",
   "ASK_FOR_FOLLOW",
   "COLLECT_INPUT",
+  "SEND_COUPON",
   "REPLY_TO_COMMENT",
   "AI_REPLY",
   "TAG",

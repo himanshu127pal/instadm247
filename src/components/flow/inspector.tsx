@@ -323,6 +323,41 @@ function NodeFields({
         </>
       );
 
+    case "SEND_COUPON":
+      return (
+        <>
+          <Field
+            label="Coupon pool"
+            hint="Create pools under Templates → Coupons. Unique pools give each person their own code."
+          >
+            <Input
+              value={node.data.poolId}
+              onChange={(e) => patch({ poolId: e.target.value.trim() })}
+              placeholder="Paste a coupon pool ID"
+            />
+          </Field>
+          <MessageEditor
+            value={node.data.message}
+            onChange={(message) => patch({ message })}
+          />
+          <p className="rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] font-medium leading-relaxed text-[var(--text-muted)]">
+            Use <code className="font-mono font-bold">{"{{coupon}}"}</code> in the message —
+            it&rsquo;s replaced with the code this person was issued. Everyone gets at most
+            one code from a pool, even if the flow runs again.
+          </p>
+          <Field
+            label="If the pool runs out"
+            hint="Sent instead of a code, and the flow takes the 'ran out' path."
+          >
+            <Input
+              value={node.data.emptyMessage ?? ""}
+              onChange={(e) => patch({ emptyMessage: e.target.value })}
+              placeholder="We've just run out — give me a moment!"
+            />
+          </Field>
+        </>
+      );
+
     case "TAG":
       return (
         <>
@@ -598,21 +633,44 @@ function MessageEditor({
               </div>
             ))}
             {value.buttons.length < 3 && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() =>
-                  onChange({
-                    ...value,
-                    buttons: [
-                      ...value.buttons,
-                      { type: "web_url", title: "Another link", url: "https://example.com" },
-                    ],
-                  })
-                }
-              >
-                <Plus className="h-3.5 w-3.5" /> Add a button
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() =>
+                    onChange({
+                      ...value,
+                      buttons: [
+                        ...value.buttons,
+                        { type: "web_url", title: "Another link", url: "https://example.com" },
+                      ],
+                    })
+                  }
+                >
+                  <Plus className="h-3.5 w-3.5" /> Add a button
+                </Button>
+
+                {/* SendDM's "WhatsApp/Email redirect", as one-tap presets. */}
+                <div className="flex flex-wrap gap-1.5">
+                  {REDIRECT_PRESETS.map((preset) => (
+                    <button
+                      key={preset.title}
+                      onClick={() =>
+                        onChange({
+                          ...value,
+                          buttons: [
+                            ...value.buttons,
+                            { type: "web_url", title: preset.title, url: preset.url },
+                          ],
+                        })
+                      }
+                      className="rounded-lg border-2 border-[var(--border)] bg-[var(--bg-sunken)] px-2 py-1 text-[11px] font-bold transition-colors hover:bg-[var(--color-pow-400)]"
+                    >
+                      + {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </Field>
@@ -698,6 +756,17 @@ function MessageEditor({
     </div>
   );
 }
+
+/**
+ * One-tap redirects out of Instagram. The placeholders are obvious enough that
+ * an unedited one is clearly unfinished rather than quietly broken.
+ */
+const REDIRECT_PRESETS = [
+  { label: "WhatsApp", title: "Chat on WhatsApp", url: "https://wa.me/1234567890" },
+  { label: "Email", title: "Email us", url: "mailto:hello@example.com" },
+  { label: "Call", title: "Call us", url: "tel:+1234567890" },
+  { label: "Book a call", title: "Book a time", url: "https://cal.com/your-handle" },
+] as const;
 
 function TokenPicker({ onInsert }: { onInsert: (token: string) => void }) {
   return (

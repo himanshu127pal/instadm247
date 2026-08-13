@@ -7,6 +7,7 @@ import { Link2, MessageSquare, MousePointerClick, Plus, Trash2 } from "lucide-re
 import { Badge, Button, EmptyState, Field, Input, Select, Textarea } from "@/components/ui";
 import { CopyField, SectionCard, Tabs } from "@/components/dashboard/bits";
 import { previewTemplate } from "@/lib/engine/template";
+import { CouponsTab, type Pool } from "@/components/dashboard/coupons-tab";
 import { timeAgo } from "@/lib/utils";
 
 type Template = {
@@ -36,12 +37,14 @@ export function TemplatesView({
   accounts,
   templates,
   links,
+  pools,
   iceBreakers,
 }: {
   appUrl: string;
   accounts: Array<{ id: string; username: string }>;
   templates: Template[];
   links: TrackedLink[];
+  pools: Pool[];
   iceBreakers: IceBreaker[];
 }) {
   const [tab, setTab] = React.useState("templates");
@@ -52,6 +55,7 @@ export function TemplatesView({
         tabs={[
           { id: "templates", label: "Messages", count: templates.length },
           { id: "links", label: "Tracked links", count: links.length },
+          { id: "coupons", label: "Coupons", count: pools.length },
           { id: "starters", label: "Conversation starters", count: iceBreakers.length },
         ]}
         active={tab}
@@ -60,6 +64,7 @@ export function TemplatesView({
 
       {tab === "templates" && <TemplatesTab templates={templates} />}
       {tab === "links" && <LinksTab links={links} appUrl={appUrl} />}
+      {tab === "coupons" && <CouponsTab pools={pools} />}
       {tab === "starters" && <StartersTab accounts={accounts} iceBreakers={iceBreakers} />}
     </div>
   );

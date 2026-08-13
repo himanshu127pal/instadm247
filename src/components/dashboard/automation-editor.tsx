@@ -9,6 +9,7 @@ import { Badge, Button, Field, Input, Select, Switch, Textarea } from "@/compone
 import { SectionCard, Tabs } from "@/components/dashboard/bits";
 import { FunnelChart } from "@/components/dashboard/charts";
 import { FlowBuilder } from "@/components/flow/builder";
+import { RewindPanel } from "@/components/dashboard/rewind-panel";
 import { cn } from "@/lib/utils";
 
 type Automation = {
@@ -172,6 +173,7 @@ export function AutomationEditor({
           { id: "flow", label: "Flow" },
           { id: "settings", label: "Trigger settings" },
           { id: "performance", label: "Performance" },
+          { id: "rewind", label: "Rewind" },
         ]}
         active={tab}
         onChange={setTab}
@@ -407,6 +409,8 @@ export function AutomationEditor({
           </div>
         </div>
       )}
+
+      {tab === "rewind" && <RewindPanel automationId={automation.id} />}
 
       {tab === "performance" && (
         <div className="grid gap-4 lg:grid-cols-2">

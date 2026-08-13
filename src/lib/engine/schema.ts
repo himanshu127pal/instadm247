@@ -187,6 +187,20 @@ export const flowNodeSchema = z.discriminatedUnion("type", [
     }),
   }),
 
+  /** Hands out a code from a coupon pool, then sends it. */
+  z.object({
+    ...base,
+    type: z.literal("SEND_COUPON"),
+    data: z.object({
+      label: z.string().default("Send a coupon"),
+      poolId: z.string().min(1),
+      /** {{coupon}} is substituted with the code they were issued. */
+      message: messagePayloadSchema,
+      /** Sent instead when the pool has run out. */
+      emptyMessage: z.string().optional(),
+    }),
+  }),
+
   z.object({
     ...base,
     type: z.literal("TAG"),
@@ -366,6 +380,8 @@ export function outputHandles(node: FlowNode): string[] {
       return ["yes", "no"];
     case "COLLECT_INPUT":
       return ["next", "timeout"];
+    case "SEND_COUPON":
+      return ["next", "empty"];
     case "RANDOMIZER":
       return node.data.branches.map((b) => b.key);
     case "END":

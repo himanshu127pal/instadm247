@@ -504,6 +504,21 @@ function createNode(type: FlowNodeType): FlowNode {
       };
     case "AI_REPLY":
       return { id, type, position, data: { label, handoffOnUnknown: true } };
+    case "SEND_COUPON":
+      return {
+        id,
+        type,
+        position,
+        data: {
+          label,
+          poolId: "",
+          message: {
+            kind: "text",
+            text: "Here's your code, {{first_name}}: {{coupon}} 🎟️",
+          },
+          emptyMessage: "Ah — we've just run out of codes. Give me a moment and I'll sort you out.",
+        },
+      };
     case "TAG":
       return { id, type, position, data: { label, action: "add", tags: ["lead"] } };
     case "SET_FIELD":

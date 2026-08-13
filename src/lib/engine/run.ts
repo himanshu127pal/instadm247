@@ -13,6 +13,7 @@ import {
   type MessagePayload,
 } from "./schema";
 import { generateAiReply } from "@/lib/ai/agent";
+import { issueCoupon } from "./coupons";
 import { renderTemplate } from "./template";
 
 /**
@@ -429,6 +430,46 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
       if (result.status === "skipped") return { kind: "halt", reason: result.explanation };
 
       return reply.answered ? { kind: "continue" } : { kind: "halt", reason: "Handed to a human." };
+    }
+
+    case "SEND_COUPON": {
+      const issued = await issueCoupon(node.data.poolId, ctx.contact.id);
+
+      if (!issued.ok) {
+        // Running out of codes must not look like success. Tell them something
+        // honest and take the "empty" branch so the flow can recover.
+        if (node.data.emptyMessage) {
+          await dispatch({
+            accountId: ctx.account.id,
+            contactId: ctx.contact.id,
+            conversationId: ctx.conversationId,
+            target: { to: "user", igsid: ctx.contact.igsid },
+            message: { kind: "text", text: node.data.emptyMessage },
+            source: "automation",
+            flowRunId: ctx.run.id,
+            nodeId: node.id,
+          });
+        }
+        console.warn("[engine] coupon pool unavailable", node.data.poolId, issued.reason);
+        return { kind: "continue", handle: "empty" };
+      }
+
+      // Expose it as {{coupon}} for this and every later step.
+      ctx.variables.coupon = issued.code;
+
+      const result = await dispatch({
+        accountId: ctx.account.id,
+        contactId: ctx.contact.id,
+        conversationId: ctx.conversationId,
+        target: { to: "user", igsid: ctx.contact.igsid },
+        message: toOutbound(node.data.message, ctx),
+        source: "automation",
+        flowRunId: ctx.run.id,
+        nodeId: node.id,
+      });
+      if (result.status === "skipped") return { kind: "halt", reason: result.explanation };
+
+      return { kind: "continue", handle: "next" };
     }
 
     case "TAG": {

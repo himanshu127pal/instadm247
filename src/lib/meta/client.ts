@@ -150,6 +150,25 @@ export class InstagramClient {
     return this.request(`/${commentId}`, { method: "POST", body: { hide } });
   }
 
+  /**
+   * Existing comments on a piece of media. Used by Rewind to find people who
+   * commented before an automation existed.
+   */
+  async getComments(igMediaId: string, limit = 100) {
+    const res = await this.request<{
+      data?: Array<{
+        id: string;
+        text?: string;
+        timestamp?: string;
+        username?: string;
+        from?: { id?: string; username?: string };
+      }>;
+    }>(`/${igMediaId}/comments`, {
+      params: { fields: "id,text,timestamp,username,from", limit: String(limit) },
+    });
+    return res.data ?? [];
+  }
+
   // --- Conversations ------------------------------------------------------
 
   async getConversations(limit = 50) {

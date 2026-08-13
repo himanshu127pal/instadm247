@@ -8,7 +8,7 @@ export default async function TemplatesPage() {
   const workspace = await getActiveWorkspace();
   if (!workspace) return null;
 
-  const [templates, links, accounts, iceBreakers] = await Promise.all([
+  const [templates, links, accounts, iceBreakers, pools] = await Promise.all([
     prisma.template.findMany({
       where: { workspaceId: workspace.id },
       orderBy: { updatedAt: "desc" },
@@ -27,13 +27,40 @@ export default async function TemplatesPage() {
       include: { account: { select: { username: true } } },
       orderBy: { order: "asc" },
     }),
+    prisma.couponPool.findMany({
+      where: { workspaceId: workspace.id },
+      include: { _count: { select: { codes: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
+
+  // Remaining-code counts, so the UI can warn before a pool runs dry.
+  const poolsWithStats = await Promise.all(
+    pools.map(async (pool) => {
+      const issued = await prisma.couponCode.count({
+        where: { poolId: pool.id, contactId: { not: null } },
+      });
+      return {
+        id: pool.id,
+        name: pool.name,
+        mode: pool.mode,
+        sharedCode: pool.sharedCode,
+        description: pool.description,
+        expiresAt: pool.expiresAt?.toISOString() ?? null,
+        stats: {
+          total: pool._count.codes,
+          issued,
+          remaining: pool._count.codes - issued,
+        },
+      };
+    }),
+  );
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
       <PageHeader
         title="Templates & assets"
-        description="Reusable messages, tracked links, and the conversation starters people see in your Instagram inbox."
+        description="Reusable messages, tracked links, coupon pools, and the conversation starters people see in your Instagram inbox."
       />
       <TemplatesView
         appUrl={env.appUrl}
@@ -52,6 +79,7 @@ export default async function TemplatesPage() {
           label: l.label,
           clickCount: l.clickCount,
         }))}
+        pools={poolsWithStats}
         iceBreakers={iceBreakers.map((i) => ({
           id: i.id,
           accountId: i.accountId,

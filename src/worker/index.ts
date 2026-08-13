@@ -16,6 +16,7 @@ import { resumeFlowRun } from "@/lib/engine/run";
 import { dispatch } from "@/lib/engine/dispatch";
 import { rollupDailyStats } from "@/lib/engine/analytics";
 import { runBroadcast, runDueReengagements } from "@/lib/engine/broadcast";
+import { runRewind } from "@/lib/engine/rewind";
 import { scanPlannedAutomations } from "@/lib/engine/planner";
 import { refreshExpiringTokens } from "@/lib/meta/account";
 import type { OutboundMessage } from "@/lib/meta/types";
@@ -87,10 +88,13 @@ workers.push(
 );
 
 workers.push(
-  new Worker<BroadcastJob>(
+  new Worker<BroadcastJob | { rewindJobId: string }>(
     QUEUE_NAMES.broadcast,
     async (job) => {
-      await runBroadcast(job.data.broadcastId);
+      // Rewinds share this queue: both are long fan-outs that must not run
+      // many-at-once against the same account.
+      if ("rewindJobId" in job.data) await runRewind(job.data.rewindJobId);
+      else await runBroadcast(job.data.broadcastId);
     },
     { connection, concurrency: 2 },
   ),
