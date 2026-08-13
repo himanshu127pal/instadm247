@@ -45,7 +45,7 @@ export default async function DataDeletionPage({
 
       <h2>3. By asking us</h2>
       <p>
-        Email <strong>[your support email]</strong> from the address on your account. We
+        Email <strong>support@instadm247.com</strong> from the address on your account. We
         respond within 30 days, and usually far sooner.
       </p>
 

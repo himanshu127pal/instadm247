@@ -76,9 +76,21 @@ function Footer() {
       </div>
 
       <div className="border-t border-[var(--border)] px-5 py-5">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 text-[12px] text-[var(--text-faint)] sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} InstaDM247. All rights reserved.</p>
-          <p>
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 text-[12px] text-[var(--text-faint)] sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+          <div className="space-y-1">
+            <p>© {new Date().getFullYear()} InstaDM247. All rights reserved.</p>
+            <p>
+              InstaDM247 is the registered trade name of Rajat Pal, a
+              proprietorship registered in India · GSTIN 09CVWPP3468C1ZX ·{" "}
+              <a
+                href="mailto:support@instadm247.com"
+                className="underline underline-offset-2 transition-colors hover:text-[var(--text)]"
+              >
+                support@instadm247.com
+              </a>
+            </p>
+          </div>
+          <p className="sm:max-w-[19rem] sm:shrink-0 sm:text-right">
             Not affiliated with or endorsed by Meta. Instagram is a trademark of
             Meta Platforms, Inc.
           </p>

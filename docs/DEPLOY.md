@@ -347,9 +347,10 @@ unacceptable, build into a fresh directory and flip a symlink before restarting.
 
 ## Before App Review
 
-- Fill in the bracketed placeholders in `/privacy`, `/terms` and
-  `/data-deletion` (`src/app/(marketing)/*/page.tsx`) — real support email and
-  legal entity. Reviewers do read these.
+- `/privacy`, `/terms` and `/data-deletion` name the real entity and
+  `support@instadm247.com`. **That inbox must exist and be monitored before you
+  submit** — reviewers test it, and it is the address data-deletion requests
+  arrive at.
 - Submit the **Human Agent** feature if the Inbox needs to reply past 24 hours.
 - Accounts connected before `instagram_business_content_publish` was added must
   reconnect before the scheduler works. The Scheduler page detects this and says

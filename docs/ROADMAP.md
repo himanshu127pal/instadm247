@@ -153,8 +153,10 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
 
 - **Prisma migrations** — the schema is applied with `db:push`. Generate a real
   migration history before the first production deploy.
-- **Legal pages** carry bracketed placeholders (`[your support email]`,
-  `[your legal entity and address]`) that must be filled in before App Review.
+- **Legal pages** are filled in with the real entity (InstaDM247 / Rajat Pal,
+  `support@instadm247.com`). They deliberately carry **no governing-law or
+  dispute clause** — the owner chose to skip it. Add one before selling into
+  jurisdictions that expect it.
 - **Live-comment window** — "is the broadcast still running" is approximated at
   15 minutes since the API doesn't expose it directly. A rejected send is
   recorded as a skip, not an error, so the worst case is a missed DM.

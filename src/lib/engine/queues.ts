@@ -67,7 +67,8 @@ export type MaintenanceJob =
   | { kind: "scan_planner" }
   | { kind: "sweep_windows" }
   | { kind: "reengage" }
-  | { kind: "publish_due" };
+  | { kind: "publish_due" }
+  | { kind: "purge_webhooks" };
 
 /**
  * Enqueue, tolerating a missing Redis. Returns false when the job could not be
@@ -101,6 +102,8 @@ export async function scheduleMaintenance(): Promise<void> {
     ["sweep_windows", { kind: "sweep_windows" }, "*/10 * * * *"],
     ["reengage", { kind: "reengage" }, "*/30 * * * *"],
     ["publish_due", { kind: "publish_due" }, "*/2 * * * *"],
+    // Enforces the 30-day raw-payload retention the privacy policy promises.
+    ["purge_webhooks", { kind: "purge_webhooks" }, "30 4 * * *"],
   ];
 
   // BullMQ v5+ replaced repeatable jobs with job schedulers. Upserting by a

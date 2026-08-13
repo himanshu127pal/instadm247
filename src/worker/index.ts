@@ -11,7 +11,11 @@ import {
   type IngestJob,
   type MaintenanceJob,
 } from "@/lib/engine/queues";
-import { processWebhookEvent } from "@/lib/engine/ingest";
+import {
+  WEBHOOK_RETENTION_DAYS,
+  processWebhookEvent,
+  purgeOldWebhookEvents,
+} from "@/lib/engine/ingest";
 import { resumeFlowRun } from "@/lib/engine/run";
 import { dispatch } from "@/lib/engine/dispatch";
 import { rollupDailyStats } from "@/lib/engine/analytics";
@@ -133,6 +137,13 @@ workers.push(
         case "publish_due": {
           const published = await publishDuePosts();
           if (published) log("maintenance", `published ${published} scheduled posts`);
+          return;
+        }
+        case "purge_webhooks": {
+          const purged = await purgeOldWebhookEvents();
+          if (purged) {
+            log("maintenance", `purged ${purged} webhook payloads past ${WEBHOOK_RETENTION_DAYS}d`);
+          }
           return;
         }
       }

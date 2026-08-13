@@ -359,3 +359,42 @@ function inboundKind(event: NormalizedEvent): string {
       return "text";
   }
 }
+
+/**
+ * Delete raw webhook payloads past their retention window.
+ *
+ * The privacy policy promises 30 days, so this is what makes that promise true
+ * rather than aspirational. It is also the only thing bounding this table —
+ * every comment, reaction and DM Instagram sends lands here, so without it the
+ * database grows forever.
+ *
+ * Deleted in batches: after the first run there is only ever a day's worth to
+ * remove, but the first run on an instance that has been live for a while could
+ * otherwise be one enormous statement.
+ */
+export const WEBHOOK_RETENTION_DAYS = 30;
+
+export async function purgeOldWebhookEvents(
+  retentionDays = WEBHOOK_RETENTION_DAYS,
+): Promise<number> {
+  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+  const BATCH = 1_000;
+  const MAX_BATCHES = 200; // ≤200k per run; the next run picks up any remainder.
+
+  let deleted = 0;
+  for (let i = 0; i < MAX_BATCHES; i++) {
+    const stale = await prisma.webhookEvent.findMany({
+      where: { createdAt: { lt: cutoff } },
+      select: { id: true },
+      take: BATCH,
+    });
+    if (stale.length === 0) break;
+
+    const result = await prisma.webhookEvent.deleteMany({
+      where: { id: { in: stale.map((row) => row.id) } },
+    });
+    deleted += result.count;
+    if (stale.length < BATCH) break;
+  }
+  return deleted;
+}

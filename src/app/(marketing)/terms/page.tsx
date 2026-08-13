@@ -76,7 +76,12 @@ export default function TermsPage() {
 
       <h2>Contact</h2>
       <p>
-        <strong>[your support email]</strong> · <strong>[your legal entity and address]</strong>
+        <strong>support@instadm247.com</strong>
+      </p>
+      <p>
+        InstaDM247 is the registered trade name of Rajat Pal, a proprietorship registered
+        in India. Registered address: 79, Unnamed Road, Near Pablikhas Railway Station,
+        Modi Puram, Meerut, Meerut, Uttar Pradesh, 250110, India. GSTIN: 09CVWPP3468C1ZX.
       </p>
     </LegalPage>
   );

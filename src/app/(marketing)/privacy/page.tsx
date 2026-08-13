@@ -92,8 +92,13 @@ export default function PrivacyPage() {
 
       <h2>Contact</h2>
       <p>
-        Questions about this policy: <strong>[your support email]</strong>. Data
-        controller: <strong>[your legal entity and address]</strong>.
+        Questions about this policy: <strong>support@instadm247.com</strong>.
+      </p>
+      <p>
+        Data controller: <strong>InstaDM247</strong>, the registered trade name of Rajat
+        Pal, a proprietorship registered in India. Registered address: 79, Unnamed Road,
+        Near Pablikhas Railway Station, Modi Puram, Meerut, Meerut, Uttar Pradesh, 250110,
+        India. GSTIN: 09CVWPP3468C1ZX.
       </p>
     </LegalPage>
   );
