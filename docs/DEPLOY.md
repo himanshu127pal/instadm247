@@ -123,7 +123,7 @@ sudo systemctl restart redis-server && redis-cli ping   # PONG
 sudo mkdir -p /srv/instadm247 && sudo chown deploy:deploy /srv/instadm247
 git clone https://github.com/himanshu127pal/instadm247.git /srv/instadm247
 cd /srv/instadm247
-git checkout claude/instagram-automation-flows-app-b2uaqh   # or main, once merged
+git checkout main
 pnpm install --frozen-lockfile
 ```
 
@@ -331,7 +331,11 @@ Copy those off the box — a backup on the same disk is not a backup. Enable you
 provider's snapshots too. Redis needs no backup: it holds in-flight jobs, and
 losing it costs pending delayed steps, not data.
 
-## 12. Redeploying
+## 12. Branches and redeploying
+
+`main` is the trunk and is what the server tracks. Work happens on short-lived
+branches that are merged into `main` through a pull request, so the server only
+ever pulls reviewed commits.
 
 ```bash
 cd /srv/instadm247
@@ -344,6 +348,17 @@ sudo systemctl restart instadm247-web instadm247-worker
 
 There is a few-seconds gap while the web unit restarts. If that becomes
 unacceptable, build into a fresh directory and flip a symlink before restarting.
+
+**If this server was first deployed from the `claude/…` branch**, point it at
+`main` once — after that, plain `git pull` is correct:
+
+```bash
+cd /srv/instadm247
+git fetch origin
+git checkout main || git checkout -b main origin/main
+git branch -u origin/main main
+git pull
+```
 
 ## Before App Review
 
