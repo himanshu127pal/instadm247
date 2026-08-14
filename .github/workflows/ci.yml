@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# A newer push to the same branch makes the in-flight run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: typecheck · build · e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # `pnpm e2e` runs the engine and safety rules against a real database and a
+    # real queue — that is the point of it, so CI provides both rather than
+    # mocking them.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: instadm247
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/instadm247
+      REDIS_URL: redis://localhost:6379
+      APP_URL: http://localhost:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Generated per run rather than committed: nothing should depend on a
+      # fixed value, and a fake key in the repo invites being copied to a server.
+      - name: Generate throwaway secrets
+        run: |
+          echo "SESSION_SECRET=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
+          echo "ENCRYPTION_KEY=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate
+
+      - name: Create schema
+        run: pnpm exec prisma db push --skip-generate
+
+      - name: Seed
+        run: pnpm exec tsx prisma/seed.ts
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Build
+        run: pnpm build
+
+      # 85 checks: signature verification, keyword matching, opt-outs, flow
+      # validation, one-private-reply-per-comment under concurrency, the 24h
+      # window, HUMAN_AGENT discipline, coupon issuance and API key auth.
+      - name: End-to-end checks
+        run: pnpm exec tsx scripts/e2e-check.ts
