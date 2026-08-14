@@ -13,7 +13,7 @@ export default async function SignupPage() {
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col justify-center px-5 py-16">
       <Logo className="mb-10 self-start" />
-      <h1 className="text-[26px] font-semibold tracking-tight">Create your account</h1>
+      <h1 className="font-display text-[30px]">Create your account</h1>
       <p className="mt-1.5 text-[14px] text-[var(--text-muted)]">
         Free to start. Connect Instagram whenever you&rsquo;re ready.
       </p>

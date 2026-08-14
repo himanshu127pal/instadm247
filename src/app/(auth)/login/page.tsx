@@ -13,7 +13,7 @@ export default async function LoginPage() {
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col justify-center px-5 py-16">
       <Logo className="mb-10 self-start" />
-      <h1 className="text-[26px] font-semibold tracking-tight">Welcome back</h1>
+      <h1 className="font-display text-[30px]">Welcome back</h1>
       <p className="mt-1.5 text-[14px] text-[var(--text-muted)]">
         Sign in to pick up where your automations left off.
       </p>
