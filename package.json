@@ -11,6 +11,7 @@
     "worker": "tsx --env-file-if-exists=.env src/worker/index.ts",
     "worker:dev": "tsx watch --env-file-if-exists=.env src/worker/index.ts",
     "db:push": "prisma db push",
+    "db:deploy": "prisma migrate deploy",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",

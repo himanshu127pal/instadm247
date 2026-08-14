@@ -71,8 +71,10 @@ jobs:
       - name: Generate Prisma client
         run: pnpm exec prisma generate
 
-      - name: Create schema
-        run: pnpm exec prisma db push --skip-generate
+      # Builds the schema from the committed migration history, so every PR
+      # proves the history itself works — not just that schema.prisma does.
+      - name: Apply migrations
+        run: pnpm exec prisma migrate deploy
 
       - name: Seed
         run: pnpm exec tsx prisma/seed.ts

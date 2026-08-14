@@ -7,7 +7,7 @@ Requires Node 22+, PostgreSQL and Redis.
 ```bash
 pnpm install
 cp .env.example .env          # fill in DATABASE_URL and REDIS_URL
-pnpm db:push                  # create the schema
+pnpm db:deploy                # create the schema from the migration history
 pnpm db:seed                  # optional demo data
 pnpm dev                      # web app on :3000
 pnpm worker                   # second terminal — delays, broadcasts, cron
@@ -109,6 +109,6 @@ pnpm build && pnpm start     # web
 pnpm worker                  # worker
 ```
 
-Run `pnpm db:push` (or `prisma migrate deploy` once you add migrations) as a
-release step. Point `APP_URL` at the public HTTPS origin — the OAuth redirect
+Run `pnpm db:deploy` (`prisma migrate deploy`) as a release step; never
+`db push` against a database holding real data. Point `APP_URL` at the public HTTPS origin — the OAuth redirect
 and webhook URLs are derived from it.
