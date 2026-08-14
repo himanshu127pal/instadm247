@@ -319,7 +319,7 @@ export function EmptyState({
         </div>
       )}
       <div className="relative space-y-1">
-        <p className="font-display text-[20px] tracking-wide">{title}</p>
+        <p className="font-heading text-[18px]">{title}</p>
         {description && (
           <p className="mx-auto max-w-sm text-[13.5px] font-medium text-[var(--text-muted)]">
             {description}

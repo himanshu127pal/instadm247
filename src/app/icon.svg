@@ -1,40 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="14 14 172 172" width="64" height="64">
   <defs>
-    <linearGradient id="ringTop" x1="10%" y1="6%" x2="94%" y2="66%">
-      <stop offset="0%" stop-color="#5B2D91"/>
-      <stop offset="48%" stop-color="#8E2A93"/>
-      <stop offset="100%" stop-color="#D01C7B"/>
-    </linearGradient>
-    <linearGradient id="ringBottom" x1="94%" y1="44%" x2="10%" y2="96%">
-      <stop offset="0%" stop-color="#D01C7B"/>
-      <stop offset="55%" stop-color="#F26B2A"/>
+    <linearGradient id="ringOuter" x1="92%" y1="14%" x2="14%" y2="82%">
+      <stop offset="0%" stop-color="#D01C6E"/>
+      <stop offset="50%" stop-color="#EE5C2B"/>
       <stop offset="100%" stop-color="#F7941E"/>
     </linearGradient>
+    <linearGradient id="ringInner" x1="8%" y1="90%" x2="86%" y2="10%">
+      <stop offset="0%" stop-color="#5E2C8F"/>
+      <stop offset="55%" stop-color="#8D2490"/>
+      <stop offset="100%" stop-color="#C21C86"/>
+    </linearGradient>
     <linearGradient id="plane" x1="16%" y1="92%" x2="88%" y2="12%">
-      <stop offset="0%" stop-color="#4C2A86"/>
-      <stop offset="100%" stop-color="#6B3AA0"/>
+      <stop offset="0%" stop-color="#46307F"/>
+      <stop offset="100%" stop-color="#5C3F9E"/>
     </linearGradient>
   </defs>
 
-  <!-- A paper-white disc tucked exactly under the ring. The mark is drawn for a
-       light ground and the plane is dark violet, so without this the favicon
-       would vanish into dark browser chrome. -->
-  <circle cx="100" cy="100" r="83" fill="#FFFDF7"/>
+  <!-- A paper-white disc tucked under the ring. The mark is drawn for a light
+       ground and the plane is dark violet, so without this the favicon would
+       vanish into dark browser chrome. -->
+  <circle cx="100" cy="100" r="79" fill="#FFFDF7"/>
 
-  <g fill="none" stroke-width="19" stroke-linecap="round">
-    <path d="M100 26 A74 74 0 0 1 170 122" stroke="url(#ringTop)"/>
-    <path d="M170 122 A74 74 0 1 1 100 26" stroke="url(#ringBottom)"/>
+  <!-- Spiral ring: the arcs overlap at the lower left, inner drawn over outer. -->
+  <g fill="none" stroke-width="15" stroke-linecap="round">
+    <path d="M164.1 63 A76 76 0 1 1 28.5 119.2" stroke="url(#ringOuter)"/>
+    <path d="M47.7 152.3 A71 71 0 0 1 152.3 47.7" stroke="url(#ringInner)"/>
   </g>
 
-  <!-- Painted wider than the fills, this is what carves the plane out of the
-       ring where the two cross. -->
-  <g fill="none" stroke="#FFFDF7" stroke-width="14" stroke-linejoin="round">
-    <path d="M152 55 L56 96 L97 114 Z"/>
-    <path d="M159 59 L104 118 L119 152 Z"/>
+  <!-- Separates the plane from the ring where they cross. -->
+  <g fill="none" stroke="#FFFDF7" stroke-width="9" stroke-linejoin="round">
+    <path d="M155 51 L56 91 L98 109 Z"/>
+    <path d="M156.7 52.7 L99.7 110.7 L121 138 Z"/>
   </g>
 
-  <g fill="url(#plane)" stroke="url(#plane)" stroke-width="3" stroke-linejoin="round">
-    <path d="M152 55 L56 96 L97 114 Z"/>
-    <path d="M159 59 L104 118 L119 152 Z"/>
+  <g fill="url(#plane)">
+    <path d="M155 51 L56 91 L98 109 Z"/>
+    <path d="M156.7 52.7 L99.7 110.7 L121 138 Z"/>
   </g>
 </svg>

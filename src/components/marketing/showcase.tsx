@@ -149,7 +149,7 @@ export function TriggerShowcase() {
             className="relative space-y-5"
           >
             <div className="flex flex-wrap items-center gap-3">
-              <h3 className="font-display text-[26px] tracking-wide">{trigger.name}</h3>
+              <h3 className="text-[21px] font-extrabold">{trigger.name}</h3>
               <span className="rounded-full border-2 border-[var(--border)] bg-[var(--color-bam-400)] px-2.5 py-0.5 text-[11px] font-extrabold uppercase text-[#12110e]">
                 {trigger.stat}
               </span>

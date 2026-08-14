@@ -21,6 +21,9 @@
     "Segoe UI Rounded", system-ui, -apple-system, sans-serif;
   --font-display: var(--font-display-loaded), "Impact", "Haettenschweiler",
     ui-rounded, system-ui, sans-serif;
+  /* Headings inside content. See the h1..h4 rule below for where each is used. */
+  --font-heading: var(--font-heading-loaded), ui-rounded,
+    "Hiragino Maru Gothic ProN", "Segoe UI Rounded", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
   /* Ink — the outline colour everything is drawn with */
@@ -114,8 +117,10 @@
 
   /* Logo plane. The ring is fixed brand gradient; only the plane is themed,
      because dark violet on a near-black header is unreadable. */
-  --brand-plane-from: #4c2a86;
-  --brand-plane-to: #6b3aa0;
+  --brand-plane-from: #46307f;
+  --brand-plane-to: #5c3f9e;
+  /* Wordmark ink. The artwork uses a slate navy, not the page's near-black. */
+  --brand-word: #2e3648;
 
   --ink: #12110e;
   --border: #12110e;          /* ink outlines are the border */
@@ -144,6 +149,7 @@
 
     --brand-plane-from: #7b4fd1;
     --brand-plane-to: #a274f5;
+    --brand-word: #f7f6f2;
 
     --ink: #f7f6f2;
     --border: #000000;
@@ -172,6 +178,7 @@
 
   --brand-plane-from: #7b4fd1;
   --brand-plane-to: #a274f5;
+  --brand-word: #f7f6f2;
 
   --ink: #f7f6f2;
   --border: #000000;
@@ -210,7 +217,19 @@
     color: #12110e;
   }
 
-  h1, h2, h3, h4 {
+  /*
+    Two heading faces, split by size rather than by level.
+
+    Bangers is a condensed comic poster face. It carries the hero and section
+    headlines, which are all 2rem+. Below that its letterforms run together and
+    it stops being readable — which is exactly what happened when this rule
+    covered h3/h4 too and every 16px card title on the homepage rendered in it.
+
+    h3/h4 are content headings and are almost always small, so they get Baloo 2:
+    still rounded and cartoon-adjacent, but legible at 16px. Reach for
+    `.font-display` explicitly on the rare large h3.
+  */
+  h1, h2 {
     font-family: var(--font-display);
     font-weight: 400;
     letter-spacing: 0.012em;
@@ -218,8 +237,17 @@
     text-wrap: balance;
   }
 
+  h3, h4 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: 0.004em;
+    line-height: 1.18;
+    text-wrap: balance;
+  }
+
   /* Bangers is all-caps by design; keep casing honest where it's used. */
   .font-display { font-family: var(--font-display); font-weight: 400; }
+  .font-heading { font-family: var(--font-heading); font-weight: 700; }
 
   p { text-wrap: pretty; }
 

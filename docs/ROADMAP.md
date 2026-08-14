@@ -170,3 +170,10 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
   before the scheduler works. The Scheduler page detects this and says so.
 - **Kit / Flodesk target pickers** take an ID by hand rather than listing forms
   and segments from the provider.
+
+### Brand assets are a redraw, not the owner's files
+
+`src/components/brand/logo.tsx` and `src/app/icon.svg` are an SVG reconstruction
+of the owner's supplied artwork, matched by eye. If the original vector files
+ever land in the repo, prefer them — see the "Replacing the logo" note in
+`docs/DEPLOY.md`.

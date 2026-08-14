@@ -173,7 +173,7 @@ function BlockRow({
 }) {
   if (block.kind === "HEADING") {
     return (
-      <h2 className="font-display pt-4 text-center text-[22px] tracking-wide opacity-90">
+      <h2 className="font-heading pt-4 text-center text-[20px] opacity-90">
         {block.label}
       </h2>
     );

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bangers, Nunito } from "next/font/google";
+import { Baloo_2, Bangers, Nunito } from "next/font/google";
 import { Toaster } from "sonner";
 import { env } from "@/lib/env";
 import "./globals.css";
@@ -9,6 +9,20 @@ const display = Bangers({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-display-loaded",
+  display: "swap",
+});
+
+/**
+ * Baloo 2 for headings that sit inside content rather than above it.
+ *
+ * Bangers is a condensed poster face — it is excellent at hero sizes and
+ * genuinely hard to read below ~2rem, where the letterforms run together. Baloo
+ * keeps the rounded, friendly character at card and section-heading sizes.
+ */
+const heading = Baloo_2({
+  weight: ["600", "700", "800"],
+  subsets: ["latin"],
+  variable: "--font-heading-loaded",
   display: "swap",
 });
 
@@ -61,7 +75,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${display.variable} ${heading.variable} ${body.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* Apply the stored theme before paint so there's no flash. */}
         <script

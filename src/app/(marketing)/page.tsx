@@ -330,7 +330,7 @@ function Features() {
                 >
                   <Icon className="h-[19px] w-[19px]" />
                 </span>
-                <h3 className="text-[16px] font-extrabold">{feature.title}</h3>
+                <h3 className="text-[17.5px] font-extrabold">{feature.title}</h3>
                 <p className="mt-2 text-[14px] font-medium leading-relaxed text-[var(--text-muted)]">
                   {feature.body}
                 </p>

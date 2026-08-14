@@ -15,14 +15,25 @@ import { cn } from "@/lib/utils";
  */
 
 const BRAND = {
-  violet: "#4C2A86",
-  violetLight: "#6B3AA0",
-  purple: "#5B2D91",
-  magenta: "#8E2A93",
-  pink: "#D01C7B",
-  orange: "#F26B2A",
+  violet: "#46307F",
+  violetLight: "#5C3F9E",
+  purple: "#5E2C8F",
+  magenta: "#8D2490",
+  pink: "#C21C86",
+  crimson: "#D01C6E",
+  orange: "#EE5C2B",
   amber: "#F7941E",
 } as const;
+
+/**
+ * The plane, as one dart rather than two loose triangles.
+ *
+ * `WING` and `BODY` share the tip and the notch; BODY is nudged ~2.4 units
+ * perpendicular to that shared edge so the fold reads as a hairline of the page
+ * showing through, which is what the original artwork does.
+ */
+const PLANE_WING = "M155 51 L56 91 L98 109 Z";
+const PLANE_BODY = "M156.7 52.7 L99.7 110.7 L121 138 Z";
 
 /**
  * The circular mark on its own — favicon, avatar, tight spaces.
@@ -44,17 +55,17 @@ export function LogoMark({
       {...(title ? { role: "img" as const, "aria-label": title } : { "aria-hidden": true })}
     >
       <defs>
-        {/* Top of the ring: violet → magenta → pink, sweeping clockwise. */}
-        <linearGradient id="idmRingTop" x1="10%" y1="6%" x2="94%" y2="66%">
-          <stop offset="0%" stopColor={BRAND.purple} />
-          <stop offset="48%" stopColor={BRAND.magenta} />
-          <stop offset="100%" stopColor={BRAND.pink} />
-        </linearGradient>
-        {/* Bottom of the ring: pink → orange → amber, continuing the sweep. */}
-        <linearGradient id="idmRingBottom" x1="94%" y1="44%" x2="10%" y2="96%">
-          <stop offset="0%" stopColor={BRAND.pink} />
-          <stop offset="55%" stopColor={BRAND.orange} />
+        {/* Under-layer: crimson at 2 o'clock, sweeping clockwise to orange at 8. */}
+        <linearGradient id="idmRingOuter" x1="92%" y1="14%" x2="14%" y2="82%">
+          <stop offset="0%" stopColor={BRAND.crimson} />
+          <stop offset="50%" stopColor={BRAND.orange} />
           <stop offset="100%" stopColor={BRAND.amber} />
+        </linearGradient>
+        {/* Over-layer: purple at 7:30, up the left and over the top to magenta. */}
+        <linearGradient id="idmRingInner" x1="8%" y1="90%" x2="86%" y2="10%">
+          <stop offset="0%" stopColor={BRAND.purple} />
+          <stop offset="55%" stopColor={BRAND.magenta} />
+          <stop offset="100%" stopColor={BRAND.pink} />
         </linearGradient>
         {/* Themed — see `--brand-plane-*` in globals.css. */}
         <linearGradient id="idmPlane" x1="16%" y1="92%" x2="88%" y2="12%">
@@ -62,30 +73,35 @@ export function LogoMark({
           <stop offset="100%" stopColor={`var(--brand-plane-to, ${BRAND.violetLight})`} />
         </linearGradient>
         {/*
-          The original artwork separates the plane from the ring with a sliver of
-          the page behind it. Punching that sliver out with a mask — rather than
-          painting it in a background colour — means the mark is correct on every
-          surface it lands on: nav, cream footer, dark theme, a user's own
+          The artwork separates the plane from the ring with a sliver of the page
+          behind it. Punching that sliver out with a mask — rather than painting
+          it in a background colour — means the mark is correct on every surface
+          it lands on: nav, cream footer, dark theme, a customer's own
           link-in-bio colour.
         */}
         <mask id="idmPlaneCut">
           <rect x="0" y="0" width="200" height="200" fill="#fff" />
-          <g fill="#000" stroke="#000" strokeWidth="14" strokeLinejoin="round">
-            <path d="M152 55 L56 96 L97 114 Z" />
-            <path d="M159 59 L104 118 L119 152 Z" />
+          <g fill="#000" stroke="#000" strokeWidth="9" strokeLinejoin="round">
+            <path d={PLANE_WING} />
+            <path d={PLANE_BODY} />
           </g>
         </mask>
       </defs>
 
-      {/* Ring, drawn as two arcs so the gradient can travel around it. */}
-      <g fill="none" strokeWidth="17" strokeLinecap="round" mask="url(#idmPlaneCut)">
-        <path d="M100 26 A74 74 0 0 1 170 122" stroke="url(#idmRingTop)" />
-        <path d="M170 122 A74 74 0 1 1 100 26" stroke="url(#idmRingBottom)" />
+      {/*
+        The ring is a spiral, not a circle: two arcs that overlap by about 35°
+        at the lower left, the inner one drawn over the outer, which is what
+        gives the mark its wrapped-ribbon tail. They stop short of each other at
+        1–2 o'clock, and the plane flies out through that gap.
+      */}
+      <g fill="none" strokeWidth="15" strokeLinecap="round" mask="url(#idmPlaneCut)">
+        <path d="M164.1 63 A76 76 0 1 1 28.5 119.2" stroke="url(#idmRingOuter)" />
+        <path d="M47.7 152.3 A71 71 0 0 1 152.3 47.7" stroke="url(#idmRingInner)" />
       </g>
 
-      <g fill="url(#idmPlane)" stroke="url(#idmPlane)" strokeWidth="3" strokeLinejoin="round">
-        <path d="M152 55 L56 96 L97 114 Z" />
-        <path d="M159 59 L104 118 L119 152 Z" />
+      <g fill="url(#idmPlane)">
+        <path d={PLANE_WING} />
+        <path d={PLANE_BODY} />
       </g>
     </svg>
   );
@@ -99,15 +115,15 @@ export function LogoWordmark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "font-sans text-[19px] font-extrabold lowercase leading-none tracking-[-0.02em]",
+        "font-sans text-[19px] font-extrabold lowercase leading-none tracking-[-0.015em]",
         className,
       )}
     >
-      <span className="text-[var(--text)]">insta</span>
+      <span className="text-[var(--brand-word,var(--text))]">insta</span>
       <span className="bg-[linear-gradient(95deg,#B8228C_0%,#D91E6E_45%,#F7941E_100%)] bg-clip-text text-transparent">
         dm2
       </span>
-      <span className="text-[var(--text)]">47</span>
+      <span className="text-[var(--brand-word,var(--text))]">47</span>
     </span>
   );
 }
