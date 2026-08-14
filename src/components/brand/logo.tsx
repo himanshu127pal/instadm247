@@ -4,24 +4,23 @@ import { cn } from "@/lib/utils";
 /**
  * Brand assets.
  *
- * These render the owner's own artwork from `public/brand/` rather than a
- * hand-drawn approximation. The files are auto-traced vectors, so they are path
- * soup — optimised at precision=1 and cropped to their content, which is the
- * difference between ~44KB and the 206KB that was uploaded.
+ * These render the owner's own PNGs from `public/brand/`. They replaced an
+ * auto-traced SVG set that looked poor at size — the trace turned smooth
+ * gradients into faceted path soup.
  *
  * The wordmark ink is a dark slate that vanishes on a dark background, so the
- * lockup ships as two files and the theme picks one. The mark itself is
- * identical in both themes: its background was stripped, so it sits correctly on
- * the nav, the cream footer, dark mode, and whatever colour a customer chooses
- * for their link-in-bio page.
+ * lockup ships as two files and the theme picks one. The mark is identical in
+ * both themes: its white background was made transparent, so it sits correctly
+ * on the nav, the cream footer, dark mode, and whatever colour a customer
+ * chooses for their link-in-bio page.
  */
 
-/** Natural aspect ratios, from each file's viewBox. */
-const MARK_RATIO = 1;
-const LOCKUP_RATIO = 1335 / 312;
+/** Intrinsic sizes of the shipped files, for correct aspect and no layout shift. */
+const MARK = { w: 256, h: 256 };
+const LOCKUP = { w: 837, h: 192 };
 
 /**
- * The circular mark on its own — favicon-adjacent spots, avatars, tight places.
+ * The circular mark on its own — tight spaces, avatars, the bio badge.
  *
  * Pass `title=""` where the brand name is already adjacent in text, so screen
  * readers don't announce it twice.
@@ -34,12 +33,12 @@ export function LogoMark({
   title?: string;
 }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- a static SVG; next/image would only add a wrapper and a request.
+    // eslint-disable-next-line @next/next/no-img-element -- a fixed-size static asset; next/image would add a request and a wrapper for nothing.
     <img
-      src="/brand/mark.svg"
+      src="/brand/mark.png"
       alt={title}
-      width={36}
-      height={36 * MARK_RATIO}
+      width={MARK.w}
+      height={MARK.h}
       className={cn("h-9 w-9", className)}
       {...(title ? {} : { "aria-hidden": true })}
     />
@@ -59,18 +58,18 @@ export function Logo({ className, imgClassName }: { className?: string; imgClass
     <span className={cn("inline-flex items-center", className)}>
       {/* eslint-disable @next/next/no-img-element */}
       <img
-        src="/brand/logo-lockup.svg"
+        src="/brand/logo-lockup.png"
         alt="InstaDM247"
-        width={Math.round(36 * LOCKUP_RATIO)}
-        height={36}
+        width={LOCKUP.w}
+        height={LOCKUP.h}
         className={cn("theme-light-only", shared)}
       />
       <img
-        src="/brand/logo-lockup-dark.svg"
+        src="/brand/logo-lockup-dark.png"
         alt=""
         aria-hidden
-        width={Math.round(36 * LOCKUP_RATIO)}
-        height={36}
+        width={LOCKUP.w}
+        height={LOCKUP.h}
         className={cn("theme-dark-only", shared)}
       />
       {/* eslint-enable @next/next/no-img-element */}

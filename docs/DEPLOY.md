@@ -427,9 +427,9 @@ migration fails there rather than on the server.
 
 ## Brand assets
 
-The logo in `public/brand/` is the owner's own artwork, rendered by
+The logo in `public/brand/` is the owner's own PNG artwork, rendered by
 `src/components/brand/logo.tsx`. See the Brand section of `docs/ROADMAP.md`
-before changing it — the files carry four non-obvious constraints (they are
-auto-traced and must be re-optimised rather than hand-edited, the mark's
-background is deliberately stripped, the lockup ships in two theme variants, and
-the favicon needs its backing disc).
+before changing it — the shipped files are processed (de-backgrounded, trimmed,
+resized, palette-encoded) rather than raw, the lockup ships in two theme
+variants because a flat image cannot be recoloured by CSS, and the favicon needs
+its backing disc.
