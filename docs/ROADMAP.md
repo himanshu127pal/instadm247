@@ -164,8 +164,13 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
 
 ## Known gaps worth knowing about
 
-- **Prisma migrations** — the schema is applied with `db:push`. Generate a real
-  migration history before the first production deploy.
+- **Prisma migrations** — `prisma/migrations/0_init` is the baseline, generated
+  from the schema and verified to reproduce it with no drift. CI applies the
+  full history on every PR, so a broken migration fails there. Change the schema
+  with `prisma migrate dev --name …` and commit the generated folder; never
+  `db push` against a database with real data in it. A server first deployed
+  before migrations existed needs a one-time
+  `prisma migrate resolve --applied 0_init` — see `docs/DEPLOY.md`.
 - **Legal pages** are filled in with the real entity (InstaDM247 / Rajat Pal,
   `support@instadm247.com`). They deliberately carry **no governing-law or
   dispute clause** — the owner chose to skip it. Add one before selling into

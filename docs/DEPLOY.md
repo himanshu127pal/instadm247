@@ -167,8 +167,8 @@ systemd and dotenv disagreeing about quoting.
 
 ```bash
 cd /srv/instadm247
-pnpm exec prisma db push      # 42 models onto the empty database
-pnpm build                    # prisma generate && next build
+pnpm exec prisma migrate deploy   # applies the committed migration history
+pnpm build                        # prisma generate && next build
 ```
 
 **Do not run `pnpm db:seed` on this server.** The seed creates a demo login
@@ -176,11 +176,11 @@ pnpm build                    # prisma generate && next build
 local exploration; on a public box it is an open door. Create your real account
 through `/signup` instead.
 
-On schema changes: `prisma db push` is safe here because the database is empty.
-Before your *second* deploy, generate a real migration history
-(`pnpm exec prisma migrate dev --name init` locally, commit it) and switch this
-step to `prisma migrate deploy`. Continuing with `db push` against a database
-holding real conversations will eventually cost you data.
+Never use `prisma db push` against this database. It reshapes the schema to
+match the models with no record of what it did and no review step, which is
+fine against an empty database and a way to lose conversations against a live
+one. `migrate deploy` only applies committed migrations, and refuses rather than
+guessing.
 
 ## 7. systemd units
 
@@ -341,7 +341,7 @@ ever pulls reviewed commits.
 cd /srv/instadm247
 git pull
 pnpm install --frozen-lockfile
-pnpm exec prisma migrate deploy     # or `prisma db push` until migrations exist
+pnpm exec prisma migrate deploy     # no-op when there is nothing new
 pnpm build
 sudo systemctl restart instadm247-web instadm247-worker
 ```
@@ -370,6 +370,60 @@ git pull
 - Accounts connected before `instagram_business_content_publish` was added must
   reconnect before the scheduler works. The Scheduler page detects this and says
   so.
+
+## One-time: baselining a server deployed before migrations existed
+
+A server whose database was created with `prisma db push` has all 42 tables but
+no `_prisma_migrations` table, so Prisma has no idea which migrations are
+already in it. Running `migrate deploy` there stops with **P3005 — "The database
+schema is not empty"** and changes nothing. It fails closed, which is the right
+behaviour, but it does mean the first deploy after migrations land needs one
+extra step.
+
+Do this **once**, on the server, after pulling the commit that adds
+`prisma/migrations/`:
+
+```bash
+cd /srv/instadm247
+git pull
+pnpm install --frozen-lockfile
+
+# 1. Back up first. This is the only step here that touches the live database.
+pg_dump "$DATABASE_URL" | gzip > ~/pre-baseline-$(date +%F).sql.gz
+
+# 2. Confirm the live schema really does match the migration. Empty output
+#    means no drift; anything printed means the database and the schema have
+#    diverged — stop and reconcile before going further.
+pnpm exec prisma migrate diff \
+  --from-url "$DATABASE_URL" \
+  --to-schema-datamodel prisma/schema.prisma \
+  --script
+
+# 3. Record 0_init as already applied. This only writes a row to
+#    _prisma_migrations; it does not touch your tables or your data.
+pnpm exec prisma migrate resolve --applied 0_init
+
+# 4. Verify.
+pnpm exec prisma migrate status     # "Database schema is up to date!"
+pnpm exec prisma migrate deploy     # "No pending migrations to apply."
+```
+
+From then on `migrate deploy` is the normal release step and needs no special
+handling.
+
+A database created *after* migrations landed needs none of this — `migrate
+deploy` builds it from empty in one go.
+
+## Changing the schema from here
+
+```bash
+# locally, against a development database
+pnpm exec prisma migrate dev --name describe_the_change
+```
+
+That writes a new folder under `prisma/migrations/`. Commit it with the code
+change — CI applies the full history on every PR, so a missing or broken
+migration fails there rather than on the server.
 
 ## Brand assets
 

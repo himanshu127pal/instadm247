@@ -88,6 +88,10 @@ directly, and don't let a working branch become a second trunk.
    Inbox. Never attach it to automation output — Meta detects and penalises this.
 5. Access tokens are encrypted at rest (`src/lib/crypto.ts`). Never log a token.
 6. Keep `docs/FEATURES.md` truthful — it is the checklist the owner reviews against.
+7. Schema changes go through `prisma migrate dev --name …` and the generated
+   folder is committed with the code. **Never** run `prisma db push` against a
+   database holding real data — it reshapes the schema with no record and no
+   review step. `prisma/migrations/0_init` is the baseline.
 
 ## Plan gating seam (Phase 1: intentionally inert)
 
