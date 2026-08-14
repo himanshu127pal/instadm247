@@ -70,6 +70,12 @@ src/components/        UI (marketing/, dashboard/, flow/, ui/)
 src/worker/            BullMQ worker process entrypoint
 ```
 
+## Branches
+
+`main` is the trunk and is what the production server tracks. Do work on a
+short-lived branch and open a pull request into `main` — don't commit to `main`
+directly, and don't let a working branch become a second trunk.
+
 ## Hard rules for anyone (human or agent) touching this code
 
 1. **Never** add a code path that calls a non-public/undocumented Instagram endpoint.
