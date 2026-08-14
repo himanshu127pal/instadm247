@@ -18,7 +18,9 @@ export function LegalPage({
 }) {
   return (
     <article className="mx-auto max-w-2xl px-5 py-20">
-      <h1 className="text-[clamp(1.9rem,4vw,2.6rem)] font-semibold tracking-tight">{title}</h1>
+      {/* Big enough for Bangers. The h2s inside are prose-sized and are not —
+          they take the default heading face. */}
+      <h1 className="font-display text-[clamp(1.9rem,4vw,2.6rem)]">{title}</h1>
       <p className="mt-2 text-[13px] text-[var(--text-faint)]">Last updated {updated}</p>
       <div className="mt-10 space-y-7 text-[15px] leading-relaxed text-[var(--text-muted)] [&_h2]:mb-2 [&_h2]:mt-8 [&_h2]:text-[17px] [&_h2]:font-semibold [&_h2]:text-[var(--text)] [&_li]:ml-5 [&_li]:list-disc [&_strong]:text-[var(--text)] [&_ul]:space-y-1.5">
         {children}

@@ -223,26 +223,20 @@
   }
 
   /*
-    Two heading faces, split by size rather than by level.
+    Headings default to Baloo 2. Bangers is opt-in, via `.font-display`.
 
-    Bangers is a condensed comic poster face. It carries the hero and section
-    headlines, which are all 2rem+. Below that its letterforms run together and
-    it stops being readable — which is exactly what happened when this rule
-    covered h3/h4 too and every 16px card title on the homepage rendered in it.
+    That direction matters. Bangers is a condensed comic poster face: it looks
+    great at hero sizes and its letterforms run together below roughly 2rem,
+    where it stops being readable. When it was the *default* for h1–h4, every
+    plain `<h2>` anyone wrote inherited it — which is how 26 section headings
+    across the legal pages, and the 16px card titles on the homepage, ended up
+    illegible. Nobody chose that; they just didn't opt out.
 
-    h3/h4 are content headings and are almost always small, so they get Baloo 2:
-    still rounded and cartoon-adjacent, but legible at 16px. Reach for
-    `.font-display` explicitly on the rare large h3.
+    Defaulting to the readable face means an omission is safe. Reach for
+    `.font-display` deliberately, on type big enough to carry it — hero and
+    section headlines, the auth pages, decorative stickers.
   */
-  h1, h2 {
-    font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: 0.012em;
-    line-height: 1.02;
-    text-wrap: balance;
-  }
-
-  h3, h4 {
+  h1, h2, h3, h4 {
     font-family: var(--font-heading);
     font-weight: 700;
     letter-spacing: 0.004em;
@@ -251,7 +245,12 @@
   }
 
   /* Bangers is all-caps by design; keep casing honest where it's used. */
-  .font-display { font-family: var(--font-display); font-weight: 400; }
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.012em;
+    line-height: 1.02;
+  }
   .font-heading { font-family: var(--font-heading); font-weight: 700; }
 
   p { text-wrap: pretty; }
