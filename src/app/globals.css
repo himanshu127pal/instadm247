@@ -115,13 +115,6 @@
   --bg-sunken: #f4ecd8;
   --paper: #fffdf7;
 
-  /* Logo plane. The ring is fixed brand gradient; only the plane is themed,
-     because dark violet on a near-black header is unreadable. */
-  --brand-plane-from: #46307f;
-  --brand-plane-to: #5c3f9e;
-  /* Wordmark ink. The artwork uses a slate navy, not the page's near-black. */
-  --brand-word: #2e3648;
-
   --ink: #12110e;
   --border: #12110e;          /* ink outlines are the border */
   --border-soft: #d6d1c2;     /* for dense UI where full ink is too heavy */
@@ -146,10 +139,6 @@
     --bg-raised: #232130;
     --bg-sunken: #100f16;
     --paper: #1c1a24;
-
-    --brand-plane-from: #7b4fd1;
-    --brand-plane-to: #a274f5;
-    --brand-word: #f7f6f2;
 
     --ink: #f7f6f2;
     --border: #000000;
@@ -176,10 +165,6 @@
   --bg-sunken: #100f16;
   --paper: #1c1a24;
 
-  --brand-plane-from: #7b4fd1;
-  --brand-plane-to: #a274f5;
-  --brand-word: #f7f6f2;
-
   --ink: #f7f6f2;
   --border: #000000;
   --border-soft: #3b3849;
@@ -196,6 +181,26 @@
   --shadow-ink: #000000;
   --shadow-color: 260 40% 3%;
 }
+
+/* --- Theme-swapped assets -------------------------------------------------
+   For images that cannot be recoloured by CSS — the logo lockup, whose
+   wordmark ink is baked into the traced paths. Both variants ship and this
+   picks one. It has to be CSS rather than a render-time choice: the theme
+   lives in localStorage and is applied before paint, so the server cannot know
+   it without risking a hydration mismatch or a flash of the wrong logo.       */
+
+.theme-dark-only { display: none; }
+.theme-light-only { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-light-only { display: none; }
+  :root:not([data-theme="light"]) .theme-dark-only { display: block; }
+}
+
+:root[data-theme="dark"] .theme-light-only { display: none; }
+:root[data-theme="dark"] .theme-dark-only { display: block; }
+:root[data-theme="light"] .theme-light-only { display: block; }
+:root[data-theme="light"] .theme-dark-only { display: none; }
 
 @layer base {
   html {

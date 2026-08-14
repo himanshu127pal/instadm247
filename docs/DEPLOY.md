@@ -356,22 +356,11 @@ unacceptable, build into a fresh directory and flip a symlink before restarting.
   reconnect before the scheduler works. The Scheduler page detects this and says
   so.
 
-## Replacing the logo with the original files
+## Brand assets
 
-The mark in `src/components/brand/logo.tsx` and `src/app/icon.svg` is an SVG
-reconstruction of the owner's artwork, drawn to match. To swap in the original
-files instead:
-
-1. Commit them, e.g. `public/brand/logo-lockup.svg` and `public/brand/mark.svg`
-   (SVG keeps it sharp at every size; a PNG works but needs a 2x/3x set).
-2. In `logo.tsx`, replace the body of `LogoMark` / `LogoWordmark` with an
-   `<img>` or an inlined `<svg>`. Keep the component names and props — the nav,
-   footer, auth pages, dashboard rail and bio badge all import from here, so
-   nothing else has to change.
-3. For the favicon, replace `src/app/icon.svg` outright and re-export
-   `apple-icon.png` (180×180) and `opengraph-image.png` (1200×630).
-
-One thing the redraw does that a dropped-in file will not: it punches the plane
-out of the ring with a mask and themes the plane colour, so the mark stays
-correct on the cream footer and in dark mode. A flat file with a baked-in
-background will need a background-appropriate variant per surface.
+The logo in `public/brand/` is the owner's own artwork, rendered by
+`src/components/brand/logo.tsx`. See the Brand section of `docs/ROADMAP.md`
+before changing it — the files carry four non-obvious constraints (they are
+auto-traced and must be re-optimised rather than hand-edited, the mark's
+background is deliberately stripped, the lockup ships in two theme variants, and
+the favicon needs its backing disc).

@@ -65,16 +65,7 @@ export function BioPageView({ page, blocks }: { page: BioPageData; blocks: BioBl
   return (
     <main
       className="relative min-h-screen overflow-hidden px-5 py-14"
-      style={
-        {
-          background: theme.bg,
-          color: theme.ink,
-          // A bio page picks its own ground, so pin the logo's plane to whichever
-          // violet stays readable on it rather than inheriting the site theme.
-          "--brand-plane-from": theme.ink === "#f7f6f2" ? "#7b4fd1" : "#4c2a86",
-          "--brand-plane-to": theme.ink === "#f7f6f2" ? "#a274f5" : "#6b3aa0",
-        } as React.CSSProperties
-      }
+      style={{ background: theme.bg, color: theme.ink }}
     >
       {/* Halftone wash, so the page reads as printed rather than flat */}
       <div
