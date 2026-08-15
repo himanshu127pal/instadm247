@@ -149,6 +149,10 @@ META_WEBHOOK_VERIFY_TOKEN="$(openssl rand -hex 24)"
 META_API_VERSION="v23.0"
 
 ANTHROPIC_API_KEY=""
+
+# Who gets /admin. See docs/ROADMAP.md for what the two levels can do.
+PLATFORM_ADMIN_EMAILS="you@yourdomain.com"
+PLATFORM_SUPPORT_EMAILS=""
 EOF
 chmod 600 .env
 ```

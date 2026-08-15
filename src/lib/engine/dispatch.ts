@@ -45,6 +45,12 @@ export type DispatchRequest = {
   /** For private replies: when the comment was made, and whether it was Live. */
   commentAt?: Date;
   isLiveComment?: boolean;
+  /**
+   * Set by request-scoped callers (the Inbox, broadcasts) when the acting
+   * session belongs to platform staff viewing the account. Never set by the
+   * worker, which has no session.
+   */
+  viaImpersonation?: boolean;
 };
 
 export type DispatchResult =
@@ -53,8 +59,25 @@ export type DispatchResult =
   | { status: "failed"; error: string; retryable: boolean; retryAfterMs?: number };
 
 export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
-  const account = await prisma.instagramAccount.findUnique({ where: { id: req.accountId } });
+  const account = await prisma.instagramAccount.findUnique({
+    where: { id: req.accountId },
+    include: { workspace: { select: { suspendedAt: true } } },
+  });
   if (!account) return skip(req, SkipReason.NOT_CONFIGURED);
+
+  // 0. Suspension. Deliberately the first gate and with no exception for
+  //    `human`: suspending a customer has to actually stop traffic leaving on
+  //    Meta's API under our app, not merely lock them out of the dashboard.
+  if (account.workspace.suspendedAt) {
+    return skip(req, SkipReason.WORKSPACE_SUSPENDED);
+  }
+
+  // 0b. A session opened by support can look, not act. Inbox replies carry the
+  //     HUMAN_AGENT tag, which asserts a human wrote them — and that human
+  //     would not be the account owner. See src/lib/impersonation.ts.
+  if (req.viaImpersonation) {
+    return skip(req, SkipReason.IMPERSONATED_SESSION);
+  }
 
   // 1. Account-level pause
   if (account.automationPaused && req.source !== "human") {

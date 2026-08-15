@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { isImpersonating } from "@/lib/impersonation";
 import { AuthError } from "@/lib/auth";
 import { ok, parseBody, route } from "@/lib/api";
 import { dispatch } from "@/lib/engine/dispatch";
@@ -83,6 +84,7 @@ export const POST = route<{ id: string }>(async ({ workspace, request, params })
     target: { to: "user", igsid: conversation.contact.igsid },
     message: { kind: "text", text },
     source: "human",
+    viaImpersonation: await isImpersonating(),
     humanAgent: true,
   });
 

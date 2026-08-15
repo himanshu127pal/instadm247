@@ -1,33 +1,42 @@
 import type { Metadata, Viewport } from "next";
-import { Baloo_2, Bangers, Nunito } from "next/font/google";
+import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import { env } from "@/lib/env";
 import "./globals.css";
 
-/** Bangers for comic display type, Nunito for the rounded body face. */
-const display = Bangers({
+/*
+  Fonts are self-hosted rather than fetched through `next/font/google`.
+
+  That loader downloads from Google at *build* time, which quietly makes every
+  build — CI and the production server's release step alike — depend on
+  reaching fonts.googleapis.com. It failed exactly that way once, and a deploy
+  that can fail because someone else's CDN blipped is not a deploy.
+
+  These are the same files the loader would have fetched (latin subset, OFL
+  licensed, so redistribution is fine). Nunito and Baloo 2 are variable, so one
+  file covers every weight.
+*/
+
+/** Bangers for comic display type — hero and section headlines only. */
+const display = localFont({
+  src: "./fonts/Bangers-Latin.woff2",
   weight: "400",
-  subsets: ["latin"],
   variable: "--font-display-loaded",
   display: "swap",
 });
 
-/**
- * Baloo 2 for headings that sit inside content rather than above it.
- *
- * Bangers is a condensed poster face — it is excellent at hero sizes and
- * genuinely hard to read below ~2rem, where the letterforms run together. Baloo
- * keeps the rounded, friendly character at card and section-heading sizes.
- */
-const heading = Baloo_2({
-  weight: ["600", "700", "800"],
-  subsets: ["latin"],
+/** Baloo 2 for headings inside content. See the h1..h4 rule in globals.css. */
+const heading = localFont({
+  src: "./fonts/Baloo2-Latin-Variable.woff2",
+  weight: "400 800",
   variable: "--font-heading-loaded",
   display: "swap",
 });
 
-const body = Nunito({
-  subsets: ["latin"],
+/** Nunito, the rounded body face. */
+const body = localFont({
+  src: "./fonts/Nunito-Latin-Variable.woff2",
+  weight: "400 900",
   variable: "--font-sans-loaded",
   display: "swap",
 });
