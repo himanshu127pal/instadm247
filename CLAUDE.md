@@ -43,6 +43,7 @@ drop items from them, and don't "helpfully" add features that aren't on them.
 | Visual design | **Comic / cartoon** — ink outlines, halftone, burst hovers | Owner's choice. Full intensity on marketing + auth; deliberately restrained in dense dashboard UI (tables, charts, flow canvas) so data stays readable. Don't "fix" that split. |
 | Landing page | Heavily animated, interactive, custom | Owner explicitly rejected "plain AI generated" look. |
 | Logo | **Owner's own files** in `public/brand/`, rendered by `src/components/brand/logo.tsx` | Do not replace them or redraw the mark. They are auto-traced vectors with real constraints — see `docs/ROADMAP.md` §Brand before touching them. |
+| Platform admin | `/admin`, gated by `PLATFORM_ADMIN_EMAILS` / `PLATFORM_SUPPORT_EMAILS` | Staff tooling, separate from workspace roles. Env-var gated so revoking access is a deploy, not a database edit. |
 | Facebook channel | **Deferred** | Owner's decision. Needs Facebook Login, Page tokens, `pages_messaging` and a second App Review. The adapter seam in `src/lib/meta/` stays. |
 
 ## Architecture in one paragraph
@@ -92,6 +93,11 @@ directly, and don't let a working branch become a second trunk.
    folder is committed with the code. **Never** run `prisma db push` against a
    database holding real data — it reshapes the schema with no record and no
    review step. `prisma/migrations/0_init` is the baseline.
+8. A support session opened by impersonation is **read-only for anything
+   outbound**, and a **suspended workspace cannot send at all**. Both are
+   enforced in `dispatch.ts`, not in the UI, and both are covered by `pnpm e2e`.
+   Suspension in particular must stop traffic leaving on Meta's API under our
+   app — locking someone out of the dashboard is not the same thing.
 
 ## Plan gating seam (Phase 1: intentionally inert)
 

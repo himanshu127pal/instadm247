@@ -99,6 +99,27 @@ export async function requireWorkspace(): Promise<{ user: SessionUser; workspace
   return { user, workspace };
 }
 
+/**
+ * The notice shown at sign-in when every workspace a user belongs to is
+ * suspended. Returns null when at least one is still active, so a user who
+ * also belongs to a healthy workspace is not locked out by someone else's
+ * suspension.
+ */
+export async function suspensionNoticeFor(userId: string): Promise<string | null> {
+  const memberships = await prisma.membership.findMany({
+    where: { userId },
+    select: { workspace: { select: { name: true, suspendedAt: true, suspendedReason: true } } },
+  });
+  if (memberships.length === 0) return null;
+  if (memberships.some((m) => !m.workspace.suspendedAt)) return null;
+
+  const suspended = memberships[0].workspace;
+  const reason = suspended.suspendedReason?.trim();
+  return reason
+    ? `${suspended.name} is suspended. ${reason}`
+    : `${suspended.name} is suspended. Contact support@instadm247.com.`;
+}
+
 export class AuthError extends Error {
   constructor(
     message: string,

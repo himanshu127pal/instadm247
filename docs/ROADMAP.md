@@ -152,6 +152,66 @@ Derived assets are wired up by Next's file conventions — `src/app/icon.png`,
 `apple-icon.png`, `opengraph-image.png`, `twitter-image.png`. Regenerate all
 four from the originals if the artwork ever changes.
 
+## Platform admin (`/admin`)
+
+Staff tooling, deliberately separate from workspace membership. Access is
+granted by listing an email in `PLATFORM_ADMIN_EMAILS` or
+`PLATFORM_SUPPORT_EMAILS` — there is no invite flow, so granting and revoking
+are both deploys, which is the right shape for a role that can read every
+customer's messages. `support` can read, impersonate and leave notes; `admin`
+adds suspend and unsuspend.
+
+Built:
+
+- **Overview** — customers, users, accounts, suspended, sent/failed in 24h,
+  accounts needing a reconnect, automations paused
+- **Highest-volume accounts, 24h** — see below
+- **Customers** — searchable by workspace, owner email or @username; per-row
+  account count, contacts, 30-day sends, plan, status
+- **Customer detail** — accounts with token status, members, a 30-day breakdown
+  of *why* sends were skipped, internal notes
+- **Suspend / unsuspend** with a customer-visible reason
+- **Sign in as** (impersonation) with a required reason
+- **Audit log** — every privileged action
+
+Three things that are load-bearing rather than decorative:
+
+1. **Suspension is enforced in `dispatch.ts`.** Blocking sign-in would leave the
+   automations running; the point of suspending is that traffic stops leaving on
+   Meta's API under our app. There is deliberately no exception for `source:
+   "human"`. Suspending also drops the customer's sessions so they see the
+   notice immediately.
+2. **Impersonated sessions cannot send.** An Inbox reply carries Meta's
+   `HUMAN_AGENT` tag, which asserts a human wrote it — and that human would not
+   be the account owner. Sessions also expire in an hour rather than thirty days,
+   and platform staff cannot be impersonated at all, which would otherwise let
+   one staff account borrow another's and muddy the audit trail.
+3. **The highest-volume view protects the business, not the customer.** Meta
+   grades a Tech Provider's app as a whole, so one customer blasting DMs can get
+   *every* customer's integration restricted. Worth a daily glance.
+
+Covered by `pnpm e2e` (5 checks): suspension blocks automation and human sends,
+lifting it restores sending, and an impersonated session is refused.
+
+### Worth adding when there's a reason to
+
+Ordered by how often the absence will actually hurt:
+
+- **Queue and worker health** — BullMQ depth, failed jobs, worker heartbeat. If
+  the worker dies, delayed steps stop silently; nothing currently notices.
+- **Cross-customer failure explorer** — group send failures by Meta error code.
+  A new code appearing across many customers at once is an API change, and
+  that is the fastest way to find out.
+- **Plan and quota management** — once pricing lands: change a plan, grant an
+  override without a deploy. Hooks into `src/lib/plan.ts`.
+- **Announcement banner** — one message pushed to every dashboard, for incidents
+  and maintenance.
+- **GDPR/export tooling** — fulfil an access or deletion request without SQL.
+- **Impersonation review** — a weekly digest of who viewed what. The log exists;
+  nobody reads logs unprompted.
+- **Signup funnel** — signups that never connected an account, to see where
+  onboarding loses people.
+
 ## Phase 2 — not started
 
 Do not build these without the owner asking. See `docs/FEATURES.md` §D.

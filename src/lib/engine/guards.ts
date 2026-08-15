@@ -220,6 +220,8 @@ export const SkipReason = {
   ACCOUNT_PAUSED: "ACCOUNT_PAUSED",
   NOT_CONFIGURED: "NOT_CONFIGURED",
   HUMAN_TAKEOVER: "HUMAN_TAKEOVER",
+  WORKSPACE_SUSPENDED: "WORKSPACE_SUSPENDED",
+  IMPERSONATED_SESSION: "IMPERSONATED_SESSION",
 } as const;
 
 export type SkipReasonKey = (typeof SkipReason)[keyof typeof SkipReason];
@@ -237,4 +239,8 @@ export const SKIP_EXPLANATIONS: Record<SkipReasonKey, string> = {
   ACCOUNT_PAUSED: "Automations are paused for this Instagram account.",
   NOT_CONFIGURED: "Instagram isn't connected on this server yet.",
   HUMAN_TAKEOVER: "A human took over this conversation, so automation is paused for the thread.",
+  WORKSPACE_SUSPENDED:
+    "This account is suspended, so nothing is being sent. Check the notice on sign-in.",
+  IMPERSONATED_SESSION:
+    "Support was viewing this account. Sessions opened by support can't send messages.",
 };

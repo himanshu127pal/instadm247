@@ -604,6 +604,79 @@ async function main() {
   );
   check("a revoked key stops working", revokedAuth === null);
 
+  // --- Admin panel guards ----------------------------------------------------
+  // Suspension and impersonation both have to be enforced at the dispatcher,
+  // not merely in the UI: the whole point of suspending a customer is that
+  // traffic stops leaving on Meta's API under our app.
+  section("Admin panel guards");
+  {
+    const igsid = `e2e_admin_${Date.now()}`;
+    const subject = await prisma.contact.create({
+      data: {
+        accountId: account.id,
+        igsid,
+        // Open window, so a refusal below is the guard under test and not the
+        // 24-hour rule.
+        windowExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        lastInteractionAt: new Date(),
+      },
+    });
+
+    const send = (extra: Partial<Parameters<typeof dispatch>[0]> = {}) =>
+      dispatch({
+        accountId: account.id,
+        contactId: subject.id,
+        target: { to: "user", igsid },
+        message: { kind: "text", text: "e2e admin guard" },
+        source: "automation",
+        ...extra,
+      });
+
+    const baseline = await send();
+    check(
+      "sends are possible before suspension",
+      !(baseline.status === "skipped" && baseline.reason === "WORKSPACE_SUSPENDED"),
+    );
+
+    await prisma.workspace.update({
+      where: { id: account.workspaceId },
+      data: { suspendedAt: new Date(), suspendedReason: "e2e suspension" },
+    });
+
+    const auto = await send();
+    check(
+      "a suspended workspace cannot send automation",
+      auto.status === "skipped" && auto.reason === "WORKSPACE_SUSPENDED",
+    );
+
+    const human = await send({ source: "human" });
+    check(
+      "suspension has no exception for human replies",
+      human.status === "skipped" && human.reason === "WORKSPACE_SUSPENDED",
+    );
+
+    await prisma.workspace.update({
+      where: { id: account.workspaceId },
+      data: { suspendedAt: null, suspendedReason: null, suspendedById: null },
+    });
+
+    const restored = await send();
+    check(
+      "lifting a suspension restores sending",
+      !(restored.status === "skipped" && restored.reason === "WORKSPACE_SUSPENDED"),
+    );
+
+    // An Inbox reply carries Meta's HUMAN_AGENT tag, which asserts a human
+    // wrote it. Support viewing the account is not that human.
+    const impersonated = await send({ source: "human", viaImpersonation: true });
+    check(
+      "a support session cannot send as the customer",
+      impersonated.status === "skipped" && impersonated.reason === "IMPERSONATED_SESSION",
+    );
+
+    await prisma.contact.delete({ where: { id: subject.id } }).catch(() => undefined);
+  }
+
   // --- Result ---------------------------------------------------------------
 
   console.log(`\n${passed} passed, ${failed} failed\n`);

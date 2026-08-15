@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { AuthError, authenticate, createSession } from "@/lib/auth";
+import { AuthError, authenticate, createSession, suspensionNoticeFor } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -17,6 +17,14 @@ export async function POST(request: Request) {
     }
 
     const user = await authenticate(parsed.data.email, parsed.data.password);
+
+    // Credentials were right, but every workspace this person belongs to is
+    // suspended. Say so plainly rather than pretending the password was wrong.
+    const notice = await suspensionNoticeFor(user.id);
+    if (notice) {
+      return NextResponse.json({ error: notice, suspended: true }, { status: 403 });
+    }
+
     await createSession(user.id, {
       userAgent: request.headers.get("user-agent") ?? undefined,
     });
