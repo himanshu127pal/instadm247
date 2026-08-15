@@ -227,6 +227,15 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
 - [ ] A/B testing with statistical significance
 - [ ] Mobile app
 
+### Fonts are self-hosted on purpose
+
+`src/app/layout.tsx` uses `next/font/local` against woff2 files in
+`src/app/fonts/`, not `next/font/google`. The Google loader downloads at *build*
+time, which makes every build — CI and the server's release step alike — depend
+on reaching fonts.googleapis.com. That failed a CI run once; a deploy that can
+break because someone else's CDN blipped is not a deploy. All three faces are
+OFL licensed, so shipping the files is fine. Don't switch back.
+
 ## Known gaps worth knowing about
 
 - **Prisma migrations** — `prisma/migrations/0_init` is the baseline, generated
