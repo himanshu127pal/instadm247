@@ -9,6 +9,8 @@
  */
 
 import { createHmac } from "node:crypto";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { verifyMetaSignature } from "../src/lib/crypto";
 import { parseWebhook } from "../src/lib/meta/webhooks";
@@ -675,6 +677,55 @@ async function main() {
     );
 
     await prisma.contact.delete({ where: { id: subject.id } }).catch(() => undefined);
+  }
+
+  section("Tenant boundary in the customer UI");
+  {
+    // Under the Tech Provider model there is one Meta app and we own it. Its
+    // setup values — above all the webhook verify token — are ours, and the
+    // customer dashboard used to render them to every signed-in browser. This
+    // is a source scan rather than a runtime assertion because the failure mode
+    // is someone pasting the panel back in, not a code path misbehaving.
+    const CUSTOMER_TREES = [
+      "src/app/(app)",
+      "src/app/(marketing)",
+      "src/app/(auth)",
+      "src/components/dashboard",
+      "src/components/marketing",
+    ];
+    const FORBIDDEN = [
+      "webhookVerifyToken",
+      "missingInstagramConfig",
+      "META_APP_SECRET",
+      "META_WEBHOOK_VERIFY_TOKEN",
+      "ANTHROPIC_API_KEY",
+    ];
+
+    function walk(dir: string): string[] {
+      let out: string[] = [];
+      for (const entry of readdirSync(dir)) {
+        const full = join(dir, entry);
+        if (statSync(full).isDirectory()) out = out.concat(walk(full));
+        else if (/\.(ts|tsx)$/.test(entry)) out.push(full);
+      }
+      return out;
+    }
+
+    const offenders: string[] = [];
+    for (const tree of CUSTOMER_TREES) {
+      for (const file of walk(tree)) {
+        const source = readFileSync(file, "utf8");
+        for (const needle of FORBIDDEN) {
+          if (source.includes(needle)) offenders.push(`${file} → ${needle}`);
+        }
+      }
+    }
+
+    check(
+      "the customer-facing tree names no platform secret or env var",
+      offenders.length === 0,
+      offenders.join("; "),
+    );
   }
 
   // --- Result ---------------------------------------------------------------

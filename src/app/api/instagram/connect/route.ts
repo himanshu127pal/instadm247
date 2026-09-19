@@ -13,10 +13,14 @@ export async function GET() {
   if (!workspace) return NextResponse.redirect(new URL("/login", process.env.APP_URL ?? "http://localhost:3000"));
 
   if (!isInstagramConfigured()) {
-    const missing = missingInstagramConfig().join(", ");
+    // Log which credential is missing for us; tell the customer only that it is
+    // ours to fix. Our env var names are not their business.
+    console.error(
+      `[instagram:connect] refused — missing ${missingInstagramConfig().join(", ")}`,
+    );
     return NextResponse.redirect(
       new URL(
-        `/dashboard/settings?error=${encodeURIComponent(`Instagram isn't configured on this server yet. Missing: ${missing}`)}`,
+        `/dashboard/accounts?error=${encodeURIComponent("Connecting Instagram is temporarily unavailable. This is on our side — please try again shortly.")}`,
         process.env.APP_URL ?? "http://localhost:3000",
       ),
     );

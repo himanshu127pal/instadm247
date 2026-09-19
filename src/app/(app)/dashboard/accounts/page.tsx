@@ -1,8 +1,6 @@
-import { Aperture } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { env, isInstagramConfigured, missingInstagramConfig } from "@/lib/env";
-import { REQUIRED_SCOPES, WEBHOOK_FIELDS } from "@/lib/meta/types";
+import { isInstagramConfigured } from "@/lib/env";
 import { PageHeader } from "@/components/dashboard/bits";
 import { AccountsView } from "@/components/dashboard/accounts-view";
 
@@ -49,19 +47,7 @@ export default async function AccountsPage({
           counts: account._count,
         }))}
         configured={isInstagramConfigured()}
-        missingConfig={missingInstagramConfig()}
-        setup={{
-          appUrl: env.appUrl,
-          webhookUrl: `${env.appUrl}/api/webhooks/instagram`,
-          redirectUri: env.meta.redirectUri,
-          deauthorizeUrl: `${env.appUrl}/api/instagram/deauthorize`,
-          deletionUrl: `${env.appUrl}/api/instagram/data-deletion`,
-          verifyToken: env.meta.webhookVerifyToken,
-          scopes: [...REQUIRED_SCOPES],
-          webhookFields: [...WEBHOOK_FIELDS],
-        }}
         flash={{ connected: params.connected, error: params.error }}
-        icon={<Aperture className="h-5 w-5" />}
       />
     </div>
   );

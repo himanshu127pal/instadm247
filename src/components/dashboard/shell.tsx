@@ -83,14 +83,12 @@ export function DashboardShell({
   workspace,
   accounts,
   instagramConfigured,
-  missingConfig,
   children,
 }: {
   user: { id: string; email: string; name: string | null };
   workspace: { id: string; name: string; planKey: string };
   accounts: Account[];
   instagramConfigured: boolean;
-  missingConfig: string[];
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -102,8 +100,9 @@ export function DashboardShell({
     if (!instagramConfigured) {
       list.push({
         tone: "warning",
-        message: `Instagram isn't configured on this server yet (missing ${missingConfig.join(", ")}). You can explore everything, but live sending is off.`,
-        href: "/dashboard/settings",
+        message:
+          "Connecting Instagram is temporarily unavailable on our side. You can build and edit everything; live sending is off until it clears.",
+        href: "/dashboard/accounts",
       });
     }
     for (const account of accounts) {
@@ -128,7 +127,7 @@ export function DashboardShell({
       }
     }
     return list;
-  }, [accounts, instagramConfigured, missingConfig]);
+  }, [accounts, instagramConfigured]);
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-subtle)]">

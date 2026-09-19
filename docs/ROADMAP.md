@@ -154,6 +154,16 @@ four from the originals if the artwork ever changes.
 
 ## Platform admin (`/admin`)
 
+**`/admin/meta`** holds the Meta app setup — OAuth redirect, webhook callback,
+deauthorize and data-deletion URLs, Graph API version, required scopes, webhook
+fields, and the platform health checks. These lived on the customer dashboard
+(`/dashboard/accounts` and `/dashboard/settings`) until they were moved here.
+That was a leftover from when the app was something one person self-hosted with
+their own Meta app; under the Tech Provider model there is one app and we own
+it. The webhook verify token in particular is a shared secret and was being sent
+to every signed-in customer's browser. The token is additionally restricted to
+`role === "admin"` — support staff have no use for it.
+
 Staff tooling, deliberately separate from workspace membership. Access is
 granted by listing an email in `PLATFORM_ADMIN_EMAILS` or
 `PLATFORM_SUPPORT_EMAILS` — there is no invite flow, so granting and revoking

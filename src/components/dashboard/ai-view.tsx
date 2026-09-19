@@ -67,11 +67,13 @@ export function AiAgentView({
         <div className="flex items-start gap-3 rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)]/40 shadow-[4px_4px_0_0_var(--shadow-ink)] p-5">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-zonk-500)]" />
           <div>
-            <p className="text-[14px] font-medium text-[var(--text)]">No model key configured</p>
+            <p className="text-[14px] font-medium text-[var(--text)]">
+              Generated replies are temporarily unavailable
+            </p>
             <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-muted)]">
-              Add <code className="font-mono">ANTHROPIC_API_KEY</code> to enable generated
-              replies. Until then the AI step falls back to your knowledge base article
-              directly, or the fallback message — it never blocks a flow.
+              This is on our side. Until it clears, the AI step falls back to your
+              knowledge base article directly, or to your fallback message — it never
+              blocks a flow.
             </p>
           </div>
         </div>
