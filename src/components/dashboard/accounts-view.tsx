@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   AlertTriangle,
-  CheckCircle2,
   Link2,
   Plus,
   RefreshCw,
@@ -14,7 +13,6 @@ import {
   Workflow,
 } from "lucide-react";
 import { Badge, Button, EmptyState } from "@/components/ui";
-import { CopyField, SectionCard } from "@/components/dashboard/bits";
 import { initials, timeAgo } from "@/lib/utils";
 
 type Account = {
@@ -35,31 +33,14 @@ type Account = {
   counts: { automations: number; contacts: number; media: number };
 };
 
-type Setup = {
-  appUrl: string;
-  webhookUrl: string;
-  redirectUri: string;
-  deauthorizeUrl: string;
-  deletionUrl: string;
-  verifyToken: string;
-  scopes: string[];
-  webhookFields: string[];
-};
-
 export function AccountsView({
   accounts,
   configured,
-  missingConfig,
-  setup,
   flash,
-  icon,
 }: {
   accounts: Account[];
   configured: boolean;
-  missingConfig: string[];
-  setup: Setup;
   flash: { connected?: string; error?: string };
-  icon: React.ReactNode;
 }) {
   const router = useRouter();
   const [busy, setBusy] = React.useState<string | null>(null);
@@ -113,12 +94,12 @@ export function AccountsView({
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-zonk-500)]" />
             <div className="space-y-2">
               <p className="text-[14px] font-medium text-[var(--text)]">
-                Instagram isn&rsquo;t configured on this server yet
+                Connecting Instagram is temporarily unavailable
               </p>
               <p className="text-[13px] leading-relaxed text-[var(--text-muted)]">
-                Add {missingConfig.map((key) => <code key={key} className="font-mono">{key} </code>)}
-                to your environment and restart. Everything else in the app works without
-                them — you just can&rsquo;t connect a live account or send real DMs.
+                This is on our side, not yours, and we&rsquo;re on it. Everything else in
+                the app keeps working — you can build flows now and connect an account
+                once this clears.
               </p>
             </div>
           </div>
@@ -246,51 +227,6 @@ export function AccountsView({
           </a>
         </div>
       )}
-
-      <SectionCard
-        title="Meta app configuration"
-        description="These are the URLs to paste into your app on developers.facebook.com."
-      >
-        <div className="space-y-4">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <CopyField label="OAuth redirect URL" value={setup.redirectUri} />
-            <CopyField label="Webhook callback URL" value={setup.webhookUrl} />
-            <CopyField label="Webhook verify token" value={setup.verifyToken} />
-            <CopyField label="Deauthorize callback URL" value={setup.deauthorizeUrl} />
-            <CopyField label="Data deletion request URL" value={setup.deletionUrl} />
-          </div>
-
-          <div>
-            <p className="mb-1.5 text-[12.5px] font-medium">Permissions to request</p>
-            <div className="flex flex-wrap gap-1.5">
-              {setup.scopes.map((scope) => (
-                <Badge key={scope} tone="brand">
-                  {scope}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-1.5 text-[12.5px] font-medium">Webhook fields to subscribe</p>
-            <div className="flex flex-wrap gap-1.5">
-              {setup.webhookFields.map((field) => (
-                <Badge key={field}>{field}</Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2.5 rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-boom-500)]" />
-            <p className="text-[12.5px] leading-relaxed text-[var(--text-muted)]">
-              Use <strong className="text-[var(--text)]">API setup with Instagram login</strong> in
-              the Instagram use case — no Facebook Page needed. Advanced Access for the
-              messaging and comments permissions is required before the app works for
-              accounts that don&rsquo;t have a role on it.
-            </p>
-          </div>
-        </div>
-      </SectionCard>
     </div>
   );
 }

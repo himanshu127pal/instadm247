@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getActiveWorkspace, getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { isInstagramConfigured, missingInstagramConfig } from "@/lib/env";
+import { isInstagramConfigured } from "@/lib/env";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { getImpersonation } from "@/lib/impersonation";
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
@@ -42,7 +42,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       workspace={workspace}
       accounts={accounts}
       instagramConfigured={isInstagramConfigured()}
-      missingConfig={missingInstagramConfig()}
     >
         {children}
       </DashboardShell>

@@ -44,6 +44,7 @@ drop items from them, and don't "helpfully" add features that aren't on them.
 | Landing page | Heavily animated, interactive, custom | Owner explicitly rejected "plain AI generated" look. |
 | Logo | **Owner's own files** in `public/brand/`, rendered by `src/components/brand/logo.tsx` | Do not replace them or redraw the mark. They are auto-traced vectors with real constraints — see `docs/ROADMAP.md` §Brand before touching them. |
 | Platform admin | `/admin`, gated by `PLATFORM_ADMIN_EMAILS` / `PLATFORM_SUPPORT_EMAILS` | Staff tooling, separate from workspace roles. Env-var gated so revoking access is a deploy, not a database edit. |
+| Meta app setup UI | `/admin/meta` only — never the customer dashboard | One Tech Provider app, owned by us. Its callback URLs, scopes and **verify token** are ours; the token is a shared secret. |
 | Facebook channel | **Deferred** | Owner's decision. Needs Facebook Login, Page tokens, `pages_messaging` and a second App Review. The adapter seam in `src/lib/meta/` stays. |
 
 ## Architecture in one paragraph
@@ -93,7 +94,12 @@ directly, and don't let a working branch become a second trunk.
    folder is committed with the code. **Never** run `prisma db push` against a
    database holding real data — it reshapes the schema with no record and no
    review step. `prisma/migrations/0_init` is the baseline.
-8. A support session opened by impersonation is **read-only for anything
+8. The customer dashboard never names our infrastructure — no env var names, no
+   Meta app callback URLs, no verify token, no "this server" framing. When
+   something of ours is down, a customer sees that it is ours to fix; the detail
+   goes to the server log and to `/admin/meta`. `pnpm e2e` scans the
+   customer-facing tree for these strings and fails if one reappears.
+9. A support session opened by impersonation is **read-only for anything
    outbound**, and a **suspended workspace cannot send at all**. Both are
    enforced in `dispatch.ts`, not in the UI, and both are covered by `pnpm e2e`.
    Suspension in particular must stop traffic leaving on Meta's API under our
