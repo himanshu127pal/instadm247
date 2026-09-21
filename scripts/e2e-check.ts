@@ -15,6 +15,7 @@ import { PrismaClient } from "@prisma/client";
 import { verifyMetaSignature } from "../src/lib/crypto";
 import { parseWebhook } from "../src/lib/meta/webhooks";
 import { accountIdForEntry, handleEvent } from "../src/lib/engine/ingest";
+import { byEitherInstagramId } from "../src/lib/meta/identity";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -679,6 +680,48 @@ async function main() {
     );
 
     await prisma.contact.delete({ where: { id: subject.id } }).catch(() => undefined);
+  }
+
+  section("Deauthorize and data deletion");
+  {
+    // Meta's signed request on these callbacks carries the app-scoped ID, while
+    // webhooks carry the professional account ID. Matching only one means the
+    // callback silently does nothing — and for deletion, answers "deleted"
+    // while deleting nothing, which is the worst way to fail a compliance path.
+    const scoped = `e2e_del_scoped_${Date.now()}`;
+    await prisma.instagramAccount.update({
+      where: { id: account.id },
+      data: { igScopedId: scoped },
+    });
+
+    const viaScoped = await prisma.instagramAccount.findMany({
+      where: byEitherInstagramId(scoped),
+      select: { id: true },
+    });
+    check(
+      "a callback carrying the app-scoped id finds the account",
+      viaScoped.length === 1 && viaScoped[0]?.id === account.id,
+    );
+
+    const viaReal = await prisma.instagramAccount.findMany({
+      where: byEitherInstagramId(account.igUserId),
+      select: { id: true },
+    });
+    check(
+      "a callback carrying the professional id finds the same account",
+      viaReal.length === 1 && viaReal[0]?.id === account.id,
+    );
+
+    const viaOther = await prisma.instagramAccount.findMany({
+      where: byEitherInstagramId("e2e_nobody"),
+      select: { id: true },
+    });
+    check("a callback for an unknown id matches nothing", viaOther.length === 0);
+
+    await prisma.instagramAccount.update({
+      where: { id: account.id },
+      data: { igScopedId: null },
+    });
   }
 
   section("Webhook delivery log");
