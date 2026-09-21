@@ -14,6 +14,7 @@ const NAV = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/customers", label: "Customers" },
   { href: "/admin/meta", label: "Meta app" },
+  { href: "/admin/webhooks", label: "Webhooks" },
   { href: "/admin/audit", label: "Audit log" },
 ];
 

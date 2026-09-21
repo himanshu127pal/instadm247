@@ -56,6 +56,20 @@ async function accountForEvent(igUserId: string) {
   });
 }
 
+/**
+ * The same match, returning just the id — for the intake route, which records
+ * the delivery before anything is processed. It has to agree with
+ * `accountForEvent`: if intake files an event as unmatched that the processor
+ * would have matched, the admin delivery log accuses the wrong thing.
+ */
+export async function accountIdForEntry(igUserId: string): Promise<string | null> {
+  const account = await prisma.instagramAccount.findFirst({
+    where: { OR: [{ igUserId }, { igScopedId: igUserId }] },
+    select: { id: true },
+  });
+  return account?.id ?? null;
+}
+
 export async function handleEvent(event: NormalizedEvent): Promise<void> {
   const account = await accountForEvent(event.igUserId);
   if (!account) {

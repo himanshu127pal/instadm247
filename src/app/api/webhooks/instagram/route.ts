@@ -4,7 +4,7 @@ import { env } from "@/lib/env";
 import { verifyMetaSignature } from "@/lib/crypto";
 import { parseWebhook } from "@/lib/meta/webhooks";
 import { enqueue } from "@/lib/engine/queues";
-import { processWebhookEvent } from "@/lib/engine/ingest";
+import { accountIdForEntry, processWebhookEvent } from "@/lib/engine/ingest";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -68,17 +68,14 @@ async function intake(body: unknown) {
   const { events, effects } = parseWebhook(body);
 
   for (const event of events) {
-    const account = await prisma.instagramAccount.findUnique({
-      where: { igUserId: event.igUserId },
-      select: { id: true },
-    });
+    const accountId = await accountIdForEntry(event.igUserId);
 
     // The unique dedupeKey is what makes Meta's duplicate notifications on
     // boosted posts harmless.
     const record = await prisma.webhookEvent
       .create({
         data: {
-          accountId: account?.id ?? null,
+          accountId,
           dedupeKey: event.dedupeKey,
           field: event.kind,
           payload: { event } as object,
@@ -98,16 +95,13 @@ async function intake(body: unknown) {
   }
 
   for (const effect of effects) {
-    const account = await prisma.instagramAccount.findUnique({
-      where: { igUserId: effect.igUserId },
-      select: { id: true },
-    });
+    const accountId = await accountIdForEntry(effect.igUserId);
 
     const key = `effect:${effect.type}:${effect.igUserId}:${"igsid" in effect ? effect.igsid : ""}:${effect.at.getTime()}`;
     const record = await prisma.webhookEvent
       .create({
         data: {
-          accountId: account?.id ?? null,
+          accountId,
           dedupeKey: key,
           field: effect.type,
           payload: { effect } as object,
