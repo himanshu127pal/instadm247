@@ -681,6 +681,52 @@ async function main() {
     await prisma.contact.delete({ where: { id: subject.id } }).catch(() => undefined);
   }
 
+  section("Instagram account identity");
+  {
+    // Instagram Login issues two IDs. The token exchange returns the app-scoped
+    // one; Graph calls and webhook payloads use the professional account ID
+    // from /me. Storing the wrong one fails two ways: subscribed_apps is
+    // refused outright, and any webhook that did arrive matches no account and
+    // is dropped without a trace.
+    const scoped = `e2e_scoped_${Date.now()}`;
+    await prisma.instagramAccount.update({
+      where: { id: account.id },
+      data: { igScopedId: scoped },
+    });
+
+    const viaReal = await prisma.instagramAccount.findFirst({
+      where: { OR: [{ igUserId: account.igUserId }, { igScopedId: account.igUserId }] },
+    });
+    check("an event carrying the professional account ID resolves", viaReal?.id === account.id);
+
+    const viaScoped = await prisma.instagramAccount.findFirst({
+      where: { OR: [{ igUserId: scoped }, { igScopedId: scoped }] },
+    });
+    check("an event carrying the app-scoped ID resolves to the same account", viaScoped?.id === account.id);
+
+    const viaNeither = await prisma.instagramAccount.findFirst({
+      where: { OR: [{ igUserId: "e2e_not_a_real_id" }, { igScopedId: "e2e_not_a_real_id" }] },
+    });
+    check("an unknown id still matches nothing", viaNeither === null);
+
+    // subscribed_apps must be addressed as `me`: the app-scoped ID is refused
+    // with "Object with ID … does not exist", which is what sent us here.
+    const paths: string[] = [];
+    const probe = new InstagramClient("token", "28762102583480360");
+    (probe as unknown as { request: (p: string, i?: unknown) => Promise<unknown> }).request =
+      async (path: string) => {
+        paths.push(path);
+        return { success: true };
+      };
+    await probe.subscribeWebhooks();
+    check("subscribe addresses /me, not the stored id", paths[0] === "/me/subscribed_apps");
+
+    await prisma.instagramAccount.update({
+      where: { id: account.id },
+      data: { igScopedId: null },
+    });
+  }
+
   section("Webhook subscription fallback");
   {
     // Meta validates subscribed_fields as a set: one field the app has not

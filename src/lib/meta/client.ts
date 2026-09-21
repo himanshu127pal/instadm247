@@ -273,8 +273,19 @@ export class InstagramClient {
 
   // --- Webhooks -----------------------------------------------------------
 
+  /**
+   * Subscribe this account to our webhook fields.
+   *
+   * Addressed as `me` rather than by ID on purpose. Instagram Login hands back
+   * two identifiers — the app-scoped ID from the token exchange and the
+   * Instagram professional account ID on /me — and `subscribed_apps` accepts
+   * only the latter, failing with "Object with ID '…' does not exist, cannot be
+   * loaded due to missing permissions, or does not support this operation" for
+   * the former. The token already identifies the account, so `me` removes the
+   * choice.
+   */
   subscribeWebhooks(fields: readonly string[] = WEBHOOK_FIELDS): Promise<{ success: boolean }> {
-    return this.request(`/${this.igUserId}/subscribed_apps`, {
+    return this.request(`/me/subscribed_apps`, {
       method: "POST",
       params: { subscribed_fields: fields.join(",") },
     });
@@ -306,7 +317,7 @@ export class InstagramClient {
   }
 
   unsubscribeWebhooks(): Promise<{ success: boolean }> {
-    return this.request(`/${this.igUserId}/subscribed_apps`, { method: "DELETE" });
+    return this.request(`/me/subscribed_apps`, { method: "DELETE" });
   }
 }
 
