@@ -27,6 +27,26 @@ export default async function AdminMetaPage() {
   // Support staff have no reason to hold it, so only admins see it.
   const showSecrets = staff?.role === "admin";
 
+  // Instagram matches redirect_uri as an exact string, so the usual near-misses
+  // (a trailing slash, www vs apex, http vs https) all fail identically with
+  // "Invalid redirect_uri" — and the failure happens on instagram.com, so
+  // nothing reaches our logs. Name them here instead of leaving it to guesswork.
+  const redirectProblems: string[] = [];
+  if (env.meta.redirectUri.endsWith("/")) {
+    redirectProblems.push("It ends in a slash. Instagram compares the string exactly.");
+  }
+  if (env.isProd && !env.meta.redirectUri.startsWith("https://")) {
+    redirectProblems.push("It is not https. Instagram rejects http redirects outside localhost.");
+  }
+  if (!env.meta.redirectUri.startsWith(`${env.appUrl}/`)) {
+    redirectProblems.push(
+      `It is not under APP_URL (${env.appUrl}). Check for a www / apex or http / https mismatch.`,
+    );
+  }
+  if (!env.meta.redirectUri.endsWith("/api/instagram/callback")) {
+    redirectProblems.push("It does not end in /api/instagram/callback, which is the route that handles the code.");
+  }
+
   const checks = [
     {
       ok: isInstagramConfigured(),
@@ -76,6 +96,25 @@ export default async function AdminMetaPage() {
           />
         </div>
       </section>
+
+      {redirectProblems.length > 0 && (
+        <section className="rounded-[var(--radius-card)] border-2 border-[var(--color-zonk-500)] bg-[var(--bg-raised)] p-4">
+          <p className="flex items-center gap-2 text-[14px] font-extrabold">
+            <ShieldAlert className="h-4 w-4 text-[var(--color-zonk-500)]" />
+            The redirect URI looks wrong
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-[12.5px] font-semibold text-[var(--text-muted)]">
+            {redirectProblems.map((problem) => (
+              <li key={problem}>{problem}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[12.5px] font-semibold text-[var(--text-muted)]">
+            Whatever is below must also be registered verbatim under{" "}
+            <em>Instagram → API setup with Instagram login → Business login settings → OAuth
+            redirect URIs</em> — not under Facebook Login, which this flow ignores.
+          </p>
+        </section>
+      )}
 
       <section className="grid gap-3 sm:grid-cols-2">
         <CopyField label="OAuth redirect URL" value={env.meta.redirectUri} />

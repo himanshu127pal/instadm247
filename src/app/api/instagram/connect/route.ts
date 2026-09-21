@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getActiveWorkspace } from "@/lib/auth";
-import { isInstagramConfigured, missingInstagramConfig } from "@/lib/env";
+import { env, isInstagramConfigured, missingInstagramConfig } from "@/lib/env";
 import { buildAuthorizeUrl } from "@/lib/meta/oauth";
 import { randomToken } from "@/lib/crypto";
 
@@ -25,6 +25,11 @@ export async function GET() {
       ),
     );
   }
+
+  // Instagram validates redirect_uri as an exact string and fails on its own
+  // domain, so a mismatch leaves no trace here at all. Log what we sent, so the
+  // journal can be compared against the App Dashboard.
+  console.log(`[instagram:connect] redirect_uri=${env.meta.redirectUri}`);
 
   // CSRF: the state is echoed back by Instagram and must match the cookie.
   const state = randomToken(16);
