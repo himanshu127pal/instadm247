@@ -38,6 +38,8 @@ export default async function AccountsPage({
           followersCount: account.followersCount,
           status: account.status,
           webhookSubbed: account.webhookSubbed,
+          webhookError: account.webhookError,
+          webhookFields: account.webhookFields,
           automationPaused: account.automationPaused,
           pausedReason: account.pausedReason,
           slowDownUntil: account.slowDownUntil?.toISOString() ?? null,

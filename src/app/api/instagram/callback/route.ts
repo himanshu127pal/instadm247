@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
+import { subscribeAccountWebhooks } from "@/lib/meta/webhook-subscribe";
 import { env } from "@/lib/env";
 import { encrypt } from "@/lib/crypto";
 import { exchangeCodeForToken, exchangeForLongLivedToken } from "@/lib/meta/oauth";
@@ -82,15 +83,12 @@ export async function GET(request: Request) {
       },
     });
 
-    // Without this subscription no webhooks arrive and nothing automates.
-    try {
-      await client.subscribeWebhooks();
-      await prisma.instagramAccount.update({
-        where: { id: account.id },
-        data: { webhookSubbed: true },
-      });
-    } catch (subscribeError) {
-      console.error("[oauth] webhook subscription failed", subscribeError);
+    // Without this subscription no webhooks arrive and nothing automates. The
+    // outcome is recorded on the account either way — a swallowed failure here
+    // used to leave the dashboard advising a reconnect that could not help.
+    const subscription = await subscribeAccountWebhooks(account.id);
+    if (!subscription.ok) {
+      console.error(`[oauth] webhook subscription failed: ${subscription.error}`);
     }
 
     // Best-effort media sync so the media picker is populated straight away.

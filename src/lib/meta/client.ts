@@ -6,6 +6,7 @@ import {
   type IgUserProfile,
   type OutboundMessage,
   type SendTarget,
+  CORE_WEBHOOK_FIELDS,
   WEBHOOK_FIELDS,
 } from "./types";
 
@@ -272,11 +273,36 @@ export class InstagramClient {
 
   // --- Webhooks -----------------------------------------------------------
 
-  subscribeWebhooks(): Promise<{ success: boolean }> {
+  subscribeWebhooks(fields: readonly string[] = WEBHOOK_FIELDS): Promise<{ success: boolean }> {
     return this.request(`/${this.igUserId}/subscribed_apps`, {
       method: "POST",
-      params: { subscribed_fields: WEBHOOK_FIELDS.join(",") },
+      params: { subscribed_fields: fields.join(",") },
     });
+  }
+
+  /**
+   * Subscribe, degrading to the core fields if the full list is refused.
+   *
+   * Meta validates `subscribed_fields` as a set: one field the app has not
+   * enabled fails the whole request, and the account then receives nothing at
+   * all. Comment and DM triggers are the product, so it is worth a second
+   * attempt with just those rather than leaving the account dark.
+   */
+  async subscribeWebhooksWithFallback(): Promise<{
+    fields: string[];
+    degraded: boolean;
+    fullListError?: string;
+  }> {
+    try {
+      await this.subscribeWebhooks(WEBHOOK_FIELDS);
+      return { fields: [...WEBHOOK_FIELDS], degraded: false };
+    } catch (error) {
+      const fullListError = (error as Error).message;
+      // Rethrow if the core set fails too — that is a different problem
+      // (unverified callback URL, missing permission) and the caller reports it.
+      await this.subscribeWebhooks(CORE_WEBHOOK_FIELDS);
+      return { fields: [...CORE_WEBHOOK_FIELDS], degraded: true, fullListError };
+    }
   }
 
   unsubscribeWebhooks(): Promise<{ success: boolean }> {

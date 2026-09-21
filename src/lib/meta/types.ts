@@ -33,6 +33,16 @@ export const WEBHOOK_FIELDS = [
   "messaging_policy_enforcement",
 ] as const;
 
+/**
+ * The fields the product cannot work without: comment triggers and DM triggers.
+ *
+ * Meta rejects a `subscribed_apps` call outright if any single field in it is
+ * not enabled on the app, so an app missing one of the optional fields would
+ * otherwise get no webhooks at all. We retry with this set so the core features
+ * still run, and record what was dropped.
+ */
+export const CORE_WEBHOOK_FIELDS = ["comments", "messages"] as const;
+
 export type IgProfile = {
   user_id?: string;
   id?: string;
