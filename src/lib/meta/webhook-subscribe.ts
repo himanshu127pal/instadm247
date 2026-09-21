@@ -17,6 +17,35 @@ import { InstagramClient } from "./client";
  * None of those are fixed by reconnecting the account, which is what the
  * dashboard used to advise, so the message matters more than the retry.
  */
+/**
+ * Turn per-field refusals into one line someone can act on.
+ *
+ * Meta answers an unknown field name with the full set it does accept, which is
+ * long and identical for every field — so the reasons are grouped rather than
+ * listed per field, and the difference that matters is called out: a field
+ * Instagram does not offer at all is ours to remove from the code, while a
+ * field it offers but refuses is one the app has not enabled.
+ */
+function describeRefusals(refused: string[], reasons: Record<string, string>): string {
+  const unknown = refused.filter((f) => /must be one of/i.test(reasons[f] ?? ""));
+  const notEnabled = refused.filter((f) => !unknown.includes(f));
+
+  const parts: string[] = [];
+  if (notEnabled.length) {
+    parts.push(
+      `Instagram refused ${notEnabled.join(", ")} — most often these are simply not ticked on the app under Instagram → Configure webhooks. Enable them there, then use Retry subscription.`,
+    );
+  }
+  if (unknown.length) {
+    parts.push(
+      `Instagram does not offer ${unknown.join(", ")} on this login type at all; that is ours to fix, not yours.`,
+    );
+  }
+  const sample = reasons[refused[0]];
+  if (sample) parts.push(`Meta said: ${sample}`);
+  return parts.join(" ");
+}
+
 export async function subscribeAccountWebhooks(accountId: string): Promise<{
   ok: boolean;
   degraded: boolean;
@@ -52,9 +81,7 @@ export async function subscribeAccountWebhooks(accountId: string): Promise<{
         webhookSubbed: true,
         webhookFields: result.fields,
         lastWebhookTryAt: new Date(),
-        webhookError: result.degraded
-          ? `Instagram refused ${result.refused.join(", ")}. Enable those fields on the app under Instagram → Configure webhooks, then retry. Meta said: ${result.fullListError}`
-          : null,
+        webhookError: result.degraded ? describeRefusals(result.refused, result.reasons) : null,
       },
     });
     return { ok: true, degraded: result.degraded, fields: result.fields };

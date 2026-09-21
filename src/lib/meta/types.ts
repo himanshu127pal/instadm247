@@ -19,7 +19,30 @@ export const REQUIRED_SCOPES: IgScope[] = [
   "instagram_business_content_publish",
 ];
 
-/** Webhook fields we subscribe to. See docs/META_API.md §4. */
+/**
+ * Webhook fields we subscribe to. See docs/META_API.md §4.
+ *
+ * Every entry must appear in the set Instagram Login accepts, which Meta
+ * returns verbatim when one does not:
+ *
+ *   agent_messages, messages, messaging_postbacks, messaging_seen,
+ *   messaging_handover, messaging_referral, messaging_optins,
+ *   message_reactions, message_edit, standby, comments, live_comments,
+ *   mentions, story_insights, creator_marketplace_projects,
+ *   creator_marketplace_invited_creator_onboarding, delta, story_reactions,
+ *   onboarding_welcome_message_series, follow, comment_poll_response,
+ *   story_poll_response, share_to_story
+ *
+ * `messaging_policy_enforcement` used to be in this list and is not in that
+ * set — it belongs to the Messenger/Facebook Login surface, not this one. One
+ * invalid name fails the whole subscription, so it took every other field down
+ * with it and left connected accounts on comments and messages alone.
+ *
+ * Note that story mentions do NOT come from `mentions`: they arrive on
+ * `messages` as an attachment of type `story_mention`, which is why that
+ * feature works without it. `mentions` is caption and comment @mentions, a
+ * feature not in docs/FEATURES.md — don't add it without adding the feature.
+ */
 export const WEBHOOK_FIELDS = [
   "comments",
   "live_comments",
@@ -30,7 +53,6 @@ export const WEBHOOK_FIELDS = [
   "messaging_seen",
   "message_reactions",
   "messaging_handover",
-  "messaging_policy_enforcement",
 ] as const;
 
 /**

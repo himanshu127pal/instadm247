@@ -843,12 +843,37 @@ async function main() {
     );
 
     // Several refused fields, to be sure the probe is not finding only the first.
-    const multi = clientRefusing(["messaging_handover", "messaging_policy_enforcement"]);
+    const multi = clientRefusing(["messaging_handover", "messaging_seen"]);
     const multiResult = await multi.client.subscribeWebhooksWithFallback();
     check(
       "several refused fields are all found",
       multiResult.refused.length === 2 &&
         multiResult.fields.length === WEBHOOK_FIELDS.length - 2,
+    );
+
+    check(
+      "each refused field keeps its own reason",
+      multiResult.reasons["messaging_handover"]?.includes("messaging_handover") === true &&
+        multiResult.reasons["messaging_seen"]?.includes("messaging_seen") === true,
+    );
+
+    // Every name we ask for must be one Instagram Login actually offers. One
+    // invalid name fails the whole subscription and takes the valid fields down
+    // with it, which is how connected accounts ended up on two fields.
+    const OFFERED = new Set([
+      "agent_messages", "messages", "messaging_postbacks", "messaging_seen",
+      "messaging_handover", "messaging_referral", "messaging_optins",
+      "message_reactions", "message_edit", "standby", "comments", "live_comments",
+      "mentions", "story_insights", "creator_marketplace_projects",
+      "creator_marketplace_invited_creator_onboarding", "delta", "story_reactions",
+      "onboarding_welcome_message_series", "follow", "comment_poll_response",
+      "story_poll_response", "share_to_story",
+    ]);
+    const notOffered = WEBHOOK_FIELDS.filter((f) => !OFFERED.has(f));
+    check(
+      "every field we request is one Instagram Login offers",
+      notOffered.length === 0,
+      notOffered.join(", "),
     );
 
     // When the core set fails too the caller must hear about it, not get a

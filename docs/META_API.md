@@ -73,8 +73,38 @@ Webhook fields we subscribe to (Instagram Login permission column):
 | `messaging_seen` | `instagram_business_manage_messages` | Read receipts → powers "Opened" analytics |
 | `message_reactions` | `instagram_business_manage_messages` | Reactions |
 | `messaging_handover` | `instagram_business_manage_messages` | Handover protocol |
-| `messaging_policy_enforcement` | — | **Policy violations. Surface these loudly in the Safety Center.** |
 | `message_echoes` | `instagram_business_manage_comments` | Echoes of messages we sent, incl. `is_self` |
+
+**`messaging_policy_enforcement` is not available on this login type.** It was in
+the list until Instagram answered the subscription with the set it does accept,
+reproduced below. One invalid name fails the whole `subscribed_apps` call, so it
+took every valid field down with it and left connected accounts subscribed to
+nothing. The Safety Center no longer implies it is watching for policy notices
+it cannot receive.
+
+The set Instagram Login accepts, verbatim from Meta's error:
+
+```
+agent_messages, messages, messaging_postbacks, messaging_seen,
+messaging_handover, messaging_referral, messaging_optins, message_reactions,
+message_edit, standby, comments, live_comments, mentions, story_insights,
+creator_marketplace_projects, creator_marketplace_invited_creator_onboarding,
+delta, story_reactions, onboarding_welcome_message_series, follow,
+comment_poll_response, story_poll_response, share_to_story
+```
+
+`pnpm e2e` checks `WEBHOOK_FIELDS` against that set, so an invalid name fails in
+CI rather than on a customer's account.
+
+**`mentions` is not story mentions.** Story mentions arrive on `messages` as an
+attachment of type `story_mention`; `mentions` is caption and comment @mentions,
+which is not a feature in `docs/FEATURES.md`. Don't subscribe to it without
+building the feature.
+
+A field being valid is not the same as it being available: it must also be
+enabled on the app under *Instagram → Configure webhooks*. A valid-but-unticked
+field is refused per-account, which is why the subscriber probes each field and
+reports the two cases differently.
 
 Envelope shape: `{ object: "instagram", entry: [ { id, time, messaging: [...] | changes: [...] } ] }`.
 
