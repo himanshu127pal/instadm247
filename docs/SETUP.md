@@ -55,10 +55,20 @@ openssl rand -base64 32   # ENCRYPTION_KEY (must decode to exactly 32 bytes)
 1. Create an app at **developers.facebook.com** and add the **Instagram** use case.
 2. Choose **API setup with Instagram login** (not Facebook login) — this is the
    path that doesn't require a linked Facebook Page.
-3. Copy the Instagram **App ID** and **App secret** into `META_APP_ID` and
-   `META_APP_SECRET`, then restart.
-4. In the App Dashboard, paste the URLs shown on **Dashboard → Instagram
-   accounts** (they're also on **Settings**):
+3. Copy the **Instagram app ID** and **Instagram app secret** into `META_APP_ID`
+   and `META_APP_SECRET`, then restart.
+
+   > **These are not the Facebook App ID and secret.** The number at the top of
+   > the App Dashboard, and the pair under *App settings → Basic*, belong to the
+   > Facebook app. Instagram Login issues its own separate pair, found under
+   > **Instagram → API setup with Instagram login → 3. Set up Instagram business
+   > login → Business login settings**. Using the Facebook App ID makes
+   > `instagram.com/oauth/authorize` reject the request with
+   > *"Invalid request: Request parameters are invalid: Invalid platform app"* —
+   > the redirect fails before the creator ever sees a login screen.
+
+4. In the App Dashboard, paste the URLs shown on **/admin/meta** (platform staff
+   only — set `PLATFORM_ADMIN_EMAILS` to reach it):
 
    | Field | Value |
    |---|---|

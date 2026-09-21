@@ -3,6 +3,7 @@ import { getPlatformStaff } from "@/lib/admin";
 import { env, isAiConfigured, isInstagramConfigured, missingInstagramConfig } from "@/lib/env";
 import { redisAvailable } from "@/lib/redis";
 import { REQUIRED_SCOPES, WEBHOOK_FIELDS } from "@/lib/meta/types";
+import { buildAuthorizeUrl } from "@/lib/meta/oauth";
 import { Badge } from "@/components/ui";
 import { CopyField } from "@/components/dashboard/bits";
 
@@ -56,6 +57,25 @@ export default async function AdminMetaPage() {
           connects through it.
         </p>
       </div>
+
+      <section className="space-y-2">
+        <h2 className="text-[16px] font-extrabold">What we send to Instagram</h2>
+        <p className="max-w-2xl text-[12.5px] font-semibold leading-relaxed text-[var(--text-muted)]">
+          The app ID below is the <strong className="text-[var(--text)]">Instagram</strong>{" "}
+          app ID from <em>API setup with Instagram login → Business login settings</em> —
+          not the Facebook App ID from <em>App settings → Basic</em>, which is a different
+          number. If a connect attempt dies at Instagram with{" "}
+          <span className="font-mono">Invalid platform app</span>, it is almost always
+          because the Facebook one is in <span className="font-mono">META_APP_ID</span>.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <CopyField label="Instagram app ID in use" value={env.meta.appId || "(not set)"} />
+          <CopyField
+            label="Authorize URL we redirect to"
+            value={isInstagramConfigured() ? buildAuthorizeUrl("EXAMPLE_STATE") : "(not set)"}
+          />
+        </div>
+      </section>
 
       <section className="grid gap-3 sm:grid-cols-2">
         <CopyField label="OAuth redirect URL" value={env.meta.redirectUri} />
