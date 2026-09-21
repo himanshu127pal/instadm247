@@ -53,7 +53,7 @@ export async function subscribeAccountWebhooks(accountId: string): Promise<{
         webhookFields: result.fields,
         lastWebhookTryAt: new Date(),
         webhookError: result.degraded
-          ? `Subscribed to ${result.fields.join(", ")} only. The full field list was refused: ${result.fullListError}`
+          ? `Instagram refused ${result.refused.join(", ")}. Enable those fields on the app under Instagram → Configure webhooks, then retry. Meta said: ${result.fullListError}`
           : null,
       },
     });

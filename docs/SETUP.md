@@ -85,7 +85,11 @@ openssl rand -base64 32   # ENCRYPTION_KEY (must decode to exactly 32 bytes)
    subscribed" — reconnecting will not clear it, because the cause is app-level.
    Use **Retry subscription** on the account once the app config is fixed.
 6. Subscribe to the webhook fields listed on that page (`comments`,
-   `live_comments`, `messages`, `messaging_postbacks`, …).
+   `live_comments`, `messages`, `messaging_postbacks`, …). **Enable all of
+   them.** Meta validates `subscribed_fields` as a set, so a field left off the
+   app makes the whole subscription call fail; the app works around that by
+   probing each field and keeping what is accepted, but the account then shows
+   which ones it had to give up and the triggers that depend on them stay dead.
 7. Request these permissions: `instagram_business_basic`,
    `instagram_business_manage_messages`, `instagram_business_manage_comments`.
 8. Click **Connect Instagram** in the dashboard.

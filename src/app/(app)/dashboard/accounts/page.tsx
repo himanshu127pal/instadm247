@@ -1,6 +1,7 @@
 import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isInstagramConfigured } from "@/lib/env";
+import { WEBHOOK_FIELDS } from "@/lib/meta/types";
 import { PageHeader } from "@/components/dashboard/bits";
 import { AccountsView } from "@/components/dashboard/accounts-view";
 
@@ -40,6 +41,11 @@ export default async function AccountsPage({
           webhookSubbed: account.webhookSubbed,
           webhookError: account.webhookError,
           webhookFields: account.webhookFields,
+          // Derived rather than stored: the canonical list lives in code, so a
+          // field added later shows up as missing without a backfill.
+          webhookMissingFields: WEBHOOK_FIELDS.filter(
+            (f) => !account.webhookFields.includes(f),
+          ),
           automationPaused: account.automationPaused,
           pausedReason: account.pausedReason,
           slowDownUntil: account.slowDownUntil?.toISOString() ?? null,

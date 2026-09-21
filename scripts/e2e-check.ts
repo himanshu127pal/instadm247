@@ -795,8 +795,8 @@ async function main() {
   {
     // Meta validates subscribed_fields as a set: one field the app has not
     // enabled fails the whole call, and the account then receives nothing at
-    // all. The fallback trades the optional fields for the core ones rather
-    // than leaving the account dark.
+    // all. The fallback probes each field so the account keeps everything that
+    // does work, rather than collapsing to the core two.
     check(
       "the core set is a subset of the full field list",
       CORE_WEBHOOK_FIELDS.every((f) => (WEBHOOK_FIELDS as readonly string[]).includes(f)),
@@ -806,26 +806,49 @@ async function main() {
       CORE_WEBHOOK_FIELDS.includes("comments") && CORE_WEBHOOK_FIELDS.includes("messages"),
     );
 
-    const attempts: string[][] = [];
-    const client = new InstagramClient("token", "igid");
-    // Stand in for the network: refuse the full list the way Meta does, accept
-    // the retry, and record what each attempt asked for.
-    (client as unknown as { subscribeWebhooks: (f: readonly string[]) => Promise<unknown> })
-      .subscribeWebhooks = async (fields: readonly string[]) => {
-      attempts.push([...fields]);
-      if (fields.length > CORE_WEBHOOK_FIELDS.length) {
-        throw new Error("(#100) messaging_handover is not enabled for this app");
-      }
-      return { success: true };
-    };
+    // Stand in for the network: this app has not enabled messaging_handover,
+    // so any request containing it fails — exactly how Meta behaves.
+    const BAD = "messaging_handover";
+    function clientRefusing(bad: string[]) {
+      const attempts: string[][] = [];
+      const client = new InstagramClient("token", "igid");
+      (client as unknown as { subscribeWebhooks: (f: readonly string[]) => Promise<unknown> })
+        .subscribeWebhooks = async (fields: readonly string[]) => {
+        attempts.push([...fields]);
+        if (fields.some((f) => bad.includes(f))) {
+          throw new Error(`(#100) ${bad.join(", ")} is not enabled for this app`);
+        }
+        return { success: true };
+      };
+      return { client, attempts };
+    }
 
+    const { client, attempts } = clientRefusing([BAD]);
     const result = await client.subscribeWebhooksWithFallback();
+
     check("the full list is tried first", attempts[0]?.length === WEBHOOK_FIELDS.length);
-    check("a refused field list retries with the core set", attempts.length === 2);
     check("the fallback reports itself as degraded", result.degraded === true);
+    check("the refused field is named", result.refused.join() === BAD);
+    check(
+      "every other field is kept, not just the core two",
+      result.fields.length === WEBHOOK_FIELDS.length - 1 && !result.fields.includes(BAD),
+    );
+    check(
+      "the subscription ends on the full accepted set",
+      attempts[attempts.length - 1]?.join() === result.fields.join(),
+    );
     check(
       "the fallback keeps Meta's reason for the operator",
-      (result.fullListError ?? "").includes("messaging_handover"),
+      (result.fullListError ?? "").includes(BAD),
+    );
+
+    // Several refused fields, to be sure the probe is not finding only the first.
+    const multi = clientRefusing(["messaging_handover", "messaging_policy_enforcement"]);
+    const multiResult = await multi.client.subscribeWebhooksWithFallback();
+    check(
+      "several refused fields are all found",
+      multiResult.refused.length === 2 &&
+        multiResult.fields.length === WEBHOOK_FIELDS.length - 2,
     );
 
     // When the core set fails too the caller must hear about it, not get a
