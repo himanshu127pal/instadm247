@@ -44,6 +44,7 @@ drop items from them, and don't "helpfully" add features that aren't on them.
 | Landing page | Heavily animated, interactive, custom | Owner explicitly rejected "plain AI generated" look. |
 | Logo | **Owner's own files** in `public/brand/`, rendered by `src/components/brand/logo.tsx` | Do not replace them or redraw the mark. They are auto-traced vectors with real constraints — see `docs/ROADMAP.md` §Brand before touching them. |
 | Platform admin | `/admin`, gated by `PLATFORM_ADMIN_EMAILS` / `PLATFORM_SUPPORT_EMAILS` | Staff tooling, separate from workspace roles. Env-var gated so revoking access is a deploy, not a database edit. |
+| Webhook delivery log | `/admin/webhooks`, staff only; reading a raw payload is audited | Payloads carry a follower's message text and scoped ID — the customer's data about a third party. Metadata is browsable; the payload is a deliberate, logged click. |
 | Meta app setup UI | `/admin/meta` only — never the customer dashboard | One Tech Provider app, owned by us. Its callback URLs, scopes and **verify token** are ours; the token is a shared secret. |
 | Facebook channel | **Deferred** | Owner's decision. Needs Facebook Login, Page tokens, `pages_messaging` and a second App Review. The adapter seam in `src/lib/meta/` stays. |
 

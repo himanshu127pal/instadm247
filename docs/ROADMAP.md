@@ -154,6 +154,13 @@ four from the originals if the artwork ever changes.
 
 ## Platform admin (`/admin`)
 
+**`/admin/webhooks`** lists every delivery Instagram has sent, newest first,
+filterable by customer, account, field and state. "Unmatched" is the one that
+earns its place: a delivery stored with no `accountId` means Instagram got its
+200 and considers the event delivered, while nothing ran — invisible from every
+other screen. The per-customer view is linked from the customer detail page.
+Payloads are purged at 30 days by the existing maintenance job.
+
 **`/admin/meta`** holds the Meta app setup — OAuth redirect, webhook callback,
 deauthorize and data-deletion URLs, Graph API version, required scopes, webhook
 fields, and the platform health checks. These lived on the customer dashboard

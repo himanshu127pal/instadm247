@@ -84,7 +84,15 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
             <ul className="space-y-2">
               {w.accounts.map((a) => (
                 <li key={a.id} className="flex items-center justify-between gap-3 text-[13px]">
-                  <span className="font-bold">@{a.username}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="font-bold">@{a.username}</span>
+                    <Link
+                      href={`/admin/webhooks?accountId=${a.id}`}
+                      className="text-[11.5px] font-semibold text-[var(--text-faint)] underline underline-offset-2 hover:text-[var(--text)]"
+                    >
+                      webhooks
+                    </Link>
+                  </span>
                   <span className="flex items-center gap-2 text-[12px] font-semibold text-[var(--text-faint)]">
                     <span>{a.status}</span>
                     {a.automationPaused && (
@@ -98,6 +106,19 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
               ))}
             </ul>
           )}
+        </Panel>
+
+        <Panel title="Webhook deliveries">
+          <p className="text-[13px] font-semibold text-[var(--text-muted)]">
+            Everything Instagram has sent for this customer in the last 30 days — the
+            first place to look when their automations are not firing.
+          </p>
+          <Link
+            href={`/admin/webhooks?workspaceId=${w.id}`}
+            className="mt-2 inline-block text-[13px] font-bold underline underline-offset-2"
+          >
+            Open the delivery log →
+          </Link>
         </Panel>
 
         <Panel title="Members">

@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { verifyMetaSignature } from "../src/lib/crypto";
 import { parseWebhook } from "../src/lib/meta/webhooks";
-import { handleEvent } from "../src/lib/engine/ingest";
+import { accountIdForEntry, handleEvent } from "../src/lib/engine/ingest";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -679,6 +679,70 @@ async function main() {
     );
 
     await prisma.contact.delete({ where: { id: subject.id } }).catch(() => undefined);
+  }
+
+  section("Webhook delivery log");
+  {
+    const { listWebhookEvents, webhookSummary } = await import("../src/lib/admin-queries");
+
+    // Intake records the delivery before anything is processed, so its account
+    // match has to agree with the processor's. If intake files an event as
+    // unmatched that the processor would have matched, the admin log accuses
+    // the wrong thing and sends someone chasing a phantom.
+    const scoped = `e2e_log_scoped_${Date.now()}`;
+    await prisma.instagramAccount.update({
+      where: { id: account.id },
+      data: { igScopedId: scoped },
+    });
+
+    check(
+      "intake matches on the professional account ID",
+      (await accountIdForEntry(account.igUserId)) === account.id,
+    );
+    check(
+      "intake matches on the app-scoped ID too",
+      (await accountIdForEntry(scoped)) === account.id,
+    );
+    check(
+      "intake reports no match for an unknown id",
+      (await accountIdForEntry("e2e_unknown_entry_id")) === null,
+    );
+
+    // An unmatched delivery must still be stored: it is the only evidence that
+    // Instagram is sending anything at all.
+    const orphan = await prisma.webhookEvent.create({
+      data: {
+        accountId: null,
+        dedupeKey: `e2e_orphan_${Date.now()}`,
+        field: "comments",
+        payload: { event: { note: "e2e" } } as object,
+      },
+    });
+
+    const unmatched = await listWebhookEvents({ state: "unmatched", limit: 50 });
+    check(
+      "an unmatched delivery is listed, not dropped",
+      unmatched.some((r) => r.id === orphan.id),
+    );
+    check(
+      "an unmatched delivery reports no customer",
+      unmatched.find((r) => r.id === orphan.id)?.workspaceId === null,
+    );
+
+    const scopedToAccount = await listWebhookEvents({ accountId: account.id, limit: 50 });
+    check(
+      "filtering by account excludes other customers' deliveries",
+      scopedToAccount.every((r) => r.accountId === account.id),
+    );
+
+    const summary = await webhookSummary();
+    check("the summary counts the unmatched delivery", summary.unmatched >= 1);
+
+    await prisma.webhookEvent.delete({ where: { id: orphan.id } }).catch(() => undefined);
+    await prisma.instagramAccount.update({
+      where: { id: account.id },
+      data: { igScopedId: null },
+    });
   }
 
   section("Instagram account identity");

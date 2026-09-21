@@ -230,3 +230,139 @@ export async function recentAudit(limit = 100) {
     include: { actor: { select: { email: true } } },
   });
 }
+
+// --- Webhook delivery log ---------------------------------------------------
+
+export type WebhookRow = {
+  id: string;
+  field: string;
+  createdAt: Date;
+  processed: boolean;
+  processedAt: Date | null;
+  error: string | null;
+  accountId: string | null;
+  username: string | null;
+  workspaceId: string | null;
+  workspaceName: string | null;
+};
+
+export type WebhookFilter = {
+  workspaceId?: string;
+  accountId?: string;
+  field?: string;
+  /** "all" | "failed" | "unprocessed" | "unmatched" */
+  state?: string;
+  limit?: number;
+};
+
+function webhookWhere(filter: WebhookFilter) {
+  const where: Record<string, unknown> = {};
+  if (filter.accountId) where.accountId = filter.accountId;
+  else if (filter.workspaceId) where.account = { workspaceId: filter.workspaceId };
+  if (filter.field) where.field = filter.field;
+
+  // "unmatched" is the one that matters when nothing is firing: the delivery
+  // arrived and was stored, but no account claimed it, so no flow ever ran.
+  if (filter.state === "unmatched") where.accountId = null;
+  else if (filter.state === "failed") where.error = { not: null };
+  else if (filter.state === "unprocessed") where.processed = false;
+
+  return where;
+}
+
+export async function listWebhookEvents(filter: WebhookFilter = {}): Promise<WebhookRow[]> {
+  const rows = await prisma.webhookEvent.findMany({
+    where: webhookWhere(filter),
+    orderBy: { createdAt: "desc" },
+    take: Math.min(filter.limit ?? 100, 500),
+    select: {
+      id: true,
+      field: true,
+      createdAt: true,
+      processed: true,
+      processedAt: true,
+      error: true,
+      accountId: true,
+      account: {
+        select: { username: true, workspaceId: true, workspace: { select: { name: true } } },
+      },
+    },
+  });
+
+  return rows.map((r) => ({
+    id: r.id,
+    field: r.field,
+    createdAt: r.createdAt,
+    processed: r.processed,
+    processedAt: r.processedAt,
+    error: r.error,
+    accountId: r.accountId,
+    username: r.account?.username ?? null,
+    workspaceId: r.account?.workspaceId ?? null,
+    workspaceName: r.account?.workspace.name ?? null,
+  }));
+}
+
+/** Counts for the filter chips, so an empty list is distinguishable from a filtered one. */
+export async function webhookSummary(filter: WebhookFilter = {}): Promise<{
+  total: number;
+  failed: number;
+  unprocessed: number;
+  unmatched: number;
+  last24h: number;
+  lastAt: Date | null;
+  byField: Array<{ field: string; count: number }>;
+}> {
+  const scope = { ...filter, state: undefined, field: undefined };
+  const base = webhookWhere(scope);
+  const since = new Date(Date.now() - DAY);
+
+  const [total, failed, unprocessed, unmatched, last24h, latest, grouped] = await Promise.all([
+    prisma.webhookEvent.count({ where: base }),
+    prisma.webhookEvent.count({ where: { ...base, error: { not: null } } }),
+    prisma.webhookEvent.count({ where: { ...base, processed: false } }),
+    prisma.webhookEvent.count({ where: { ...base, accountId: null } }),
+    prisma.webhookEvent.count({ where: { ...base, createdAt: { gte: since } } }),
+    prisma.webhookEvent.findFirst({
+      where: base,
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    }),
+    prisma.webhookEvent.groupBy({
+      by: ["field"],
+      where: base,
+      _count: { field: true },
+      orderBy: { _count: { field: "desc" } },
+    }),
+  ]);
+
+  return {
+    total,
+    failed,
+    unprocessed,
+    unmatched,
+    last24h,
+    lastAt: latest?.createdAt ?? null,
+    byField: grouped.map((g) => ({ field: g.field, count: g._count.field })),
+  };
+}
+
+/** One event with its raw payload. Reading a payload is audited by the caller. */
+export async function getWebhookEvent(id: string) {
+  return prisma.webhookEvent.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      field: true,
+      payload: true,
+      createdAt: true,
+      processed: true,
+      processedAt: true,
+      error: true,
+      accountId: true,
+      account: {
+        select: { username: true, workspaceId: true, workspace: { select: { name: true } } },
+      },
+    },
+  });
+}
