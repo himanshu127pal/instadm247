@@ -82,6 +82,10 @@ function parseChange(
   const field = str(change.field);
   const value = rec(change.value);
 
+  // Kept although we no longer subscribe to it: the field is not offered on
+  // Instagram Login (see WEBHOOK_FIELDS), so this cannot fire today. Parsing it
+  // costs nothing and means a payload would be handled rather than dropped if
+  // that ever changes.
   if (field === "messaging_policy_enforcement") {
     return {
       type: "policy_enforcement",

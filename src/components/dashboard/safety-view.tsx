@@ -74,12 +74,14 @@ export function SafetyView({
           tone={totalSkips > 0 ? "warning" : "neutral"}
         />
         <StatCard label="Suppressed contacts" value={suppressions} hint="opt-outs and blocks" />
-        <StatCard
-          label="Policy notices"
-          value={policyEvents}
-          hint="last 30 days"
-          tone={policyEvents > 0 ? "warning" : "success"}
-        />
+        {policyEvents > 0 && (
+          <StatCard
+            label="Policy notices"
+            value={policyEvents}
+            hint="last 30 days"
+            tone="warning"
+          />
+        )}
       </div>
 
       <SectionCard

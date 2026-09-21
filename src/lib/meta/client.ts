@@ -308,23 +308,29 @@ export class InstagramClient {
   async subscribeWebhooksWithFallback(): Promise<{
     fields: string[];
     refused: string[];
+    reasons: Record<string, string>;
     degraded: boolean;
     fullListError?: string;
   }> {
     try {
       await this.subscribeWebhooks(WEBHOOK_FIELDS);
-      return { fields: [...WEBHOOK_FIELDS], refused: [], degraded: false };
+      return { fields: [...WEBHOOK_FIELDS], refused: [], reasons: {}, degraded: false };
     } catch (error) {
       const fullListError = (error as Error).message;
 
       const accepted: string[] = [];
       const refused: string[] = [];
+      // Keep each field's own reason. The whole-list error names only the first
+      // problem, and "not a valid field name" and "valid but not enabled on the
+      // app" need completely different fixes from whoever reads this.
+      const reasons: Record<string, string> = {};
       for (const field of WEBHOOK_FIELDS) {
         try {
           await this.subscribeWebhooks([field]);
           accepted.push(field);
-        } catch {
+        } catch (fieldError) {
           refused.push(field);
+          reasons[field] = (fieldError as Error).message;
         }
       }
 
@@ -335,7 +341,7 @@ export class InstagramClient {
 
       try {
         await this.subscribeWebhooks(accepted);
-        return { fields: accepted, refused, degraded: true, fullListError };
+        return { fields: accepted, refused, reasons, degraded: true, fullListError };
       } catch {
         // The set behaved differently from its parts. Keep the core triggers
         // rather than leaving the account on whatever the last probe set.
@@ -345,6 +351,7 @@ export class InstagramClient {
           refused: WEBHOOK_FIELDS.filter(
             (f) => !(CORE_WEBHOOK_FIELDS as readonly string[]).includes(f),
           ),
+          reasons,
           degraded: true,
           fullListError,
         };
