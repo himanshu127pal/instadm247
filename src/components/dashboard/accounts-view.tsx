@@ -27,6 +27,7 @@ type Account = {
   webhookSubbed: boolean;
   webhookError: string | null;
   webhookFields: string[];
+  webhookMissingFields: string[];
   automationPaused: boolean;
   pausedReason: string | null;
   slowDownUntil: string | null;
@@ -245,11 +246,30 @@ export function AccountsView({
                     </div>
                   )}
                   {account.webhookSubbed && account.webhookError && (
-                    <p className="flex items-start gap-2 text-[12.5px] text-[var(--color-zap-500)]">
-                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      Partly subscribed: {account.webhookFields.join(", ")}. Some triggers
-                      won&rsquo;t fire.
-                    </p>
+                    <div className="space-y-1.5">
+                      <p className="flex items-start gap-2 text-[12.5px] text-[var(--color-zap-500)]">
+                        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        Instagram wouldn&rsquo;t subscribe{" "}
+                        <span className="font-mono">
+                          {account.webhookMissingFields.join(", ")}
+                        </span>
+                        , so those triggers won&rsquo;t fire. Everything else works.
+                      </p>
+                      <p className="pl-[22px] font-mono text-[11.5px] leading-relaxed text-[var(--text-muted)]">
+                        {account.webhookError}
+                      </p>
+                      <div className="pl-[22px]">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={busy === account.id}
+                          onClick={() => resubscribe(account.id)}
+                        >
+                          <Satellite className="h-3.5 w-3.5" />
+                          Retry subscription
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
