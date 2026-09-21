@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db";
+import { byEitherInstagramId } from "@/lib/meta/identity";
 import { env } from "@/lib/env";
 
 export const runtime = "nodejs";
@@ -51,8 +52,8 @@ export async function POST(request: Request) {
   const payload = await readSignedRequest(request);
   if (!payload?.user_id) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 
-  await prisma.instagramAccount.updateMany({
-    where: { igUserId: String(payload.user_id) },
+  const result = await prisma.instagramAccount.updateMany({
+    where: byEitherInstagramId(String(payload.user_id)),
     data: {
       status: "revoked",
       accessTokenEnc: null,
@@ -62,6 +63,15 @@ export async function POST(request: Request) {
       pausedReason: "This Instagram account removed access to the app.",
     },
   });
+
+  if (result.count === 0) {
+    // Meta only ever sends this for an account that authorised us, so no match
+    // means our stored identifier disagrees with theirs — and the revocation
+    // did nothing.
+    console.error(
+      `[deauthorize] no account matched ${payload.user_id}; access was NOT revoked locally`,
+    );
+  }
 
   return NextResponse.json({ success: true });
 }

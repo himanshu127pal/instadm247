@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { byEitherInstagramId } from "@/lib/meta/identity";
 import type { NormalizedEvent } from "@/lib/meta/types";
 import type { SideEffect } from "@/lib/meta/webhooks";
 import { isOptOutMessage, suppress, windowExpiryFrom } from "./guards";
@@ -51,9 +52,7 @@ function reviveEvent(event: NormalizedEvent): NormalizedEvent {
  * account is dropped on the floor.
  */
 async function accountForEvent(igUserId: string) {
-  return prisma.instagramAccount.findFirst({
-    where: { OR: [{ igUserId }, { igScopedId: igUserId }] },
-  });
+  return prisma.instagramAccount.findFirst({ where: byEitherInstagramId(igUserId) });
 }
 
 /**
@@ -64,7 +63,7 @@ async function accountForEvent(igUserId: string) {
  */
 export async function accountIdForEntry(igUserId: string): Promise<string | null> {
   const account = await prisma.instagramAccount.findFirst({
-    where: { OR: [{ igUserId }, { igScopedId: igUserId }] },
+    where: byEitherInstagramId(igUserId),
     select: { id: true },
   });
   return account?.id ?? null;
