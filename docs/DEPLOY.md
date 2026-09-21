@@ -284,6 +284,13 @@ curl -I https://app.yourdomain.com/      # expect 200 over TLS
 With the site live on HTTPS, fill in `META_APP_ID` and `META_APP_SECRET` in
 `.env`, then `sudo systemctl restart instadm247-web instadm247-worker`.
 
+**Take both from the Instagram product, not from App settings → Basic.**
+Instagram Login issues its own app ID and secret, separate from the Facebook
+app's. They are under **Instagram → API setup with Instagram login → 3. Set up
+Instagram business login → Business login settings**. The Facebook App ID is a
+different number, and using it makes every connect attempt fail at Instagram
+with *"Invalid request: Request parameters are invalid: Invalid platform app"*.
+
 In the App Dashboard (**Instagram** use case → *API setup with Instagram
 login*), set:
 
@@ -301,7 +308,7 @@ Request these permissions: `instagram_business_basic`,
 
 You do not need to tick the individual webhook fields by hand — the app
 subscribes its own field list (`WEBHOOK_FIELDS` in `src/lib/meta/types.ts`) when
-an account connects. **Dashboard → Instagram accounts** prints the exact URLs and
+an account connects. **/admin/meta** prints the exact URLs and
 field list for this deployment, derived from your `APP_URL`; copy from there
 rather than from this page.
 

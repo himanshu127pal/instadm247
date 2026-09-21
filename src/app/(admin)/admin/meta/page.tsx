@@ -3,6 +3,7 @@ import { getPlatformStaff } from "@/lib/admin";
 import { env, isAiConfigured, isInstagramConfigured, missingInstagramConfig } from "@/lib/env";
 import { redisAvailable } from "@/lib/redis";
 import { REQUIRED_SCOPES, WEBHOOK_FIELDS } from "@/lib/meta/types";
+import { buildAuthorizeUrl } from "@/lib/meta/oauth";
 import { Badge } from "@/components/ui";
 import { CopyField } from "@/components/dashboard/bits";
 
@@ -25,6 +26,26 @@ export default async function AdminMetaPage() {
   // The verify token is the secret Meta echoes back on webhook verification.
   // Support staff have no reason to hold it, so only admins see it.
   const showSecrets = staff?.role === "admin";
+
+  // Instagram matches redirect_uri as an exact string, so the usual near-misses
+  // (a trailing slash, www vs apex, http vs https) all fail identically with
+  // "Invalid redirect_uri" — and the failure happens on instagram.com, so
+  // nothing reaches our logs. Name them here instead of leaving it to guesswork.
+  const redirectProblems: string[] = [];
+  if (env.meta.redirectUri.endsWith("/")) {
+    redirectProblems.push("It ends in a slash. Instagram compares the string exactly.");
+  }
+  if (env.isProd && !env.meta.redirectUri.startsWith("https://")) {
+    redirectProblems.push("It is not https. Instagram rejects http redirects outside localhost.");
+  }
+  if (!env.meta.redirectUri.startsWith(`${env.appUrl}/`)) {
+    redirectProblems.push(
+      `It is not under APP_URL (${env.appUrl}). Check for a www / apex or http / https mismatch.`,
+    );
+  }
+  if (!env.meta.redirectUri.endsWith("/api/instagram/callback")) {
+    redirectProblems.push("It does not end in /api/instagram/callback, which is the route that handles the code.");
+  }
 
   const checks = [
     {
@@ -56,6 +77,44 @@ export default async function AdminMetaPage() {
           connects through it.
         </p>
       </div>
+
+      <section className="space-y-2">
+        <h2 className="text-[16px] font-extrabold">What we send to Instagram</h2>
+        <p className="max-w-2xl text-[12.5px] font-semibold leading-relaxed text-[var(--text-muted)]">
+          The app ID below is the <strong className="text-[var(--text)]">Instagram</strong>{" "}
+          app ID from <em>API setup with Instagram login → Business login settings</em> —
+          not the Facebook App ID from <em>App settings → Basic</em>, which is a different
+          number. If a connect attempt dies at Instagram with{" "}
+          <span className="font-mono">Invalid platform app</span>, it is almost always
+          because the Facebook one is in <span className="font-mono">META_APP_ID</span>.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <CopyField label="Instagram app ID in use" value={env.meta.appId || "(not set)"} />
+          <CopyField
+            label="Authorize URL we redirect to"
+            value={isInstagramConfigured() ? buildAuthorizeUrl("EXAMPLE_STATE") : "(not set)"}
+          />
+        </div>
+      </section>
+
+      {redirectProblems.length > 0 && (
+        <section className="rounded-[var(--radius-card)] border-2 border-[var(--color-zonk-500)] bg-[var(--bg-raised)] p-4">
+          <p className="flex items-center gap-2 text-[14px] font-extrabold">
+            <ShieldAlert className="h-4 w-4 text-[var(--color-zonk-500)]" />
+            The redirect URI looks wrong
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-[12.5px] font-semibold text-[var(--text-muted)]">
+            {redirectProblems.map((problem) => (
+              <li key={problem}>{problem}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[12.5px] font-semibold text-[var(--text-muted)]">
+            Whatever is below must also be registered verbatim under{" "}
+            <em>Instagram → API setup with Instagram login → Business login settings → OAuth
+            redirect URIs</em> — not under Facebook Login, which this flow ignores.
+          </p>
+        </section>
+      )}
 
       <section className="grid gap-3 sm:grid-cols-2">
         <CopyField label="OAuth redirect URL" value={env.meta.redirectUri} />
