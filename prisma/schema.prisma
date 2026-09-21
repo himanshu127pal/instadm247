@@ -158,6 +158,14 @@ model InstagramAccount {
 
   status               String    @default("connected") // connected | token_expired | revoked | demo
   webhookSubbed        Boolean   @default(false)
+  /// Why the last subscribe attempt failed, verbatim from Meta. Surfaced in the
+  /// dashboard: the usual causes are app-level config the customer cannot fix by
+  /// reconnecting, so telling them to reconnect without this is a dead end.
+  webhookError         String?
+  /// Fields actually subscribed. Meta rejects the whole call if one field is not
+  /// enabled on the app, so we fall back to the core set and record the gap.
+  webhookFields        String[]  @default([])
+  lastWebhookTryAt     DateTime?
   lastSyncAt           DateTime?
   // Safety
   slowDownUntil        DateTime?

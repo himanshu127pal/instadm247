@@ -22,6 +22,8 @@ import { PRESETS } from "../src/lib/engine/presets";
 import { captionContainsCode, generateDraftCode } from "../src/lib/engine/planner";
 import { addCodes, generateCodes, issueCoupon, poolStats } from "../src/lib/engine/coupons";
 import { createApiKey, authenticateApiKey, hashKey } from "../src/lib/api-keys";
+import { CORE_WEBHOOK_FIELDS, WEBHOOK_FIELDS } from "../src/lib/meta/types";
+import { InstagramClient } from "../src/lib/meta/client";
 
 const prisma = new PrismaClient();
 
@@ -677,6 +679,55 @@ async function main() {
     );
 
     await prisma.contact.delete({ where: { id: subject.id } }).catch(() => undefined);
+  }
+
+  section("Webhook subscription fallback");
+  {
+    // Meta validates subscribed_fields as a set: one field the app has not
+    // enabled fails the whole call, and the account then receives nothing at
+    // all. The fallback trades the optional fields for the core ones rather
+    // than leaving the account dark.
+    check(
+      "the core set is a subset of the full field list",
+      CORE_WEBHOOK_FIELDS.every((f) => (WEBHOOK_FIELDS as readonly string[]).includes(f)),
+    );
+    check(
+      "the core set covers both comment and DM triggers",
+      CORE_WEBHOOK_FIELDS.includes("comments") && CORE_WEBHOOK_FIELDS.includes("messages"),
+    );
+
+    const attempts: string[][] = [];
+    const client = new InstagramClient("token", "igid");
+    // Stand in for the network: refuse the full list the way Meta does, accept
+    // the retry, and record what each attempt asked for.
+    (client as unknown as { subscribeWebhooks: (f: readonly string[]) => Promise<unknown> })
+      .subscribeWebhooks = async (fields: readonly string[]) => {
+      attempts.push([...fields]);
+      if (fields.length > CORE_WEBHOOK_FIELDS.length) {
+        throw new Error("(#100) messaging_handover is not enabled for this app");
+      }
+      return { success: true };
+    };
+
+    const result = await client.subscribeWebhooksWithFallback();
+    check("the full list is tried first", attempts[0]?.length === WEBHOOK_FIELDS.length);
+    check("a refused field list retries with the core set", attempts.length === 2);
+    check("the fallback reports itself as degraded", result.degraded === true);
+    check(
+      "the fallback keeps Meta's reason for the operator",
+      (result.fullListError ?? "").includes("messaging_handover"),
+    );
+
+    // When the core set fails too the caller must hear about it, not get a
+    // silent half-success: that is the unverified-callback-URL case.
+    const dead = new InstagramClient("token", "igid");
+    (dead as unknown as { subscribeWebhooks: () => Promise<unknown> }).subscribeWebhooks =
+      async () => {
+        throw new Error("(#2200) callback verification failed");
+      };
+    let threw = "";
+    await dead.subscribeWebhooksWithFallback().catch((e: Error) => (threw = e.message));
+    check("a total failure propagates", threw.includes("callback verification failed"));
   }
 
   section("Tenant boundary in the customer UI");

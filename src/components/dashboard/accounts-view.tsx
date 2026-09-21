@@ -8,6 +8,7 @@ import {
   Link2,
   Plus,
   RefreshCw,
+  Satellite,
   Trash2,
   Users,
   Workflow,
@@ -24,6 +25,8 @@ type Account = {
   followersCount: number;
   status: string;
   webhookSubbed: boolean;
+  webhookError: string | null;
+  webhookFields: string[];
   automationPaused: boolean;
   pausedReason: string | null;
   slowDownUntil: string | null;
@@ -57,6 +60,25 @@ export function AccountsView({
       const data = (await res.json()) as { error?: string; media?: number };
       if (!res.ok) throw new Error(data.error ?? "Sync failed");
       toast.success(`Synced ${data.media ?? 0} posts`);
+      router.refresh();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function resubscribe(accountId: string) {
+    setBusy(accountId);
+    try {
+      const res = await fetch(`/api/accounts/${accountId}/resubscribe`, { method: "POST" });
+      const data = (await res.json()) as { error?: string; degraded?: boolean; fields?: string[] };
+      if (!res.ok) throw new Error(data.error ?? "Instagram refused the subscription");
+      if (data.degraded) {
+        toast.success(`Subscribed, but only to ${(data.fields ?? []).join(", ")}`);
+      } else {
+        toast.success("Webhooks subscribed");
+      }
       router.refresh();
     } catch (error) {
       toast.error((error as Error).message);
@@ -189,7 +211,7 @@ export function AccountsView({
                 </div>
               </div>
 
-              {(account.pausedReason || !account.webhookSubbed) && (
+              {(account.pausedReason || !account.webhookSubbed || account.webhookError) && (
                 <div className="mt-4 space-y-2 border-t-2 border-[var(--border-soft)] pt-3">
                   {account.pausedReason && (
                     <p className="flex items-start gap-2 text-[12.5px] text-[var(--color-zonk-500)]">
@@ -198,10 +220,35 @@ export function AccountsView({
                     </p>
                   )}
                   {!account.webhookSubbed && account.status === "connected" && (
-                    <p className="flex items-start gap-2 text-[12.5px] text-[var(--color-zonk-500)]">
+                    <div className="space-y-1.5">
+                      <p className="flex items-start gap-2 text-[12.5px] text-[var(--color-zonk-500)]">
+                        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        Webhooks aren&rsquo;t subscribed for this account, so nothing will
+                        trigger.
+                      </p>
+                      {account.webhookError && (
+                        <p className="pl-[22px] font-mono text-[11.5px] leading-relaxed text-[var(--text-muted)]">
+                          Instagram said: {account.webhookError}
+                        </p>
+                      )}
+                      <div className="pl-[22px]">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={busy === account.id}
+                          onClick={() => resubscribe(account.id)}
+                        >
+                          <Satellite className="h-3.5 w-3.5" />
+                          Retry subscription
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {account.webhookSubbed && account.webhookError && (
+                    <p className="flex items-start gap-2 text-[12.5px] text-[var(--color-zap-500)]">
                       <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      Webhooks aren&rsquo;t subscribed for this account, so nothing will
-                      trigger. Reconnect it to fix this.
+                      Partly subscribed: {account.webhookFields.join(", ")}. Some triggers
+                      won&rsquo;t fire.
                     </p>
                   )}
                 </div>

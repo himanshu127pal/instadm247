@@ -78,11 +78,17 @@ openssl rand -base64 32   # ENCRYPTION_KEY (must decode to exactly 32 bytes)
    | Deauthorize callback URL | `<APP_URL>/api/instagram/deauthorize` |
    | Data deletion request URL | `<APP_URL>/api/instagram/data-deletion` |
 
-5. Subscribe to the webhook fields listed on that page (`comments`,
+5. **Configure webhooks before connecting an account.** In the Instagram
+   product, set the callback URL and verify token and press *Verify and save*,
+   then enable the fields below. Until that succeeds, `subscribed_apps` is
+   refused for every account and the dashboard shows "Webhooks aren't
+   subscribed" — reconnecting will not clear it, because the cause is app-level.
+   Use **Retry subscription** on the account once the app config is fixed.
+6. Subscribe to the webhook fields listed on that page (`comments`,
    `live_comments`, `messages`, `messaging_postbacks`, …).
-6. Request these permissions: `instagram_business_basic`,
+7. Request these permissions: `instagram_business_basic`,
    `instagram_business_manage_messages`, `instagram_business_manage_comments`.
-7. Click **Connect Instagram** in the dashboard.
+8. Click **Connect Instagram** in the dashboard.
 
 Webhooks need a public HTTPS URL. For local development, tunnel with ngrok or
 Cloudflare Tunnel and set `APP_URL` to the tunnel address.
