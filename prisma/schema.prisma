@@ -142,7 +142,15 @@ model InstagramAccount {
   workspaceId String
 
   // Instagram-scoped identifiers
+  //
+  // Two IDs, because Instagram Login hands back two and they are not
+  // interchangeable. `igUserId` is the Instagram professional account ID (the
+  // `user_id` field on /me), which is what Graph calls and webhook payloads
+  // use. `igScopedId` is the app-scoped ID returned by the token exchange.
+  // Which of the two appears in `entry.id` has moved between API versions, so
+  // inbound events are matched against either.
   igUserId          String  @unique
+  igScopedId        String? @unique
   username          String
   name              String?
   profilePictureUrl String?

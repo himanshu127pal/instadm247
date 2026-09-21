@@ -39,9 +39,13 @@ export async function GET(request: Request) {
     const shortLived = await exchangeCodeForToken(code);
     const longLived = await exchangeForLongLivedToken(shortLived.access_token);
 
-    const igUserId = String(shortLived.user_id);
-    const client = new InstagramClient(longLived.access_token, igUserId);
+    // The token exchange returns the app-scoped ID. Graph calls and webhook
+    // payloads use the Instagram professional account ID, which only /me
+    // reports, so the profile call has to happen before we decide what to store.
+    const scopedId = String(shortLived.user_id);
+    const client = new InstagramClient(longLived.access_token, scopedId);
     const profile = await client.getProfile();
+    const igUserId = profile.user_id ? String(profile.user_id) : scopedId;
 
     const scopes = Array.isArray(shortLived.permissions)
       ? shortLived.permissions
@@ -49,11 +53,20 @@ export async function GET(request: Request) {
         ? shortLived.permissions.split(",").map((s) => s.trim())
         : REQUIRED_SCOPES.slice();
 
+    // An account connected before we knew the difference is stored under its
+    // app-scoped ID, so upserting on igUserId alone would create a duplicate
+    // row and orphan its automations. Match either identifier, then correct it.
+    const existing = await prisma.instagramAccount.findFirst({
+      where: { OR: [{ igUserId }, { igUserId: scopedId }, { igScopedId: scopedId }] },
+      select: { id: true },
+    });
+
     const account = await prisma.instagramAccount.upsert({
-      where: { igUserId },
+      where: existing ? { id: existing.id } : { igUserId },
       create: {
         workspaceId,
         igUserId,
+        igScopedId: scopedId,
         username: profile.username,
         name: profile.name ?? null,
         profilePictureUrl: profile.profile_picture_url ?? null,
@@ -68,6 +81,8 @@ export async function GET(request: Request) {
       },
       update: {
         workspaceId,
+        igUserId,
+        igScopedId: scopedId,
         username: profile.username,
         name: profile.name ?? null,
         profilePictureUrl: profile.profile_picture_url ?? null,

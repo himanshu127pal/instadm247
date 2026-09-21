@@ -41,14 +41,32 @@ function reviveEvent(event: NormalizedEvent): NormalizedEvent {
   return { ...event, timestamp: new Date(event.timestamp) };
 }
 
-export async function handleEvent(event: NormalizedEvent): Promise<void> {
-  const account = await prisma.instagramAccount.findUnique({
-    where: { igUserId: event.igUserId },
+/**
+ * Resolve the account an inbound event belongs to.
+ *
+ * `entry.id` carries the Instagram professional account ID, but which of the
+ * two IDs Instagram Login issues appears there has moved between API versions,
+ * and an account connected before we stored both is keyed on the app-scoped
+ * one. Matching either is cheap; guessing wrong means every webhook for that
+ * account is dropped on the floor.
+ */
+async function accountForEvent(igUserId: string) {
+  return prisma.instagramAccount.findFirst({
+    where: { OR: [{ igUserId }, { igScopedId: igUserId }] },
   });
-  if (!account) return;
+}
+
+export async function handleEvent(event: NormalizedEvent): Promise<void> {
+  const account = await accountForEvent(event.igUserId);
+  if (!account) {
+    // Silence here is how a webhook problem hides: delivery succeeds, Meta
+    // sees a 200, and nothing ever runs. Say so.
+    console.warn(`[ingest] no account matches entry.id ${event.igUserId}; event dropped`);
+    return;
+  }
 
   // Never react to our own account's activity.
-  if (event.igsid === account.igUserId) return;
+  if (event.igsid === account.igUserId || event.igsid === account.igScopedId) return;
 
   // Viral Post Protection: measure the inbound rate and slow down proactively,
   // before Instagram has any reason to throttle us.
@@ -234,7 +252,7 @@ function findEmail(answers: Record<string, unknown>): string | null {
 // --- Side effects -----------------------------------------------------------
 
 export async function handleSideEffect(effect: SideEffect): Promise<void> {
-  const account = await prisma.instagramAccount.findUnique({ where: { igUserId: effect.igUserId } });
+  const account = await accountForEvent(effect.igUserId);
   if (!account) return;
 
   switch (effect.type) {
