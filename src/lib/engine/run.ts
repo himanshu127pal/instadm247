@@ -208,7 +208,7 @@ async function advance(flowRunId: string, fromNodeId: string): Promise<FlowRun |
         "flow",
         "resume",
         { kind: "resume", flowRunId: run.id, nodeId: result.nodeId },
-        { delay, jobId: `resume:${run.id}:${result.nodeId}:${result.resumeAt.getTime()}` },
+        { delay, jobId: resumeJobId(run.id, result.nodeId, result.resumeAt) },
       );
       if (!queued) {
         // No Redis: the sweep_windows maintenance job picks waiting runs up.
@@ -239,6 +239,22 @@ async function advance(flowRunId: string, fromNodeId: string): Promise<FlowRun |
   }).catch(() => undefined);
 
   return prisma.flowRun.findUnique({ where: { id: run.id } });
+}
+
+/**
+ * The BullMQ job ID for resuming a run at a node. Deterministic, so a resume
+ * that gets queued twice collapses into one job.
+ *
+ * No colons. BullMQ rejects a custom ID containing ":" unless it has exactly
+ * three parts — a carve-out for legacy repeatable jobs — and this one had four.
+ * Every Delay step's resume was refused, and the run sat until the 10-minute
+ * sweep found it: a "wait 30 minutes" step took up to 40. Nothing failed
+ * visibly, because the sweep is a working fallback. It must stay a fallback.
+ *
+ * Unambiguous with "-": a cuid has none, and the timestamp is digits.
+ */
+export function resumeJobId(runId: string, nodeId: string, at: Date): string {
+  return `resume-${runId}-${nodeId}-${at.getTime()}`;
 }
 
 function nextNodeId(edges: FlowEdge[], nodeId: string, handle = "next"): string | null {
