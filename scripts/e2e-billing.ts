@@ -37,6 +37,7 @@ type Mutable = {
     };
   };
   anthropicApiKey: string;
+  meta: { appId: string; appSecret: string };
 };
 const mutableEnv = env as unknown as Mutable;
 
@@ -52,6 +53,8 @@ export async function runBillingChecks(prisma: PrismaClient, check: Check, secti
     secret: mutableEnv.billing.dodo.webhookSecret,
     products: JSON.parse(JSON.stringify(mutableEnv.billing.dodo.products)),
     anthropic: mutableEnv.anthropicApiKey,
+    metaAppId: mutableEnv.meta.appId,
+    metaAppSecret: mutableEnv.meta.appSecret,
   };
 
   const tag = randomBytes(4).toString("hex");
@@ -223,6 +226,13 @@ export async function runBillingChecks(prisma: PrismaClient, check: Check, secti
 
     // A live-looking account, so the send reaches the quota gate. The gate
     // refuses BEFORE any network call is made, which is what's asserted.
+    //
+    // Instagram must count as configured, or dispatch takes the simulated path
+    // and never reaches the gate — which is exactly how this passed locally and
+    // failed in CI, where no Meta credentials are set. The test sets what it
+    // depends on rather than inheriting it.
+    mutableEnv.meta.appId = "e2e-app-id";
+    mutableEnv.meta.appSecret = "e2e-app-secret";
     await prisma.instagramAccount.update({
       where: { id: account.id },
       data: { status: "connected", accessTokenEnc: encrypt("e2e-not-a-real-token") },
@@ -241,10 +251,16 @@ export async function runBillingChecks(prisma: PrismaClient, check: Check, secti
       "an automated send past the monthly allowance is skipped as PLAN_LIMIT",
       capped.status === "skipped" && capped.reason === "PLAN_LIMIT",
     );
+    // Only meaningful if the send really reached the quota gate: the simulated
+    // path releases the claim too, so without the check above this would pass
+    // for the wrong reason.
     check(
       "that skip hands the comment's one private reply back",
-      await claimCommentReply(account.id, commentId, "private"),
+      capped.status === "skipped" && capped.reason === "PLAN_LIMIT" &&
+        (await claimCommentReply(account.id, commentId, "private")),
     );
+    mutableEnv.meta.appId = saved.metaAppId;
+    mutableEnv.meta.appSecret = saved.metaAppSecret;
     await prisma.instagramAccount.update({
       where: { id: account.id },
       data: { status: "demo", accessTokenEnc: null },
@@ -481,6 +497,8 @@ export async function runBillingChecks(prisma: PrismaClient, check: Check, secti
     mutableEnv.billing.dodo.webhookSecret = saved.secret;
     Object.assign(mutableEnv.billing.dodo.products, saved.products);
     mutableEnv.anthropicApiKey = saved.anthropic;
+    mutableEnv.meta.appId = saved.metaAppId;
+    mutableEnv.meta.appSecret = saved.metaAppSecret;
     await prisma.paymentEvent.deleteMany({ where: { workspaceId: workspace.id } }).catch(() => undefined);
     await prisma.paymentEvent
       .deleteMany({ where: { OR: [{ providerCustomerId: { in: [`cus_e2e_${tag}`, "cus_nobody"] } }, { providerSubscriptionId: { startsWith: "sub_e2e_" } }] } })
