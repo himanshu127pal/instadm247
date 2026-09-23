@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { isInstagramConfigured } from "@/lib/env";
-import { getClientForAccount } from "@/lib/meta/account";
+import { getClientForAccount, markReconnectNeeded } from "@/lib/meta/account";
 import { MetaApiError, type OutboundMessage, type SendTarget } from "@/lib/meta/types";
 import {
   SKIP_EXPLANATIONS,
@@ -235,16 +235,7 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
     if (meta?.isRateLimit) {
       await armSlowDown(req.accountId, "Instagram throttled this account, so sending was slowed down.");
     }
-    if (meta?.isAuthError) {
-      await prisma.instagramAccount.update({
-        where: { id: req.accountId },
-        data: {
-          status: "token_expired",
-          automationPaused: true,
-          pausedReason: "Instagram access expired. Reconnect the account to resume automations.",
-        },
-      });
-    }
+    if (meta?.isAuthError) await markReconnectNeeded(req.accountId);
 
     // A window error is a fact of life, not a bug — record it as a skip.
     if (meta?.isWindowError) {

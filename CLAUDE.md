@@ -60,7 +60,7 @@ Down mode. Full detail in `docs/ARCHITECTURE.md`.
 ## Repo layout
 
 ```
-docs/                  Memory + specs (FEATURES, ARCHITECTURE, META_API, SETUP, ROADMAP)
+docs/                  Memory + specs (FEATURES, ARCHITECTURE, META_API, SETUP, ROADMAP, BILLING, EMAIL)
 prisma/schema.prisma   All domain models
 src/app/(marketing)/   Public landing site
 src/app/(auth)/        Login / signup
@@ -69,6 +69,7 @@ src/app/api/           Route handlers (auth, oauth, webhooks, REST for dashboard
 src/lib/meta/          Graph client, OAuth, webhook parsing, message sending
 src/lib/engine/        Trigger matching, node executor, queues, rate limiter, window guard
 src/lib/ai/            AI agent + knowledge base retrieval
+src/lib/email/         SES sending, templates, verification/reset tokens, notifications
 src/lib/billing/       Plans, metering, plan resolution, Dodo, payment trace
 src/components/        UI (marketing/, dashboard/, flow/, ui/)
 src/worker/            BullMQ worker process entrypoint
@@ -114,6 +115,12 @@ directly, and don't let a working branch become a second trunk.
 11. **Every payment webhook hit is recorded** in `PaymentEvent` — forged,
    duplicate, failed or ignored — and an admin override can only ever *raise* a
    customer's plan, never lower what they pay for.
+
+12. **Nothing that can sign someone in is queued or stored.** Verification and
+   password-reset emails are sent in the request; their log row keeps no inputs
+   and tokens are stored only as hashes. Every other automatic email has a
+   dedupe key, and an email failure never fails the action that caused it.
+   See `docs/EMAIL.md`.
 
 ## Plans and billing
 

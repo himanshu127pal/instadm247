@@ -7,6 +7,7 @@ import {
   scheduleMaintenance,
   type BroadcastJob,
   type DispatchJob,
+  type EmailJob,
   type FlowJob,
   type IngestJob,
   type MaintenanceJob,
@@ -26,6 +27,8 @@ import { publishDuePosts } from "@/lib/engine/scheduler";
 import { refreshExpiringTokens } from "@/lib/meta/account";
 import { reconcilePlans } from "@/lib/billing/resolve";
 import { purgeRejectedPaymentEvents } from "@/lib/billing/trace";
+import { deliverEmail } from "@/lib/email/send";
+import { sendBillingReminders } from "@/lib/email/notify";
 import type { OutboundMessage } from "@/lib/meta/types";
 
 /**
@@ -152,6 +155,11 @@ workers.push(
           if (rejected) log("maintenance", `purged ${rejected} rejected payment hits`);
           return;
         }
+        case "billing_reminders": {
+          const sent = await sendBillingReminders();
+          if (sent) log("maintenance", `queued ${sent} billing reminders`);
+          return;
+        }
         case "reconcile_plans": {
           const changed = await reconcilePlans();
           if (changed) log("maintenance", `reconciled ${changed} workspace plans`);
@@ -160,6 +168,20 @@ workers.push(
       }
     },
     { connection, concurrency: 2 },
+  ),
+);
+
+workers.push(
+  new Worker<EmailJob>(
+    QUEUE_NAMES.email,
+    async (job) => {
+      // The queue retries with backoff; on the last attempt a failure is
+      // recorded as final instead of being thrown for another try.
+      const finalAttempt = job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
+      await deliverEmail(job.data.emailMessageId, { finalAttempt });
+    },
+    // SES allows 14/s once out of the sandbox; this stays well under it.
+    { connection, concurrency: 5 },
   ),
 );
 

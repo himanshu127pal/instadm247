@@ -134,11 +134,31 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
           </Link>
         </Panel>
 
+        <Panel title="Emails">
+          <p className="text-[13px] font-semibold text-[var(--text-muted)]">
+            Billing notices, alerts and account emails sent to this customer, with whether each one
+            got out.
+          </p>
+          <Link
+            href={`/admin/emails?workspaceId=${w.id}`}
+            className="mt-2 inline-block text-[13px] font-bold underline underline-offset-2"
+          >
+            Open the email log →
+          </Link>
+        </Panel>
+
         <Panel title="Members">
           <ul className="space-y-2">
             {w.memberships.map((m) => (
               <li key={m.id} className="flex items-center justify-between gap-3 text-[13px]">
-                <span className="font-semibold">{m.user.email}</span>
+                <span className="font-semibold">
+                  <Link href={`/admin/emails?to=${encodeURIComponent(m.user.email)}`} className="hover:underline">
+                    {m.user.email}
+                  </Link>
+                  {!m.user.emailVerifiedAt && (
+                    <span className="ml-2 text-[11.5px] font-bold text-[var(--color-zap-500)]">unverified</span>
+                  )}
+                </span>
                 <span className="flex items-center gap-3">
                   <span className="text-[12px] font-semibold text-[var(--text-faint)]">{m.role}</span>
                   <ImpersonateControl workspaceId={w.id} userId={m.userId} email={m.user.email} />

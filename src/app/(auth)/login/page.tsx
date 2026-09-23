@@ -22,7 +22,13 @@ export default async function LoginPage() {
         <AuthForm mode="login" />
       </div>
 
-      <p className="mt-6 text-[13.5px] text-[var(--text-muted)]">
+      <p className="mt-4 text-[13.5px]">
+        <Link href="/forgot-password" className="font-medium text-[var(--accent)] hover:underline">
+          Forgot your password?
+        </Link>
+      </p>
+
+      <p className="mt-3 text-[13.5px] text-[var(--text-muted)]">
         New here?{" "}
         <Link href="/signup" className="font-medium text-[var(--accent)] hover:underline">
           Create an account

@@ -17,6 +17,7 @@ import { parseWebhook } from "../src/lib/meta/webhooks";
 import { accountIdForEntry, handleEvent } from "../src/lib/engine/ingest";
 import { byEitherInstagramId } from "../src/lib/meta/identity";
 import { runBillingChecks } from "./e2e-billing";
+import { runEmailChecks } from "./e2e-email";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -933,6 +934,7 @@ async function main() {
   }
 
   await runBillingChecks(prisma, check, section);
+  await runEmailChecks(prisma, check, section);
 
   section("Tenant boundary in the customer UI");
   {
@@ -947,6 +949,8 @@ async function main() {
       "src/app/(auth)",
       "src/components/dashboard",
       "src/components/marketing",
+      // What customers read in their inbox is customer-facing too.
+      "src/lib/email/templates.ts",
     ];
     const FORBIDDEN = [
       "webhookVerifyToken",
@@ -957,9 +961,13 @@ async function main() {
       "DODO_PAYMENTS",
       "BILLING_ENABLED",
       "webhookSecret",
+      "EMAIL_PROVIDER",
+      "SES_REGION",
+      "AWS_",
     ];
 
     function walk(dir: string): string[] {
+      if (!statSync(dir).isDirectory()) return [dir];
       let out: string[] = [];
       for (const entry of readdirSync(dir)) {
         const full = join(dir, entry);

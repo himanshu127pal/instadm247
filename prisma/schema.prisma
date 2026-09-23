@@ -27,8 +27,12 @@ model User {
   /// Bootstrapped from PLATFORM_ADMIN_EMAILS at sign-in; see src/lib/admin.ts.
   platformRole String @default("none")
 
+  /// Set when the user proves they own the address. See docs/EMAIL.md.
+  emailVerifiedAt DateTime?
+
   memberships Membership[]
   sessions    Session[]
+  emailTokens EmailToken[]
   auditEvents AdminAuditLog[] @relation("AuditActor")
   adminNotes  AdminNote[]
 }
@@ -1191,4 +1195,60 @@ model PaymentEvent {
   @@index([status, receivedAt])
   @@index([type])
   @@index([webhookId])
+}
+
+// --- Email -------------------------------------------------------------------
+// See docs/EMAIL.md.
+
+/// Single-use tokens for email verification and password reset. Only the
+/// SHA-256 of the token is stored, like API keys: the database alone can't be
+/// used to take over an account.
+model EmailToken {
+  id        String    @id @default(cuid())
+  userId    String
+  /// verify | reset
+  kind      String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+/// Every email the platform sends or tries to, for tracing. The body is never
+/// stored, and neither are the inputs of templates that carry a secret — a
+/// verification or reset link sitting in this table would let anyone who can
+/// read it take over the account.
+model EmailMessage {
+  id       String @id @default(cuid())
+  to       String
+  from     String
+  /// accounts | billing | alerts
+  category String
+  template String
+  subject  String
+  /// Non-secret render inputs, kept so a failed send can be retried.
+  /// Always null for templates that carry a secret.
+  params   Json?
+  /// Makes a send idempotent: a second send with the same key is a no-op.
+  dedupeKey String? @unique
+
+  /// queued | sent | failed | skipped
+  status            String
+  providerMessageId String?
+  error             String?
+  attempts          Int       @default(0)
+
+  userId      String?
+  workspaceId String?
+
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+
+  @@index([workspaceId, createdAt])
+  @@index([status, createdAt])
+  @@index([to])
 }

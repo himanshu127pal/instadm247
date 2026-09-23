@@ -503,3 +503,81 @@ export async function customerBilling(workspaceId: string) {
     events,
   };
 }
+
+// --- Emails -----------------------------------------------------------------
+
+export type EmailFilter = {
+  workspaceId?: string;
+  status?: string;
+  category?: string;
+  /** Recipient address, exact. */
+  to?: string;
+  limit?: number;
+};
+
+/**
+ * The outgoing email log. Rows hold the subject and recipient, never the body
+ * of a message that carried a link to sign in or reset a password — those
+ * aren't stored at all. See docs/EMAIL.md.
+ */
+export async function listEmails(f: EmailFilter = {}) {
+  const rows = await prisma.emailMessage.findMany({
+    where: {
+      ...(f.workspaceId ? { workspaceId: f.workspaceId } : {}),
+      ...(f.status ? { status: f.status } : {}),
+      ...(f.category ? { category: f.category } : {}),
+      ...(f.to ? { to: f.to.trim().toLowerCase() } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+    take: Math.min(f.limit ?? 100, 500),
+    select: {
+      id: true,
+      to: true,
+      category: true,
+      template: true,
+      subject: true,
+      status: true,
+      error: true,
+      attempts: true,
+      dedupeKey: true,
+      providerMessageId: true,
+      params: true,
+      workspaceId: true,
+      createdAt: true,
+      sentAt: true,
+    },
+  });
+
+  // No relation on the log — it outlives the workspaces it mentions — so
+  // names are looked up for the rows on this page.
+  const ids = [...new Set(rows.map((r) => r.workspaceId).filter((id): id is string => Boolean(id)))];
+  const workspaces = ids.length
+    ? await prisma.workspace.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } })
+    : [];
+  const names = new Map(workspaces.map((w) => [w.id, w.name]));
+
+  return rows.map(({ params, ...r }) => ({
+    ...r,
+    // Whether the admin retry can rebuild it — secret-bearing mail can't be.
+    retryable: params !== null && r.status === "failed",
+    workspaceName: r.workspaceId ? (names.get(r.workspaceId) ?? null) : null,
+  }));
+}
+
+export async function emailSummary() {
+  const since = new Date(Date.now() - DAY);
+  const [byStatus, failed7d] = await Promise.all([
+    prisma.emailMessage.groupBy({
+      by: ["status"],
+      where: { createdAt: { gte: since } },
+      _count: { status: true },
+    }),
+    prisma.emailMessage.count({
+      where: { status: "failed", createdAt: { gte: new Date(Date.now() - 7 * DAY) } },
+    }),
+  ]);
+  return {
+    last24h: Object.fromEntries(byStatus.map((s) => [s.status, s._count.status])) as Record<string, number>,
+    failed7d,
+  };
+}

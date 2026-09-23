@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { AuthError, createSession, registerUser } from "@/lib/auth";
+import { sendVerificationEmail } from "@/lib/email/tokens";
 
 export const runtime = "nodejs";
 
@@ -23,6 +24,11 @@ export async function POST(request: Request) {
     const { user } = await registerUser(parsed.data);
     await createSession(user.id, {
       userAgent: request.headers.get("user-agent") ?? undefined,
+    });
+
+    // The account exists either way; a failed send is retried from the banner.
+    await sendVerificationEmail(user.id).catch((error) => {
+      console.error("[auth] verification email failed", error);
     });
 
     return NextResponse.json({ ok: true });

@@ -13,7 +13,7 @@ import { DodoError } from "./billing/dodo";
 
 export type Handler<T> = (ctx: {
   workspace: { id: string; name: string; planKey: string };
-  user: { id: string; email: string };
+  user: { id: string; email: string; emailVerified: boolean };
   request: Request;
   params: T;
 }) => Promise<NextResponse | Response>;

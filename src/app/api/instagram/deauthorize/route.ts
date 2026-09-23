@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db";
+import { notifyInstagramAccessRemoved } from "@/lib/email/notify";
 import { byEitherInstagramId } from "@/lib/meta/identity";
 import { env } from "@/lib/env";
 
@@ -52,6 +53,13 @@ export async function POST(request: Request) {
   const payload = await readSignedRequest(request);
   if (!payload?.user_id) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 
+  // Who to tell, read before the update: only accounts that were still live —
+  // Meta can send this more than once.
+  const affected = await prisma.instagramAccount.findMany({
+    where: { ...byEitherInstagramId(String(payload.user_id)), status: { not: "revoked" } },
+    select: { id: true, workspaceId: true, username: true },
+  });
+
   const result = await prisma.instagramAccount.updateMany({
     where: byEitherInstagramId(String(payload.user_id)),
     data: {
@@ -70,6 +78,12 @@ export async function POST(request: Request) {
     // did nothing.
     console.error(
       `[deauthorize] no account matched ${payload.user_id}; access was NOT revoked locally`,
+    );
+  }
+
+  for (const account of affected) {
+    await notifyInstagramAccessRemoved(account).catch((error) =>
+      console.error("[deauthorize] access removed email failed", error),
     );
   }
 

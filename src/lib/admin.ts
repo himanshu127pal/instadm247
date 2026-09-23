@@ -94,7 +94,7 @@ export class AdminAccessError extends Error {}
 export async function audit(entry: {
   actorUserId: string;
   action: string;
-  targetType: "workspace" | "user" | "account";
+  targetType: "workspace" | "user" | "account" | "email";
   targetId: string;
   reason?: string;
   meta?: Record<string, unknown>;

@@ -97,6 +97,14 @@ export default function PrivacyPage() {
         checkout; they never reach our servers. Nothing about the people who message you
         is ever shared with Dodo.
       </p>
+      <p>
+        We send account emails — verifying your address, resetting your password, billing
+        notices and alerts about your connected accounts — through Amazon Web Services&rsquo;
+        email service, which receives your email address, your name and the content of those
+        emails. We keep a record of each email we send (who it went to, its subject and whether
+        it was delivered) for troubleshooting. Links that sign you in or reset your password are
+        never stored.
+      </p>
       <p>We do not share data with anyone else.</p>
 
       <h2>Contact</h2>

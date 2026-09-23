@@ -112,12 +112,17 @@ than parity.
 - **Follower-growth gate** and **ask-for-follow** as first-class flow steps
 - **In-DM forms, surveys and quizzes** with CSV *and* Excel export
 - **Broadcast eligibility preview** — the reachable count before you send
+- **Account and notification email** (built on the owner's request) — email
+  verification, password reset, and notices for subscription changes, failed
+  payments, renewals, usage limits, Instagram reconnects and suspensions, via
+  Amazon SES from `accounts@`, `billing@` and `alerts@`. Inert until SES is
+  configured. Full list in `docs/EMAIL.md`
 
 ---
 
 ## E. Phase 2 — do not build without being asked
 
-- Pricing, plans, quota enforcement, billing
+- ~~Pricing, plans, quota enforcement, billing~~ — built on the owner's request; see §C
 - Team seats, roles and permissions
 - Facebook / WhatsApp / Messenger / TikTok channels
 - Catalogue and checkout inside the DM

@@ -11,6 +11,8 @@ export type SessionUser = {
   email: string;
   name: string | null;
   avatarUrl: string | null;
+  /** Whether they've proved they own the address. See docs/EMAIL.md. */
+  emailVerified: boolean;
 };
 
 export type ActiveWorkspace = {
@@ -59,6 +61,7 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
     email: session.user.email,
     name: session.user.name,
     avatarUrl: session.user.avatarUrl,
+    emailVerified: Boolean(session.user.emailVerifiedAt),
   };
 });
 

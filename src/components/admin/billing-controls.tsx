@@ -41,6 +41,7 @@ export function PlanOverrideControl({
   const [plan, setPlan] = React.useState("pro");
   const [until, setUntil] = React.useState("");
   const [reason, setReason] = React.useState("");
+  const [notify, setNotify] = React.useState(true);
   const [busy, setBusy] = React.useState(false);
 
   if (!canManage) {
@@ -62,6 +63,7 @@ export function PlanOverrideControl({
               workspaceId,
               plan,
               reason,
+              notify,
               ...(until ? { until: new Date(`${until}T23:59:59Z`).toISOString() } : {}),
             });
       toast.success(`Plan is now ${result.plan}`);
@@ -114,6 +116,12 @@ export function PlanOverrideControl({
             <input type="date" className={input} value={until} onChange={(e) => setUntil(e.target.value)} />
           </label>
         </div>
+      )}
+      {mode === "set" && (
+        <label className="flex items-center gap-2 text-[12.5px] font-semibold">
+          <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
+          Email the customer that their plan was upgraded
+        </label>
       )}
       <textarea
         className={input}

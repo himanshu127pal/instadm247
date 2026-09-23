@@ -14,6 +14,7 @@ export const QUEUE_NAMES = {
   dispatch: "dispatch",
   broadcast: "broadcast",
   maintenance: "maintenance",
+  email: "email",
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
@@ -61,6 +62,8 @@ export type DispatchJob = {
 
 export type BroadcastJob = { broadcastId: string };
 
+export type EmailJob = { emailMessageId: string };
+
 export type MaintenanceJob =
   | { kind: "refresh_tokens" }
   | { kind: "rollup_stats" }
@@ -69,7 +72,8 @@ export type MaintenanceJob =
   | { kind: "reengage" }
   | { kind: "publish_due" }
   | { kind: "purge_webhooks" }
-  | { kind: "reconcile_plans" };
+  | { kind: "reconcile_plans" }
+  | { kind: "billing_reminders" };
 
 /**
  * Enqueue, tolerating a missing Redis. Returns false when the job could not be
@@ -108,6 +112,9 @@ export async function scheduleMaintenance(): Promise<void> {
     // Plan changes driven by the clock alone: an override expiring, a cancelled
     // subscription's paid period ending. Webhooks cover the rest.
     ["reconcile_plans", { kind: "reconcile_plans" }, "*/15 * * * *"],
+    // Renewal and plan-ending reminders. Daily is enough: each is deduped per
+    // subscription and period, so a missed or repeated run can't double-send.
+    ["billing_reminders", { kind: "billing_reminders" }, "0 9 * * *"],
   ];
 
   // BullMQ v5+ replaced repeatable jobs with job schedulers. Upserting by a

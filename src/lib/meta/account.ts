@@ -2,6 +2,7 @@ import type { InstagramAccount } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { decrypt, encrypt } from "@/lib/crypto";
 import { isInstagramConfigured } from "@/lib/env";
+import { notifyInstagramReconnect } from "@/lib/email/notify";
 import { InstagramClient } from "./client";
 import { refreshLongLivedToken } from "./oauth";
 import { MetaApiError } from "./types";
@@ -57,6 +58,31 @@ export async function storeAccessToken(accountId: string, token: string, expires
   });
 }
 
+const RECONNECT_REASON = "Instagram access expired. Reconnect the account to resume automations.";
+
+/**
+ * Instagram stopped accepting this account's token: pause it and tell the
+ * owner. The update is conditional on the account not already being marked,
+ * so the burst of sends that fail together when a token dies sends one email.
+ */
+export async function markReconnectNeeded(accountId: string): Promise<void> {
+  const changed = await prisma.instagramAccount.updateMany({
+    where: { id: accountId, status: { notIn: ["token_expired", "revoked", "demo"] } },
+    data: { status: "token_expired", automationPaused: true, pausedReason: RECONNECT_REASON },
+  });
+  if (changed.count === 0) return;
+
+  const account = await prisma.instagramAccount.findUnique({
+    where: { id: accountId },
+    select: { id: true, workspaceId: true, username: true, lastRefreshAt: true },
+  });
+  if (account) {
+    await notifyInstagramReconnect(account).catch((error) =>
+      console.error("[account] reconnect email failed", error),
+    );
+  }
+}
+
 /**
  * Refresh tokens approaching expiry. Long-lived tokens last 60 days; we renew
  * at 15 days remaining so a few failed attempts still leave plenty of runway.
@@ -85,17 +111,9 @@ export async function refreshExpiringTokens(): Promise<{ refreshed: number; fail
       refreshed++;
     } catch (error) {
       failed++;
-      const isAuth = error instanceof MetaApiError && error.isAuthError;
-      await prisma.instagramAccount.update({
-        where: { id: account.id },
-        data: {
-          status: isAuth ? "token_expired" : account.status,
-          pausedReason: isAuth
-            ? "Instagram access expired. Reconnect the account to resume automations."
-            : account.pausedReason,
-          automationPaused: isAuth ? true : account.automationPaused,
-        },
-      });
+      // Anything else — a network error, Meta having a bad minute — is retried
+      // on the next run; there's plenty of runway before the token lapses.
+      if (error instanceof MetaApiError && error.isAuthError) await markReconnectNeeded(account.id);
     }
   }
 

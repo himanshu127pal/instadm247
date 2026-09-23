@@ -396,6 +396,23 @@ workspace that existed before the billing migration carries an explicit
 
 Full design, and Dodo's API as verified against their SDK, in `docs/BILLING.md`.
 
+## Email (Amazon SES)
+
+Without it the app works: every email is logged as skipped at `/admin/emails`,
+nobody is asked to verify an address, and checkout doesn't require one. To turn
+it on:
+
+1. Verify `instadm247.com` in SES with Easy DKIM, a custom MAIL FROM domain and a
+   DMARC record, and request production access. Step by step in
+   `docs/EMAIL.md` §Setting up SES.
+2. Create an IAM user limited to `ses:SendEmail`.
+3. Make `support@instadm247.com` a real inbox — every email says "just reply".
+4. Set `EMAIL_PROVIDER=ses`, `SES_REGION`, `AWS_ACCESS_KEY_ID` and
+   `AWS_SECRET_ACCESS_KEY` from `.env.example`, then restart **both** the web and
+   worker services (the worker sends queued mail and runs the daily reminders).
+5. Sign up with a fresh address and watch the verification email reach **sent**
+   at `/admin/emails`, with an SES message ID.
+
 ## Before App Review
 
 - `/privacy`, `/terms` and `/data-deletion` name the real entity and
