@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { hasFeature } from "@/lib/plan";
 import { getClientForAccount } from "@/lib/meta/account";
 import { MetaApiError } from "@/lib/meta/types";
 
@@ -27,6 +28,15 @@ export async function publishScheduledPost(postId: string): Promise<void> {
   if (!post) return;
   if (post.status === "published" || post.status === "publishing") return;
   if (post.status === "cancelled") return;
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: post.account.workspaceId },
+    select: { planKey: true },
+  });
+  if (!hasFeature(workspace, "scheduler")) {
+    await fail(post.id, "The post scheduler isn't included in your current plan, so this wasn't published.");
+    return;
+  }
 
   await prisma.scheduledPost.update({
     where: { id: post.id },

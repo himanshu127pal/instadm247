@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { hasFeature } from "@/lib/plan";
 import type { OutboundMessage } from "@/lib/meta/types";
 import { dispatch } from "./dispatch";
 import { evaluateWindow } from "./guards";
@@ -58,6 +59,23 @@ export async function runBroadcast(broadcastId: string): Promise<void> {
   });
   if (!broadcast) return;
   if (broadcast.status === "sending" || broadcast.status === "sent") return;
+
+  // Scheduled before a downgrade, run after it: refuse with a reason rather
+  // than send a Pro feature on a plan that doesn't include it.
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: broadcast.workspaceId },
+    select: { planKey: true },
+  });
+  if (!hasFeature(workspace, "broadcasts")) {
+    await prisma.broadcast.update({
+      where: { id: broadcast.id },
+      data: {
+        status: "failed",
+        error: "Broadcasts aren't included in your current plan, so this one wasn't sent.",
+      },
+    });
+    return;
+  }
 
   const filter = ((broadcast.segment?.filter as SegmentFilter) ?? {}) as SegmentFilter;
 

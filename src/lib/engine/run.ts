@@ -16,6 +16,9 @@ import { generateAiReply } from "@/lib/ai/agent";
 import { issueCoupon } from "./coupons";
 import { renderTemplate } from "./template";
 import { emitWebhook } from "./outbound-webhooks";
+import { SKIP_EXPLANATIONS, SkipReason } from "./guards";
+import { featureForNode, hasFeature } from "@/lib/plan";
+import { FEATURE_LABELS } from "@/lib/billing/plans";
 
 /**
  * The flow engine: walks the node graph for a single contact.
@@ -27,6 +30,8 @@ import { emitWebhook } from "./outbound-webhooks";
 export type RunContext = {
   run: FlowRun;
   account: InstagramAccount;
+  /** The workspace's resolved plan, read once per tick. See docs/BILLING.md. */
+  planKey: string;
   contact: Contact;
   conversationId: string;
   graph: FlowGraph;
@@ -129,9 +134,15 @@ async function advance(flowRunId: string, fromNodeId: string): Promise<FlowRun |
   });
   if (!parsed.success) return run;
 
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: run.account.workspaceId },
+    select: { planKey: true },
+  });
+
   const ctx: RunContext = {
     run,
     account: run.account,
+    planKey: workspace?.planKey ?? "free",
     contact: run.contact,
     conversationId: run.conversationId ?? (await ensureConversation(run.accountId, run.contactId)),
     graph: parsed.data,
@@ -159,8 +170,19 @@ async function advance(flowRunId: string, fromNodeId: string): Promise<FlowRun |
     });
 
     let result: NodeResult;
+    // The plan gate at run time. This is what makes a downgrade safe: flows
+    // built on a higher plan are kept exactly as they are, and simply stop at
+    // the first node the current plan doesn't cover — with a reason the
+    // customer can read. Upgrading again resumes them with nothing to rebuild.
+    const feature = featureForNode(node.type);
+    const allowed = !feature || hasFeature({ planKey: ctx.planKey }, feature);
     try {
-      result = await executeNode(ctx, node);
+      result = allowed
+        ? await executeNode(ctx, node)
+        : {
+            kind: "halt",
+            reason: `${SKIP_EXPLANATIONS[SkipReason.PLAN_FEATURE]} (${FEATURE_LABELS[feature!]})`,
+          };
     } catch (error) {
       const message = (error as Error).message ?? "Unknown error";
       await prisma.flowRunStep.update({

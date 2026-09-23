@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AuthError, requireWorkspace } from "./auth";
 import { prisma } from "./db";
 import { MetaApiError } from "./meta/types";
+import { PlanLimitError } from "./plan";
 
 /**
  * Shared plumbing for dashboard API routes: consistent auth, consistent error
@@ -39,6 +40,14 @@ export function errorResponse(error: unknown): NextResponse {
   }
   if (error instanceof MetaApiError) {
     return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+  if (error instanceof PlanLimitError) {
+    // 402, with the plan that would unlock it, so the dashboard can offer the
+    // upgrade in place rather than just showing an error.
+    return NextResponse.json(
+      { error: error.message, upgradeTo: error.upgradeTo },
+      { status: 402 },
+    );
   }
   if (error instanceof z.ZodError) {
     return NextResponse.json(

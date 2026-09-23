@@ -55,10 +55,22 @@ model Workspace {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
-  // Plan gating seam — inert in Phase 1. See CLAUDE.md.
-  planKey   String   @default("unlimited")
+  /// The RESOLVED plan — free | pro | business | unlimited. Recomputed by
+  /// src/lib/billing/resolve.ts whenever a subscription, an override or the
+  /// clock changes it, so enforcement reads one column. See docs/BILLING.md.
+  planKey   String   @default("free")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  /// Dodo's customer_id for this workspace, created before its first checkout.
+  /// Webhooks are mapped back to the workspace through this.
+  billingCustomerId  String?   @unique
+  /// Staff-granted plan that wins over any subscription until it expires.
+  /// Every workspace that existed before billing shipped carries "unlimited".
+  planOverride       String?
+  planOverrideReason String?
+  planOverrideUntil  DateTime?
+  planOverrideById   String?
 
   /// Suspension. The reason is shown to the customer at sign-in, and the
   /// dispatcher refuses to send for a suspended workspace.
@@ -81,6 +93,9 @@ model Workspace {
   webhookEndpoints WebhookEndpoint[]
   integrations     Integration[]
   adminNotes       AdminNote[]
+  subscriptions    Subscription[]
+  usageCounters    UsageCounter[]
+  paymentEvents    PaymentEvent[]
 }
 
 /// Every privileged action platform staff take. Impersonation touches the DMs
@@ -688,6 +703,8 @@ model Broadcast {
   /// BROADCAST | REENGAGE — SendDM's "Smart Re-engage" is a recurring broadcast
   kind        String    @default("BROADCAST")
   status      String    @default("draft") // draft | scheduled | sending | sent | failed | cancelled
+  /// Why it failed, in words the customer can act on.
+  error       String?
   scheduledAt DateTime?
   startedAt   DateTime?
   completedAt DateTime?
@@ -1071,4 +1088,104 @@ model RewindJob {
   automation Automation       @relation(fields: [automationId], references: [id], onDelete: Cascade)
 
   @@index([accountId, status])
+}
+
+// --- Billing -----------------------------------------------------------------
+// See docs/BILLING.md.
+
+/// One row per provider subscription. History is kept: a workspace that
+/// cancels and resubscribes has two rows, and the trace needs both.
+model Subscription {
+  id          String @id @default(cuid())
+  workspaceId String
+
+  provider               String @default("dodo")
+  providerSubscriptionId String @unique
+  providerCustomerId     String
+  providerProductId      String
+
+  /// Mapped from the product ID. free | pro | business
+  planKey  String
+  /// month | year
+  interval String
+  /// Dodo's status, verbatim: pending | active | on_hold | paused | cancelled
+  /// | failed | expired | past_due
+  status   String
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+  cancelledAt        DateTime?
+  /// Dodo's past_due_ends_at — the end of its dunning grace window.
+  graceEndsAt        DateTime?
+
+  /// Timestamp of the newest event applied. An older event arriving late is
+  /// recorded but not applied, so a retry can never roll the state backwards.
+  lastEventAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+}
+
+/// Monthly usage, one row per workspace × UTC calendar month × metric.
+/// Incremented with a conditional UPDATE so a limit can never be overshot.
+model UsageCounter {
+  id          String   @id @default(cuid())
+  workspaceId String
+  /// YYYY-MM, UTC
+  period      String
+  /// dms | ai_replies
+  metric      String
+  count       Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, period, metric])
+}
+
+/// The payment trace: every webhook hit and every call we make to the
+/// provider, written before anything else happens. See docs/BILLING.md.
+model PaymentEvent {
+  id        String @id @default(cuid())
+  provider  String @default("dodo")
+  /// inbound (a webhook) | outbound (a call we made)
+  direction String @default("inbound")
+
+  /// The webhook-id header. Not unique: a retry is a second hit and is logged
+  /// as one, marked duplicate if the first was already processed.
+  webhookId String?
+  /// The event type, or for outbound calls e.g. "checkout.create".
+  type      String?
+
+  /// Resolved workspace; null until matched, or if it never was.
+  workspaceId            String?
+  providerCustomerId     String?
+  providerSubscriptionId String?
+  providerPaymentId      String?
+  /// Minor units, as the provider reports them.
+  amount   Int?
+  currency String?
+
+  signatureValid Boolean?
+  /// processed | ignored | duplicate | unmatched | rejected | failed | ok
+  status         String
+  error          String?
+  /// Parsed body; capped for rejected hits, which are unauthenticated input.
+  payload        Json?
+  httpStatus     Int?
+
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, receivedAt])
+  @@index([status, receivedAt])
+  @@index([type])
+  @@index([webhookId])
 }
