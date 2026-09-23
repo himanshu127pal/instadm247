@@ -4,6 +4,7 @@ import { AuthError, requireWorkspace } from "./auth";
 import { prisma } from "./db";
 import { MetaApiError } from "./meta/types";
 import { PlanLimitError } from "./plan";
+import { DodoError } from "./billing/dodo";
 
 /**
  * Shared plumbing for dashboard API routes: consistent auth, consistent error
@@ -40,6 +41,15 @@ export function errorResponse(error: unknown): NextResponse {
   }
   if (error instanceof MetaApiError) {
     return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+  if (error instanceof DodoError) {
+    // Never pass the provider's raw message to a customer: it can describe our
+    // account and configuration. The trace has the detail.
+    console.error("[billing] provider call failed", error.message);
+    return NextResponse.json(
+      { error: "The payment provider couldn't complete that. Please try again in a moment." },
+      { status: 502 },
+    );
   }
   if (error instanceof PlanLimitError) {
     // 402, with the plan that would unlock it, so the dashboard can offer the

@@ -233,7 +233,8 @@ Ordered by how often the absence will actually hurt:
 
 Do not build these without the owner asking. See `docs/FEATURES.md` §D.
 
-- [ ] Pricing, plans and quota enforcement (seam exists in `src/lib/plan.ts`)
+- [x] Pricing, plans and quota enforcement — Free / Pro / Business via Dodo
+      Payments, inert behind `BILLING_ENABLED`. See `docs/BILLING.md`.
 - [ ] Team seats, roles and permissions
 - [ ] Facebook AutoDM (deferred by the owner — needs Facebook Login, Page
       tokens and a second App Review)

@@ -44,18 +44,30 @@ advertise seats until invites exist.
 
 `Workspace.planKey` is the **resolved** plan, recomputed whenever something that
 affects it changes, so every enforcement point reads one column with no joins.
-`resolvePlanKey()` in `src/lib/billing/resolve.ts` is a pure function; the order is:
+`resolvePlanKey()` in `src/lib/billing/resolve.ts` is a pure function. The
+result is the **highest** of:
 
-1. An admin **override** that has not expired (`planOverride`, `planOverrideUntil`).
-2. The workspace's **subscription**, by Dodo status:
-   - `active`, `past_due` → the subscribed plan (`past_due` is Dodo's grace window)
-   - `cancelled` while `currentPeriodEnd` is still ahead → the subscribed plan (paid through)
-   - anything else → Free
-3. **Free.**
+- an admin **override** that has not expired (`planOverride`, `planOverrideUntil`);
+- what each of the workspace's **subscriptions** grants, by Dodo status:
+  - `active`, `past_due` → the subscribed plan (`past_due` is Dodo's grace window)
+  - anything else, including statuses Dodo adds later → Free
+
+**`cancelled` is not "paid through".** In Dodo, a customer who cancels to stop
+renewing stays `active` with `cancel_at_next_billing_date` set; the SDK: *"the
+subscription will remain active until the end of billing period"*. So `cancelled`
+means access has already ended — the period ran out, or it was cancelled
+immediately, for example with a refund. Treating it as paid-through would give a
+refunded customer the rest of their month free.
+- **Free.**
+
+The highest, not "override wins": an override exists to *grant* — a comp, a
+grandfathered workspace — and must never be able to take away something a
+customer is paying for. Restricting a customer is what suspension is for.
 
 It is recomputed on every subscription webhook, on every admin override change,
 and by the `reconcile_plans` maintenance job, which catches the transitions that
-happen by the clock alone (an override expiring, a cancelled period ending).
+happen by the clock alone — an override expiring. (A subscription's own period
+ending arrives as a webhook.)
 
 `BILLING_ENABLED` is applied at read time in `getLimits()`, not stored — so
 flipping it takes effect immediately, and while it is off the admin panel still

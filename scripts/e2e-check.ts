@@ -16,6 +16,7 @@ import { verifyMetaSignature } from "../src/lib/crypto";
 import { parseWebhook } from "../src/lib/meta/webhooks";
 import { accountIdForEntry, handleEvent } from "../src/lib/engine/ingest";
 import { byEitherInstagramId } from "../src/lib/meta/identity";
+import { runBillingChecks } from "./e2e-billing";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -931,6 +932,8 @@ async function main() {
     check("a total failure propagates", threw.includes("callback verification failed"));
   }
 
+  await runBillingChecks(prisma, check, section);
+
   section("Tenant boundary in the customer UI");
   {
     // Under the Tech Provider model there is one Meta app and we own it. Its
@@ -951,6 +954,9 @@ async function main() {
       "META_APP_SECRET",
       "META_WEBHOOK_VERIFY_TOKEN",
       "ANTHROPIC_API_KEY",
+      "DODO_PAYMENTS",
+      "BILLING_ENABLED",
+      "webhookSecret",
     ];
 
     function walk(dir: string): string[] {

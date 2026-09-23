@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCustomer } from "@/lib/admin-queries";
+import { customerBilling, getCustomer } from "@/lib/admin-queries";
+import { env } from "@/lib/env";
+import { CustomerBilling } from "@/components/admin/customer-billing";
 import { getPlatformStaff } from "@/lib/admin";
 import { SKIP_EXPLANATIONS, type SkipReasonKey } from "@/lib/engine/guards";
 import { AddNote, ImpersonateControl, SuspendControls } from "@/components/admin/actions";
@@ -19,8 +21,12 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 export default async function CustomerDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [data, staff] = await Promise.all([getCustomer(id), getPlatformStaff()]);
-  if (!data || !staff) notFound();
+  const [data, staff, billing] = await Promise.all([
+    getCustomer(id),
+    getPlatformStaff(),
+    customerBilling(id),
+  ]);
+  if (!data || !staff || !billing) notFound();
 
   const { workspace: w, stats, recentSkips } = data;
   const owner = w.memberships[0];
@@ -75,6 +81,13 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
           </div>
         ))}
       </div>
+
+      <CustomerBilling
+        workspaceId={w.id}
+        data={billing}
+        role={staff.role}
+        billingEnabled={env.billing.enabled}
+      />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Instagram accounts">

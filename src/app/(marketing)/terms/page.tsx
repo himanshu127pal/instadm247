@@ -47,6 +47,27 @@ export default function TermsPage() {
         needed to store and transmit them to deliver the service.
       </p>
 
+      <h2>Plans and payment</h2>
+      <p>
+        You can use InstaDM247 on the free plan, or buy a paid plan. Paid plans are sold
+        through Dodo Payments, which acts as our merchant of record: it is the seller on
+        your receipt, and it collects and remits any sales tax, VAT or GST that applies
+        where you are.
+      </p>
+      <p>
+        Paid plans renew automatically each month or year until you cancel. You can cancel
+        at any time from the billing page, and you keep your plan until the end of the
+        period you have paid for. Usage allowances — automated DMs and AI replies — reset
+        on the first day of each calendar month (UTC) and do not roll over. Messages you
+        type yourself in the inbox are never counted against them.
+      </p>
+      <p>
+        If you move to a plan that doesn&rsquo;t include a feature you were using, nothing
+        you built is deleted: automations that rely on it pause at that step, and resume if
+        you upgrade again. If you believe you&rsquo;ve been charged in error, contact us at
+        the address below.
+      </p>
+
       <h2>Availability</h2>
       <p>
         We work to keep the service running, but we depend on the Instagram API. Meta can

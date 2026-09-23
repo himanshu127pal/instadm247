@@ -37,7 +37,7 @@ drop items from them, and don't "helpfully" add features that aren't on them.
 |---|---|---|
 | Meta auth path | **Instagram API with Instagram Login** (Business Login) | No Facebook Page required — creators connect IG directly. Facebook Login path kept as an adapter seam but not the default. |
 | Meta App ID/Secret | **Supplied at deploy time via env** | Owner adds them on the server. App must boot and the whole UI must work without them; only live IG calls degrade. |
-| Pricing / plans | **Deliberately NOT implemented yet** | Owner's instruction: build every feature unplanned/ungated first. A `Plan` seam exists in the schema but nothing is enforced. See "Plan gating seam" below. |
+| Pricing / plans | **Free / Pro / Business via Dodo Payments** (merchant of record), inert behind `BILLING_ENABLED` | Owner-approved. Priced against LinkDM; safety is free on every plan. Full design, and Dodo's verified API, in `docs/BILLING.md` — read it before touching billing. |
 | Stack | Next.js 15 App Router + TypeScript, Postgres + Prisma, Redis + BullMQ, Tailwind v4 | Single deployable repo, real durable queue for delayed flow steps. |
 | Flow builder | `@xyflow/react` (React Flow) node graph | Matches "automation flows" as the core primitive. |
 | Visual design | **Comic / cartoon** — ink outlines, halftone, burst hovers | Owner's choice. Full intensity on marketing + auth; deliberately restrained in dense dashboard UI (tables, charts, flow canvas) so data stays readable. Don't "fix" that split. |
@@ -69,6 +69,7 @@ src/app/api/           Route handlers (auth, oauth, webhooks, REST for dashboard
 src/lib/meta/          Graph client, OAuth, webhook parsing, message sending
 src/lib/engine/        Trigger matching, node executor, queues, rate limiter, window guard
 src/lib/ai/            AI agent + knowledge base retrieval
+src/lib/billing/       Plans, metering, plan resolution, Dodo, payment trace
 src/components/        UI (marketing/, dashboard/, flow/, ui/)
 src/worker/            BullMQ worker process entrypoint
 ```
@@ -105,13 +106,22 @@ directly, and don't let a working branch become a second trunk.
    enforced in `dispatch.ts`, not in the UI, and both are covered by `pnpm e2e`.
    Suspension in particular must stop traffic leaving on Meta's API under our
    app — locking someone out of the dashboard is not the same thing.
+10. **Safety is never a paid feature.** No plan gate may touch the messaging
+   window, rate limits, per-comment dedupe, Slow Down or viral protection. And a
+   human's reply typed in the Inbox is **never metered and never blocked** by a
+   plan. Plans gate what a customer builds, not whether their account is safe or
+   whether they can answer their own customer.
+11. **Every payment webhook hit is recorded** in `PaymentEvent` — forged,
+   duplicate, failed or ignored — and an admin override can only ever *raise* a
+   customer's plan, never lower what they pay for.
 
-## Plan gating seam (Phase 1: intentionally inert)
+## Plans and billing
 
-`Workspace.planKey` exists and defaults to `unlimited`. `src/lib/plan.ts` exposes
-`getLimits(workspace)` which currently returns `Infinity` for every quota. When pricing
-lands, only that file and the `Plan` table need to change — no feature code should ever
-hardcode a limit.
+The price list is `src/lib/billing/plans.ts`; the only place that decides what a
+workspace may do is `src/lib/plan.ts`. No feature code hardcodes a limit or reads
+`planKey` to make a decision. `Workspace.planKey` is the *resolved* plan, written
+only by `src/lib/billing/resolve.ts`. Everything Dodo-specific is in
+`src/lib/billing/dodo.ts` and the webhook. See `docs/BILLING.md`.
 
 ## Current status
 

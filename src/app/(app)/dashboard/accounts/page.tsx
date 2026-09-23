@@ -1,6 +1,7 @@
 import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isInstagramConfigured } from "@/lib/env";
+import { getLimits } from "@/lib/plan";
 import { WEBHOOK_FIELDS } from "@/lib/meta/types";
 import { PageHeader } from "@/components/dashboard/bits";
 import { AccountsView } from "@/components/dashboard/accounts-view";
@@ -55,6 +56,11 @@ export default async function AccountsPage({
           counts: account._count,
         }))}
         configured={isInstagramConfigured()}
+        accountLimit={
+          Number.isFinite(getLimits(workspace).instagramAccounts)
+            ? getLimits(workspace).instagramAccounts
+            : null
+        }
         flash={{ connected: params.connected, error: params.error }}
       />
     </div>

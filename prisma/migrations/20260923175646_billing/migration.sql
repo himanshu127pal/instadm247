@@ -60,6 +60,7 @@ CREATE TABLE "PaymentEvent" (
     "signatureValid" BOOLEAN,
     "status" TEXT NOT NULL,
     "error" TEXT,
+    "note" TEXT,
     "payload" JSONB,
     "httpStatus" INTEGER,
     "receivedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

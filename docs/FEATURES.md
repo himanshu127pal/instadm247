@@ -25,7 +25,7 @@ to Phase 2 by an explicit decision recorded below.
 | 10 | **Comment Auto-Reply** | Reply to the comment publicly once a DM is sent | Done | `REPLY_TO_COMMENT` node |
 | 11 | **White Label** | Remove LinkDM branding from DMs sent | **N/A** | We never brand outbound DMs. Applies only to the Link-in-Bio badge, which is toggleable. |
 | 12 | **Multiple Accounts** | Connect up to 3 Instagram accounts | Done | Unlimited in Phase 1 |
-| 13 | **Increased DM Send Limit** | 25,000 DMs/account/month | **P2** | Plan gating — `src/lib/plan.ts` |
+| 13 | **Increased DM Send Limit** | 25,000 DMs/account/month | Done | Pro plan: 25,000 automated DMs/month — see `docs/BILLING.md` |
 | 14 | **Universal Triggers** | Global triggers across multiple placements | Done | `scope: UNIVERSAL` |
 | 15 | **Rewind** | Backsend DMs to eligible comments | Done | Rewind, per automation |
 | 16 | **Advertising AutoDM** | Auto-reply to comments on sponsored content | Done | `AD_COMMENT` trigger |
@@ -36,8 +36,8 @@ to Phase 2 by an explicit decision recorded below.
 | 21 | **DM Templates** | Save and re-use DMs | Done | Template library |
 | 22 | **DM Coupons** | Send coupons via DMs | Done | Coupon pools + `SEND_COUPON` node |
 | 23 | **API Integrations** | Connect lead forms to Kit and Flodesk | Done | Native Kit + Flodesk, plus generic webhook |
-| 24 | **DM Send Limit+** | 300,000 DMs/account/month | **P2** | Plan gating |
-| 25 | **Accounts+** | Up to 10 Instagram accounts | **P2** | Unlimited already; the cap is a plan concern |
+| 24 | **DM Send Limit+** | 300,000 DMs/account/month | Done | Business plan: 300,000 automated DMs/month |
+| 25 | **Accounts+** | Up to 10 Instagram accounts | Done | Business plan: 10 accounts (Pro: 3, Free: 1) |
 | 26 | **DM Queue** | Advance queue so a DM is never missed | Done | BullMQ dispatch queue + queue view in Safety Center |
 | 27 | **Slow Down Mode** | Slow automations when Reels blow up | Done | Manual, auto-on-throttle, and proactive spike detection |
 
@@ -47,8 +47,8 @@ Filtered to actual product capabilities; quotas and support tiers are marked.
 
 | # | SendDM line item | Status | Where it lives |
 |---|---|---|---|
-| 1 | Unlimited **DM Send Limit** | **P2** (quota) | Unlimited today |
-| 2 | 25,000/mo **AI Credits** | **P2** (quota) | AI is unmetered today |
+| 1 | Unlimited **DM Send Limit** | Done | Metered per plan; see `docs/BILLING.md` |
+| 2 | 25,000/mo **AI Credits** | Done | AI replies metered per plan: Pro 1,000, Business 10,000 |
 | 3 | **Viral Post Protection** | Done | Proactive comment-spike detection → Slow Down |
 | 4 | 20 **Instagram Accounts** | Done | Unlimited |
 | 5 | **Comment Auto-Reply** | Done | |
@@ -83,10 +83,12 @@ path, Page access tokens, `pages_messaging`, a Page-shaped data model and a
 second App Review track — a large parallel integration for one line item.
 `src/lib/meta/` keeps the adapter seam. Revisit as a focused piece of work.
 
-### Plan gating (LinkDM #13, #24, #25; SendDM #1, #2)
-Owner's standing instruction: build every feature ungated first. `Workspace.planKey`
-and `src/lib/plan.ts` are the only places that change when pricing lands. No
-feature code may hardcode a quota.
+### Plans and billing (LinkDM #13, #24, #25; SendDM #1, #2)
+Free / Pro / Business, sold through Dodo Payments, defined once in
+`src/lib/billing/plans.ts`. Every gated action asks `src/lib/plan.ts`; no feature
+code hardcodes a quota. Inert until `BILLING_ENABLED` is set. Safety features are
+included on every plan — unlike both competitors, who charge for them. Full design
+in `docs/BILLING.md`.
 
 ### Not software (LinkDM #18; SendDM #14, #17, #18)
 Referral programme, priority support, dedicated account manager, SLA. These are

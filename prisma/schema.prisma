@@ -1175,6 +1175,9 @@ model PaymentEvent {
   /// processed | ignored | duplicate | unmatched | rejected | failed | ok
   status         String
   error          String?
+  /// What happened, in words — "plan pro → business", "older than the last
+  /// applied event, not applied". Distinct from `error`, which is for failures.
+  note           String?
   /// Parsed body; capped for rejected hits, which are unauthenticated input.
   payload        Json?
   httpStatus     Int?
