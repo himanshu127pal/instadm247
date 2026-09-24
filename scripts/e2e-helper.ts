@@ -57,6 +57,8 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
 
   section("AI Helper: who gets it");
 
+  check("the default model is Sonnet 5, and it has a price", env.helperModel === "claude-sonnet-5" && modelPrice(env.helperModel) !== null);
+
   const saved = { billing: mutableEnv.billing.enabled, key: mutableEnv.anthropicApiKey, model: mutableEnv.helperModel };
   try {
     mutableEnv.billing.enabled = true;
@@ -269,7 +271,7 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
     return realFetch(url, init);
   }) as typeof fetch;
   mutableEnv.anthropicApiKey = "e2e-key";
-  mutableEnv.helperModel = "claude-opus-5";
+  mutableEnv.helperModel = "claude-sonnet-5";
 
   try {
     const events: HelperEvent[] = [];
@@ -297,7 +299,7 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
 
     section("AI Helper: it never costs more than the plan allows");
 
-    const price = modelPrice("claude-opus-5")!;
+    const price = modelPrice("claude-sonnet-5")!;
     const cap = helperBudget(ws);
     const spend = () => getHelperSpend(ws.id);
     const setSpend = (micros: number) =>
@@ -363,7 +365,7 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
     });
     await ask().catch(() => undefined);
     const afterDrop = await spend();
-    check("a dropped call keeps its whole worst case charged", afterDrop > 50_000, String(afterDrop));
+    check("a dropped call keeps its whole worst case charged", afterDrop > 30_000, String(afterDrop));
     await setSpend(0);
     replies.push(() => new Response(JSON.stringify({ type: "error", error: { type: "api_error", message: "down" } }), { status: 500 }));
     await ask().catch(() => undefined);
@@ -388,7 +390,7 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
     requests.length = 0;
     const unpriced = await ask();
     check("a model we have no price for is never called", requests.length === 0 && unpriced.some((e) => e.type === "error"));
-    mutableEnv.helperModel = "claude-opus-5";
+    mutableEnv.helperModel = "claude-sonnet-5";
   } finally {
     globalThis.fetch = realFetch;
     mutableEnv.anthropicApiKey = saved.key;
@@ -417,7 +419,7 @@ function sse(
           id: "msg_e2e",
           type: "message",
           role: "assistant",
-          model: "claude-opus-5",
+          model: "claude-sonnet-5",
           content: [],
           stop_reason: null,
           stop_sequence: null,

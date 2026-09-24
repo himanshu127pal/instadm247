@@ -80,7 +80,8 @@ dashboard/helper page ──POST /api/helper──▶ route.ts
 
 ## Model and cost
 
-- Model: `AI_HELPER_MODEL`, default `claude-opus-5`, adaptive thinking at
+- Model: `AI_HELPER_MODEL`, default **`claude-sonnet-5`** (owner's choice: about
+  2.5× more questions than Opus under the same cap), adaptive thinking at
   `medium` effort. The model must be in the price table in
   `src/lib/helper/pricing.ts`; **an unpriced model is never called** (the helper
   shows "temporarily unavailable" and logs why), because its cost can't be
@@ -129,22 +130,22 @@ How it's enforced (`run.ts`, `pricing.ts`, `usage.ts`):
    turns of history of 2,000 characters, and tool results of 8,000 characters —
    which keeps each call's worst case, and therefore the reservation, small.
 
-What that means in questions (estimates; the cap itself is exact). A typical
-question costs about $0.03–0.06 on `claude-opus-5`; a question can only start
-while roughly $0.16–0.26 of the month is left, because that's its first call's
-worst case:
+What that means in questions (estimates; the cap itself is exact). On
+`claude-sonnet-5` ($2 / $10 per million tokens) a typical question costs about
+$0.01–0.025, and a question can only start while roughly $0.06–0.10 of the
+month is left, because that's its first call's worst case:
 
-| Plan | Weekly limit | Likely questions / month on `claude-opus-5` | On `claude-sonnet-5` |
+| Plan | Weekly limit | Likely questions / month on `claude-sonnet-5` (default) | On `claude-opus-5` |
 |---|---|---|---|
-| Free | 5 | ~15–22 | ~22 (weekly limit) |
-| Pro | 20 | ~25–45 | ~60–87 |
-| Business | 50 | ~120–210 | ~217 (weekly limit) |
+| Free | 5 | ~22 (weekly limit) | ~15–22 |
+| Pro | 20 | ~60–87 | ~25–45 |
+| Business | 50 | ~217 (weekly limit) | ~120–210 |
 
 If every question were as expensive as the rules allow, far fewer would fit —
 but the cap would still hold. The weekly limit spreads use through the month;
-the money cap is what guarantees the cost. `AI_HELPER_MODEL=claude-sonnet-5`
-($2/$10 per million tokens against $5/$25) lets customers ask about two and a
-half times as many questions within the same cap.
+the money cap is what guarantees the cost. Switching to `claude-opus-5`
+($5 / $25) gives more careful answers and about 2.5× fewer questions under the
+same cap.
 
 ## Plans
 

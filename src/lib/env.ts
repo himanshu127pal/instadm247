@@ -45,11 +45,12 @@ export const env = {
 
   anthropicApiKey: str("ANTHROPIC_API_KEY"),
   /**
-   * The model behind the in-dashboard AI Helper (docs/HELPER.md). Each question
-   * is one or a few calls to it, so this is the main cost lever: a smaller
-   * model is cheaper per question and somewhat less careful.
+   * The model behind the in-dashboard AI Helper (docs/HELPER.md). Owner's
+   * choice: Sonnet 5, so customers get about 2.5× more questions under the
+   * same hard monthly spend cap than on Opus. Must have a price in
+   * src/lib/helper/pricing.ts or the helper refuses to run.
    */
-  helperModel: str("AI_HELPER_MODEL", "claude-opus-5"),
+  helperModel: str("AI_HELPER_MODEL", "claude-sonnet-5"),
 
   /**
    * Transactional email via Amazon SES. See docs/EMAIL.md. With no provider
