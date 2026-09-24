@@ -12,3 +12,6 @@ coverage
 /prisma/*.db
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+
+# Local Redis snapshot
+dump.rdb
