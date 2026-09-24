@@ -13,7 +13,7 @@ Pricing, plans, metering and payments. Read this before touching anything under
 | Safety | **Never gated, on any plan** | The product's promise is that creators don't get banned. Competitors charge for Slow Down and viral protection; we don't. The window, rate limits and dedupe are also hard rules in `dispatch.ts` — gating them would mean weakening the dispatcher. |
 | Human replies | **Never blocked and never counted** | A person answering their own customer in the Inbox is not what the plan meters. Same principle as the opt-out rule, which also exempts human replies. |
 | Failed payment | Dodo's own dunning decides | `past_due` keeps the plan through Dodo's grace window; `on_hold` degrades to Free. No data is deleted on a downgrade. |
-| Refunds | **Monthly: none. Annual: the months not yet started, on request by email** | Owner's policy, published at `/refunds`. See §Refunds. |
+| Refunds | **Monthly: none. Annual: on request, less the months used at the monthly price. Nothing else** | Owner's policy, published at `/refunds`. Used months at the monthly rate, so an annual discount can't be used to buy months cheaply and refund the rest. No "charged in error" refunds either — it can't be verified. See §Refunds. |
 | Rollout | **Inert behind `BILLING_ENABLED`** | Metering runs and plans resolve from day one, but nothing is enforced until the flag is on — so the deploy that ships this is not the deploy that starts charging. |
 
 ## Plans
@@ -181,14 +181,20 @@ pricing, sign-up and billing pages:
 
 - **Monthly plans are not refundable.** Cancelling stops renewal; the paid month
   runs out.
-- **Annual plans** are refunded, on request to `support@instadm247.com`, for the
-  months of the current billing year that haven't started. The month in
-  progress counts as used. Amount = what was paid for the year, tax included,
-  × unused months ÷ 12, rounded down to the minor unit. The plan then ends
-  immediately.
-- A charge made in error is refunded on either plan — that's not this policy,
-  it's fixing a mistake, and it's done in Dodo's dashboard.
+- **Annual plans** are refunded, on request to `support@instadm247.com`: what
+  was paid for the year, less the months used charged at the plan's **monthly**
+  list price. The month in progress counts as used. In list terms
+  `refund = yearly − used × monthly`; applied as that share of what was
+  actually paid, so tax and a local currency come back in proportion:
+  `paid × (yearly − used × monthly) ÷ yearly`, rounded down to the minor unit.
+  With "two months free" pricing nothing is left from the 10th month. The plan
+  then ends immediately.
+- **Nothing else is refunded** — not partial months, not unused allowances, and
+  not claims of a mistaken charge, which can't be verified. A genuine payment
+  dispute goes through Dodo as merchant of record.
 
+Prices come from `src/lib/billing/plans.ts` at the time of the request, so a
+customer who bought before a price change is refunded against today's prices.
 The arithmetic is `src/lib/billing/refund.ts`, and the page says the same thing;
 change them together.
 
@@ -196,7 +202,7 @@ change them together.
 
 1. Check it came from the workspace owner's address — the customer page lists
    members. If not, reply asking the owner to write in.
-2. Customer page → the annual subscription → **Refund unused months**. Enter the
+2. Customer page → the annual subscription → **Refund annual plan**. Enter the
    date the email arrived, then **Preview refund**. The payment and amount come
    from our own trace of Dodo's `payment.succeeded`, never typed in.
 3. Admin only: give the reason (who asked, when) and **Refund … and end the plan**.

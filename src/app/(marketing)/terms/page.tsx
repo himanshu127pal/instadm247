@@ -67,12 +67,13 @@ export default function TermsPage() {
         you upgrade again.
       </p>
       <p>
-        Monthly plans are not refundable. Annual plans can be refunded, on request, for the
-        months that haven&rsquo;t started — the full rules, and how to ask, are in our{" "}
+        Monthly plans are not refundable. Annual plans can be refunded on request, less the
+        months used charged at the monthly price. No other payments are refundable. The full
+        rules, and how to ask, are in our{" "}
         <a href="/refunds" className="text-[var(--accent)] underline">
           refund policy
         </a>
-        . If you believe you&rsquo;ve been charged in error, contact us at the address below.
+        .
       </p>
 
       <h2>Availability</h2>

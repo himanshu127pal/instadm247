@@ -216,8 +216,7 @@ export function SubscriptionActions({
         <div className="space-y-2 rounded-lg border-2 border-[var(--color-zap-400)] bg-[var(--bg-raised)] p-3">
           <p className="text-[12.5px] font-bold">
             Stops renewal. They keep the plan until the period they paid for ends. For an annual
-            refund use &ldquo;Refund unused months&rdquo; instead; anything else is refunded in
-            Dodo&rsquo;s dashboard.
+            refund under the policy, use &ldquo;Refund annual plan&rdquo; instead.
           </p>
           <textarea
             className={input}
@@ -241,8 +240,8 @@ export function SubscriptionActions({
 }
 
 /**
- * The refund policy's one refundable case: an annual plan, refunded for the
- * months not yet started, counted from the day the request reached support.
+ * The refund policy's one refundable case: an annual plan, refunded less the
+ * months used at the monthly price, counted to the day the request reached support.
  * Preview first — the numbers come from our payment trace, not from staff —
  * then refund, which also ends the plan.
  */
@@ -306,7 +305,7 @@ function AnnualRefund({
   if (!open) {
     return (
       <button className={btn} onClick={() => setOpen(true)}>
-        Refund unused months
+        Refund annual plan
       </button>
     );
   }
@@ -314,8 +313,8 @@ function AnnualRefund({
   return (
     <div className="space-y-2 rounded-lg border-2 border-[var(--color-zap-400)] bg-[var(--bg-raised)] p-3">
       <p className="text-[12.5px] font-bold">
-        Refunds the months of this billing year that haven&rsquo;t started, pro rata of what they
-        paid, and ends the plan now. The month in progress isn&rsquo;t refunded.
+        Refunds what they paid for the year, less the months used charged at the monthly price,
+        and ends the plan now. The month in progress counts as used.
       </p>
       <label className="block text-[11.5px] font-bold uppercase tracking-wider text-[var(--text-faint)]">
         Request reached support on (UTC)
@@ -342,8 +341,8 @@ function AnnualRefund({
       {quote && (
         <div className="space-y-2 border-t-2 border-[var(--border-soft)] pt-2">
           <p className="text-[13px] font-semibold">
-            Paid {quote.paid} · {quote.monthsUsed} of 12 months started ·{" "}
-            <strong>refund {quote.refund}</strong> for {quote.monthsUnused} months
+            Paid {quote.paid} · {quote.monthsUsed} {quote.monthsUsed === 1 ? "month" : "months"} used,
+            charged at the monthly price · <strong>refund {quote.refund}</strong>
           </p>
           <p className="break-all font-mono text-[11.5px] text-[var(--text-faint)]">payment {quote.paymentId}</p>
           {quote.refundAlreadyIssued && (

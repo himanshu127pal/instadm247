@@ -53,7 +53,7 @@ export type TemplateParams = {
   subscription_payment_recovered: Named & { plan: string };
   subscription_on_hold: Named & { plan: string };
   subscription_ended: Named & { plan: string };
-  refund_issued: Named & { plan: string; amount: string; months: number };
+  refund_issued: Named & { plan: string; amount: string; monthsUsed: number };
   renewal_reminder: Named & { plan: string; renewsOn: string };
   plan_ending_reminder: Named & { plan: string; endsOn: string };
   plan_granted: Named & { plan: string; until: string | null };
@@ -249,11 +249,11 @@ export const TEMPLATES: { [K in TemplateName]: Def<TemplateParams[K]> } = {
     category: "billing",
     build: (p) => ({
       subject: `Your refund of ${p.amount} is on its way`,
-      preheader: `For the ${p.months} unused ${p.months === 1 ? "month" : "months"} of your annual ${p.plan} plan.`,
+      preheader: `From your annual ${p.plan} plan.`,
       heading: "Your refund is on its way",
       blocks: [
         {
-          p: `${hi(p)} we've refunded ${p.amount} for the ${p.months} unused ${p.months === 1 ? "month" : "months"} of your annual ${p.plan} plan, to the payment method you paid with. How long it takes to appear depends on your bank or card issuer.`,
+          p: `${hi(p)} we've refunded ${p.amount} from your annual ${p.plan} plan to the payment method you paid with: what you paid for the year, less the ${p.monthsUsed} ${p.monthsUsed === 1 ? "month" : "months"} you used at the monthly price. How long it takes to appear depends on your bank or card issuer.`,
         },
         { p: "Your plan has ended and your workspace is on the Free plan. Everything you built is still there — automations using features Free doesn't include are paused at that step, and resume if you upgrade again." },
         { cta: { label: "See plans", url: app("/dashboard/billing") } },
@@ -270,7 +270,7 @@ export const TEMPLATES: { [K in TemplateName]: Def<TemplateParams[K]> } = {
       blocks: [
         { p: `${hi(p)} a heads-up: your yearly ${p.plan} plan renews automatically on ${p.renewsOn}, and the card on file will be charged then.` },
         { p: "Nothing to do if you'd like to continue. To change plan or cancel, visit the billing page before that date." },
-        { note: "Changed your mind after it renews? Annual plans can be refunded for the months you haven't started — just reply to this email." },
+        { note: "Changed your mind after it renews? You can ask for a refund of what's left once the months you've used are charged at the monthly price — just reply to this email." },
         { cta: { label: "Manage billing", url: app("/dashboard/billing") } },
       ],
     }),

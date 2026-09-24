@@ -206,7 +206,7 @@ export async function POST(request: Request) {
             paymentId: prepared.paymentId,
             amount: prepared.amount,
             currency: prepared.currency,
-            monthsUnused: prepared.monthsUnused,
+            monthsUsed: prepared.monthsUsed,
             requestedAt: at.toISOString(),
           },
         });
@@ -220,7 +220,7 @@ export async function POST(request: Request) {
               paymentId: prepared.paymentId,
               productId: prepared.productId,
               amount: prepared.amount,
-              reason: `Annual plan, ${prepared.monthsUnused} unused months. ${body.reason}`,
+              reason: `Annual plan refund, ${prepared.monthsUsed} months used at the monthly price. ${body.reason}`,
             });
             await traceOutbound("refund.create", {
               workspaceId: workspace.id,
@@ -229,7 +229,7 @@ export async function POST(request: Request) {
               amount: prepared.amount,
               currency: prepared.currency,
               status: "ok",
-              note: `By staff: ${refundText} for ${prepared.monthsUnused} unused months (${refund.status})`,
+              note: `By staff: ${refundText}, ${prepared.monthsUsed} months used at the monthly price (${refund.status})`,
               payload: refund,
             });
           } catch (error) {
@@ -247,7 +247,7 @@ export async function POST(request: Request) {
         }
 
         try {
-          await cancelNow(body.subscriptionId, `Refunded ${prepared.monthsUnused} unused months: ${body.reason}`);
+          await cancelNow(body.subscriptionId, `Annual plan refunded (${prepared.monthsUsed} months used): ${body.reason}`);
           await traceOutbound("subscription.cancel_now", {
             workspaceId: workspace.id,
             providerSubscriptionId: body.subscriptionId,
@@ -272,7 +272,7 @@ export async function POST(request: Request) {
         await emailWorkspaceOwner(
           workspace.id,
           "refund_issued",
-          { plan: planFor(prepared.planKey).name, amount: refundText, months: prepared.monthsUnused },
+          { plan: planFor(prepared.planKey).name, amount: refundText, monthsUsed: prepared.monthsUsed },
           `refund:${prepared.paymentId}`,
         );
         // Dodo confirms with refund and subscription.cancelled webhooks; the

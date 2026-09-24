@@ -130,7 +130,7 @@ export default async function BillingPage({
               : subscription.status === "past_due"
                 ? "Your last payment didn't go through. Update your card to keep your plan — we'll keep retrying for a few days first."
                 : subscription.interval === "year"
-                  ? `Renews ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? ""} · billed yearly · unstarted months are refundable on request`
+                  ? `Renews ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? ""} · billed yearly · refundable on request, less the months used at the monthly price`
                   : `Renews ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? ""} · billed monthly`
             : ws.planOverride
               ? ws.planOverrideUntil

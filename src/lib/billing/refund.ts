@@ -1,12 +1,15 @@
 import { prisma } from "@/lib/db";
+import { planFor } from "./plans";
 
 /**
  * The refund policy, as code. See /refunds and docs/BILLING.md §Refunds.
  *
  *   Monthly plans — no refunds.
- *   Annual plans  — on request, the months not yet started are refunded, pro
- *                   rata of what was actually paid. The month in progress
- *                   counts as used.
+ *   Annual plans  — on request: what was paid, minus the months used charged
+ *                   at the MONTHLY price. The month in progress counts as
+ *                   used. Charging used months at the annual rate would let
+ *                   someone buy a year, use a few months at the discount and
+ *                   take the rest back.
  *
  * Kept free of I/O apart from `findRefundablePayment`, so the arithmetic that
  * decides how much money goes back is testable on its own.
@@ -44,17 +47,26 @@ export type RefundQuote =
 
 /**
  * How much of an annual payment goes back if the request arrived at `at`.
- * A month counts as used once it has started, so a request on day one of the
- * year refunds eleven twelfths, and one in the twelfth month refunds nothing.
+ *
+ *   refund = paid × (yearly price − months used × monthly price) ÷ yearly price
+ *
+ * Worked in list prices and then applied as a share of what was actually
+ * paid, so it holds whatever currency they paid in and whatever tax was added:
+ * in list terms it is simply "the yearly price minus the months used at the
+ * monthly price". A month counts as used once it has started. Once the used
+ * months cost as much as the year did, nothing is left.
  */
 export function quoteAnnualRefund(input: {
   periodStart: Date;
   periodEnd: Date;
   /** What the customer paid for this year, tax included, in minor units. */
   paid: number;
+  /** List prices, in whole units of the list currency. */
+  price: { month: number; year: number };
   at: Date;
 }): RefundQuote {
-  const { periodStart, periodEnd, paid, at } = input;
+  const { periodStart, periodEnd, paid, price, at } = input;
+  if (!(price.year > 0) || !(price.month > 0)) return { ok: false, reason: "This plan has no list price to work from." };
   if (!(paid > 0)) return { ok: false, reason: "There's no payment to refund." };
   if (at < periodStart) return { ok: false, reason: "The request is dated before this billing year began." };
   if (at >= periodEnd) return { ok: false, reason: "This billing year has already ended." };
@@ -63,9 +75,15 @@ export function quoteAnnualRefund(input: {
   while (monthsUsed < MONTHS_PER_YEAR && addMonthsUtc(periodStart, monthsUsed) <= at) monthsUsed++;
 
   const monthsUnused = MONTHS_PER_YEAR - monthsUsed;
-  if (monthsUnused <= 0) return { ok: false, reason: "Every month of this year has started, so nothing is left to refund." };
+  const remaining = price.year - monthsUsed * price.month;
+  if (remaining <= 0) {
+    return {
+      ok: false,
+      reason: `${monthsUsed} ${monthsUsed === 1 ? "month" : "months"} at the monthly price already cost as much as the year, so nothing is left to refund.`,
+    };
+  }
 
-  return { ok: true, monthsUsed, monthsUnused, amount: Math.floor((paid * monthsUnused) / MONTHS_PER_YEAR) };
+  return { ok: true, monthsUsed, monthsUnused, amount: Math.floor((paid * remaining) / price.year) };
 }
 
 /**
@@ -193,6 +211,7 @@ export async function prepareAnnualRefund(
     periodStart: sub.currentPeriodStart,
     periodEnd: sub.currentPeriodEnd,
     paid: payment.amount,
+    price: planFor(sub.planKey).price ?? { month: 0, year: 0 },
     at,
   });
   if (!quote.ok) return quote;

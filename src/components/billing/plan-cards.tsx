@@ -177,8 +177,8 @@ export function PlanCards({
       {/* The pricing page carries this in its own footnote. */}
       {mode === "dashboard" && (
         <p className="text-center text-[12.5px] font-semibold text-[var(--text-faint)]">
-          Monthly plans aren&rsquo;t refundable. Annual plans can be refunded for the months you
-          haven&rsquo;t started —{" "}
+          Monthly plans aren&rsquo;t refundable. Annual plans can be refunded, less the months used
+          at the monthly price —{" "}
           <Link href="/refunds" className="underline hover:text-[var(--text-muted)]">
             refund policy
           </Link>

@@ -35,25 +35,43 @@ export async function runRefundChecks(prisma: PrismaClient, check: Check, sectio
 
   const start = new Date("2026-03-15T12:00:00Z");
   const end = addMonthsUtc(start, 12);
-  const q = (at: Date, paid = 19_000) => quoteAnnualRefund({ periodStart: start, periodEnd: end, paid, at });
+  const PRO = { month: 19, year: 190 };
+  const q = (at: Date, paid = 19_000) =>
+    quoteAnnualRefund({ periodStart: start, periodEnd: end, paid, price: PRO, at });
 
   const first = q(new Date(start.getTime() + 60_000));
-  check("on day one, the month in progress is used and eleven are refunded", first.ok && first.monthsUnused === 11);
+  check(
+    "on day one, one month is charged at the monthly price: $190 − $19 = $171",
+    first.ok && first.monthsUsed === 1 && first.amount === 17_100,
+  );
   const policyExample = q(new Date("2026-05-25T00:00:00Z"));
   check(
-    "the policy page's example holds: two months and ten days in refunds nine",
-    policyExample.ok && policyExample.monthsUnused === 9 && policyExample.amount === 14_250,
+    "the policy page's example holds: two months and ten days in, $190 − 3 × $19 = $133",
+    policyExample.ok && policyExample.monthsUsed === 3 && policyExample.amount === 13_300,
+  );
+  const nine = q(addMonthsUtc(start, 8));
+  check("nine months used leaves $19", nine.ok && nine.monthsUsed === 9 && nine.amount === 1_900);
+  check(
+    "from the tenth month the used months cost as much as the year, so nothing is refunded",
+    !q(addMonthsUtc(start, 9)).ok,
+  );
+  const taxed = q(new Date("2026-05-25T00:00:00Z"), 20_900);
+  check("tax is refunded in proportion: $209 paid with 10% tax → $146.30", taxed.ok && taxed.amount === 14_630);
+  const yen = quoteAnnualRefund({ periodStart: start, periodEnd: end, paid: 28_500, price: PRO, at: new Date("2026-05-25T00:00:00Z") });
+  check("paid in another currency, the same share comes back: ¥28,500 → ¥19,950", yen.ok && yen.amount === 19_950);
+  check(
+    "a plan with no list price can't be quoted",
+    !quoteAnnualRefund({ periodStart: start, periodEnd: end, paid: 19_000, price: { month: 0, year: 0 }, at: start }).ok,
   );
   const boundary = q(addMonthsUtc(start, 3));
   check("a month counts as used from the moment it starts", boundary.ok && boundary.monthsUsed === 4);
   const justBefore = q(new Date(addMonthsUtc(start, 3).getTime() - 1));
   check("…and not a millisecond before", justBefore.ok && justBefore.monthsUsed === 3);
-  check("in the twelfth month there's nothing left to refund", !q(addMonthsUtc(start, 11)).ok);
   check("a request dated before the year began is refused", !q(new Date(start.getTime() - DAY)).ok);
   check("a request after the year ended is refused", !q(end).ok);
   check("nothing paid, nothing refunded", !q(new Date(start.getTime() + DAY), 0).ok);
   const odd = q(new Date(start.getTime() + DAY), 19_001);
-  check("amounts round down to the minor unit", odd.ok && odd.amount === Math.floor((19_001 * 11) / 12));
+  check("amounts round down to the minor unit", odd.ok && odd.amount === Math.floor((19_001 * 171) / 190));
 
   const jan31 = new Date("2026-01-31T00:00:00Z");
   check("month arithmetic clamps to the end of a short month", addMonthsUtc(jan31, 1).toISOString().startsWith("2026-02-28"));
@@ -109,9 +127,9 @@ export async function runRefundChecks(prisma: PrismaClient, check: Check, sectio
     });
     const ready = await prepareAnnualRefund(workspace.id, yearly.providerSubscriptionId, new Date());
     check(
-      "an annual plan 40 days in refunds ten months of what was paid",
-      ready.ok && ready.paymentId === paymentId && ready.monthsUnused === 10 && ready.amount === Math.floor((19_000 * 10) / 12),
-      ready.ok ? `${ready.monthsUnused} months, ${ready.amount}` : ready.reason,
+      "a Pro year 40 days in refunds $190 − 2 × $19 = $152",
+      ready.ok && ready.paymentId === paymentId && ready.monthsUsed === 2 && ready.amount === 15_200,
+      ready.ok ? `${ready.monthsUsed} months, ${ready.amount}` : ready.reason,
     );
     check("the refund targets the subscription's own product line", ready.ok && ready.productId === yearly.providerProductId);
     const dayOne = await prepareAnnualRefund(
@@ -119,7 +137,7 @@ export async function runRefundChecks(prisma: PrismaClient, check: Check, sectio
       yearly.providerSubscriptionId,
       new Date(`${periodStart.toISOString().slice(0, 10)}T00:00:00Z`),
     );
-    check("a request dated the day the year began counts as that year's first month", dayOne.ok && dayOne.monthsUnused === 11);
+    check("a request dated the day the year began counts as that year's first month", dayOne.ok && dayOne.monthsUsed === 1);
 
     // Refunded already in Dodo's dashboard: hands off.
     const dashboardRefund = await prisma.paymentEvent.create({
@@ -143,12 +161,15 @@ export async function runRefundChecks(prisma: PrismaClient, check: Check, sectio
 
     section("Refund policy: emails");
 
-    const r = render("refund_issued", { name: "Alex", plan: "Pro", amount: "$158.33", months: 10 });
-    check("the refund email names the amount and the months", r.subject.includes("$158.33") && r.text.includes("10 unused months"));
+    const r = render("refund_issued", { name: "Alex", plan: "Pro", amount: "$152.00", monthsUsed: 2 });
+    check(
+      "the refund email names the amount and how it was worked out",
+      r.subject.includes("$152.00") && r.text.includes("2 months you used at the monthly price"),
+    );
     check("it comes from the billing address", r.category === "billing");
     check(
       "the renewal reminder tells yearly customers a refund is possible",
-      render("renewal_reminder", { name: "Alex", plan: "Pro", renewsOn: "1 May 2027" }).text.includes("refunded"),
+      render("renewal_reminder", { name: "Alex", plan: "Pro", renewsOn: "1 May 2027" }).text.includes("at the monthly price"),
     );
 
     const sent: OutgoingEmail[] = [];
@@ -185,7 +206,7 @@ export async function runRefundChecks(prisma: PrismaClient, check: Check, sectio
       return new Response(JSON.stringify({ refund_id: "ref_1", status: "pending" }), { status: 200 });
     }) as typeof fetch;
     try {
-      await createRefund({ paymentId: "pay_1", productId: "prod_1", amount: 15_833, reason: "test" });
+      await createRefund({ paymentId: "pay_1", productId: "prod_1", amount: 15_200, reason: "test" });
       await cancelNow("sub_1", "test");
     } finally {
       globalThis.fetch = realFetch;
@@ -196,7 +217,7 @@ export async function runRefundChecks(prisma: PrismaClient, check: Check, sectio
     check(
       "a refund is a partial refund of one product line, tax included",
       refundCall?.method === "POST" && new URL(refundCall.url).pathname.endsWith("/refunds") &&
-        refundCall.body.payment_id === "pay_1" && item?.item_id === "prod_1" && item.amount === 15_833 && item.tax_inclusive === true,
+        refundCall.body.payment_id === "pay_1" && item?.item_id === "prod_1" && item.amount === 15_200 && item.tax_inclusive === true,
     );
     check(
       "the plan is ended now, not at period end",
