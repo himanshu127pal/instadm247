@@ -40,6 +40,8 @@ type Turn = {
   proposals?: Proposal[];
   error?: string;
   truncated?: boolean;
+  /** Cut short because the month's allowance ran out. */
+  budget?: boolean;
   pending?: boolean;
 };
 
@@ -47,8 +49,8 @@ type HelperEvent =
   | { type: "text"; text: string }
   | { type: "status"; text: string }
   | { type: "proposal"; proposal: Proposal }
-  | { type: "done"; truncated?: boolean }
-  | { type: "error"; message: string };
+  | { type: "done"; truncated?: boolean; budget?: boolean }
+  | { type: "error"; message: string; code?: "budget" };
 
 const STORAGE_KEY = "idm-helper-chat";
 
@@ -76,12 +78,15 @@ const newId = () => Math.random().toString(36).slice(2, 10);
 export function HelperChat({
   available,
   remaining: initialRemaining,
+  allowanceUsed,
   upgradeTo,
   from,
 }: {
   available: boolean;
   /** Questions left this week; null when unlimited. */
   remaining: number | null;
+  /** Share of this month's AI Helper allowance used, 0–100. */
+  allowanceUsed: number;
   /** The plan with more questions, if there is one to move to. */
   upgradeTo?: string;
   from?: string;
@@ -90,6 +95,7 @@ export function HelperChat({
   const [input, setInput] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [remaining, setRemaining] = React.useState(initialRemaining);
+  const [outOfBudget, setOutOfBudget] = React.useState(allowanceUsed >= 100);
   const endRef = React.useRef<HTMLDivElement>(null);
   const abortRef = React.useRef<AbortController | null>(null);
 
@@ -128,11 +134,11 @@ export function HelperChat({
 
     const history = turns
       .filter((t) => !t.error && t.text.trim())
-      .slice(-10)
+      .slice(-8)
       .map((t) => {
         // Drafts it offered are cards, not text; tell it what it already offered.
         const drafts = t.proposals?.length ? `\n\n(Draft offered: ${t.proposals.map((p) => p.name).join(", ")})` : "";
-        return { role: t.role, content: `${t.text}${drafts}`.slice(0, 3000) };
+        return { role: t.role, content: `${t.text}${drafts}`.slice(0, 2000) };
       });
     const answerId = newId();
     setTurns((all) => [
@@ -184,8 +190,13 @@ export function HelperChat({
               parts: [...(t.parts ?? []), { kind: "proposal", proposal: event.proposal }],
               status: undefined,
             }));
-          else if (event.type === "error") update(answerId, (t) => ({ ...t, error: event.message }));
-          else if (event.type === "done") update(answerId, (t) => ({ ...t, truncated: event.truncated }));
+          else if (event.type === "error") {
+            if (event.code === "budget") setOutOfBudget(true);
+            update(answerId, (t) => ({ ...t, error: event.message }));
+          } else if (event.type === "done") {
+            if (event.budget) setOutOfBudget(true);
+            update(answerId, (t) => ({ ...t, truncated: event.truncated, budget: event.budget }));
+          }
         }
       }
     } catch (error) {
@@ -212,7 +223,7 @@ export function HelperChat({
     );
   }
 
-  const outOfQuestions = remaining === 0;
+  const outOfQuestions = remaining === 0 || outOfBudget;
 
   return (
     <div className="flex min-h-[60vh] flex-col rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] shadow-[4px_4px_0_0_var(--shadow-ink)]">
@@ -221,6 +232,8 @@ export function HelperChat({
           {remaining === null
             ? "Answers come from InstaDM247's own guide and your account's setup."
             : `${remaining} question${remaining === 1 ? "" : "s"} left this week`}
+          {" · "}
+          {outOfBudget ? "this month's allowance is used up" : `${allowanceUsed}% of this month's allowance used`}
           {outOfQuestions && upgradeTo && (
             <>
               {" · "}
@@ -284,7 +297,9 @@ export function HelperChat({
           maxLength={2000}
           disabled={outOfQuestions}
           placeholder={
-            outOfQuestions ? "You've used this week's questions. They reset on Monday." : "How do I… / Help me set up… / Why didn't…"
+            outOfQuestions ? outOfBudget
+                ? "You've used this month's AI Helper allowance. It resets on the 1st."
+                : "You've used this week's questions. They reset on Monday." : "How do I… / Help me set up… / Why didn't…"
           }
           aria-label="Ask the AI Helper"
           className="min-h-[44px] flex-1 resize-none rounded-xl border-2 border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[13.5px] outline-none focus:border-[var(--accent)] disabled:opacity-60"
@@ -326,7 +341,11 @@ function TurnView({ turn }: { turn: Turn }) {
           </p>
         )}
         {turn.truncated && (
-          <p className="text-[12px] text-[var(--text-faint)]">That answer was cut short — ask it to continue.</p>
+          <p className="text-[12px] text-[var(--text-faint)]">
+            {turn.budget
+              ? "That answer was cut short: this month's AI Helper allowance ran out. It resets on the 1st."
+              : "That answer was cut short — ask it to continue."}
+          </p>
         )}
         {turn.error && <p className="text-[13px] font-medium text-[var(--color-zap-500)]">{turn.error}</p>}
       </div>

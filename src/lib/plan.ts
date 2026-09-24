@@ -4,6 +4,7 @@ import {
   NODE_FEATURE,
   PLANS,
   cheapestPlanWith,
+  helperBudgetMicros,
   planFor,
   type Feature,
   type Limits,
@@ -29,6 +30,15 @@ type PlanHolder = { planKey?: string | null } | null | undefined;
 export function effectivePlan(workspace: PlanHolder): Plan {
   if (!env.billing.enabled) return PLANS.unlimited;
   return planFor(workspace?.planKey);
+}
+
+/**
+ * The AI Helper's monthly spending cap for this workspace, in micro-dollars.
+ * While billing is off everyone is on Unlimited, which pays nothing — so they
+ * get the unpaid cap, not an unlimited one.
+ */
+export function helperBudget(workspace: PlanHolder): number {
+  return helperBudgetMicros(effectivePlan(workspace));
 }
 
 export function getLimits(workspace: PlanHolder): Limits {

@@ -461,7 +461,7 @@ export async function billingSummary() {
 /** Everything the customer page needs to show and manage one workspace's billing. */
 export async function customerBilling(workspaceId: string) {
   const { getUsage } = await import("./billing/usage");
-  const { planFor } = await import("./billing/plans");
+  const { planFor, helperBudgetMicros } = await import("./billing/plans");
 
   const [workspace, subscriptions, usage, accounts, events] = await Promise.all([
     prisma.workspace.findUnique({
@@ -497,6 +497,7 @@ export async function customerBilling(workspaceId: string) {
     // The stored plan's limits, ignoring BILLING_ENABLED — staff need to see what
     // WOULD apply, which is the whole point of resolving while inert.
     limits: planFor(workspace.planKey).limits,
+    helperBudget: helperBudgetMicros(planFor(workspace.planKey)),
     subscriptions,
     usage,
     accounts,

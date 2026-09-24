@@ -80,54 +80,85 @@ dashboard/helper page ──POST /api/helper──▶ route.ts
 
 ## Model and cost
 
-- Model: `AI_HELPER_MODEL`, default `claude-opus-5`. Adaptive thinking at
-  `medium` effort. Server-side refusal fallback (`fallbacks: "default"`) is on
-  for `claude-opus-5`, so a declined request is retried on another model instead
-  of ending the answer.
-- The system prompt and tools (~6k tokens) are the **same for every customer**
-  and carry a cache breakpoint, so they're one shared prompt cache across the
-  product. Anything per-request (date, the page they came from) goes in a second
-  system block after the breakpoint. `pnpm e2e` checks this.
-- **What one question can cost is capped in code** (`run.ts`): at most 4 model
-  calls, at most 4,096 output tokens each (thinking included), and at most the
-  last 10 chat turns of 3,000 characters sent back as history.
+- Model: `AI_HELPER_MODEL`, default `claude-opus-5`, adaptive thinking at
+  `medium` effort. The model must be in the price table in
+  `src/lib/helper/pricing.ts`; **an unpriced model is never called** (the helper
+  shows "temporarily unavailable" and logs why), because its cost can't be
+  bounded.
+- The system prompt and tools (~6k tokens) are the same for every customer and
+  cached as one shared prefix. Per-request context goes after the breakpoint.
+- No server-side refusal fallback and no SDK retries: either could bill a call
+  we didn't reserve for, or bill a different model.
 
-### Cost
+### The cap: worst case, enforced before every call
 
-On `claude-opus-5` ($5 / $25 per million input / output tokens; the shared
-prompt read from cache at $0.50):
+**Rule (owner's decision): the helper can never cost more than 10% of what the
+customer pays, and never more than $1 a month for a customer who pays nothing.**
+It's a hard cap, not an estimate.
 
-| | Per question |
-|---|---|
-| Typical (one or two lookups, a normal-length answer) | ~$0.03–0.10 |
-| Hard ceiling (4 rounds, every one at 4,096 tokens, full history) | under ~$1 |
+| Plan | Monthly cap | Why |
+|---|---|---|
+| Free | $1.00 | owner-set flat cap for unpaid use |
+| Pro | $1.58 | 10% of $190/year ÷ 12 (also under 10% of $19/month) |
+| Business | $6.58 | 10% of $790/year ÷ 12 (also under 10% of $79/month) |
+| Unlimited (staff, comps, pre-billing) | $1.00 | nobody pays for it |
+| Anything while `BILLING_ENABLED` is off | $1.00 | nobody's paying yet |
 
-Per workspace per month, if they use the **whole** weekly allowance every week
-(~4.35 weeks a month):
+Computed in `helperBudgetMicros` (`plans.ts`) from the plan's prices, so it
+follows any price change. Spend is recorded in `UsageCounter` as metric
+`helper_spend`, in micro-dollars, per calendar month.
 
-| Plan | Allowance | Questions / month | Typical | Ceiling | Plan price |
-|---|---|---|---|---|---|
-| Free | 5 / week | ~22 | ~$0.65–2.20 | ~$22 | $0 |
-| Pro | 20 / week | ~87 | ~$2.60–8.70 | ~$87 | $19 / month ($190 / year) |
-| Business | 50 / week | ~217 | ~$6.50–22 | ~$217 | $79 / month ($790 / year) |
+How it's enforced (`run.ts`, `pricing.ts`, `usage.ts`):
 
-The ceiling needs every single question to max out every limit, which normal
-questions don't come near; most customers won't use the whole allowance either.
-The number to watch is Free: it earns nothing, so its cost is acquisition spend.
-Setting `AI_HELPER_MODEL=claude-sonnet-5` ($2 / $10) cuts every figure above by
-more than half, with somewhat less careful answers. These are estimates —
-measure real usage (Anthropic's console shows spend) before changing the model
-or the allowances.
+1. **Before every model call**, the most that call could cost is reserved:
+   every input token priced as a cache write (the dearest way an input token is
+   billed), input tokens bounded by the request's UTF-8 size (a token always
+   covers at least one byte, whatever the language), plus earlier rounds' output
+   (their thinking comes back as input), plus a fixed overhead; and output at
+   `max_tokens`. The reservation is one atomic `UPDATE … WHERE count + amount <=
+   cap`, so racing questions can't overshoot either.
+2. **If the cap can't cover that worst case, the call isn't made.** Before the
+   first call, the customer sees "You've reached this month's AI Helper
+   allowance"; between calls, the answer stops and says why.
+3. **After a call**, the API's own usage report sets what it really cost, and the
+   rest of the reservation is given back.
+4. **A call that fails part-way keeps its whole reservation** (it may have been
+   billed for anything up to it). A call the API rejected with an HTTP error
+   costs nothing and is released.
+5. Each question is also limited to 4 calls of at most 4,096 output tokens, 8
+   turns of history of 2,000 characters, and tool results of 8,000 characters —
+   which keeps each call's worst case, and therefore the reservation, small.
+
+What that means in questions (estimates; the cap itself is exact). A typical
+question costs about $0.03–0.06 on `claude-opus-5`; a question can only start
+while roughly $0.16–0.26 of the month is left, because that's its first call's
+worst case:
+
+| Plan | Weekly limit | Likely questions / month on `claude-opus-5` | On `claude-sonnet-5` |
+|---|---|---|---|
+| Free | 5 | ~15–22 | ~22 (weekly limit) |
+| Pro | 20 | ~25–45 | ~60–87 |
+| Business | 50 | ~120–210 | ~217 (weekly limit) |
+
+If every question were as expensive as the rules allow, far fewer would fit —
+but the cap would still hold. The weekly limit spreads use through the month;
+the money cap is what guarantees the cost. `AI_HELPER_MODEL=claude-sonnet-5`
+($2/$10 per million tokens against $5/$25) lets customers ask about two and a
+half times as many questions within the same cap.
 
 ## Plans
 
-Every plan (`aiHelper` feature), metered **per workspace, per week** as
-`helperQuestionsPerWeek`: Free 5, Pro 20, Business 50. The week is an ISO week
-in UTC and resets Monday 00:00 UTC (`UsageCounter.period` = `YYYY-Www`). One
-question = one unit, reserved before the model is called and released if
-nothing came back. No usage email; when a Free or Pro workspace runs out, the
-chat links to the plan with more. While `BILLING_ENABLED` is off, everyone has
-it, unlimited.
+Every plan (`aiHelper` feature). Two limits, both per workspace:
+
+- **Questions per week** (`helperQuestionsPerWeek`, ISO week, resets Monday
+  00:00 UTC): Free 5, Pro 20, Business 50. One per question, reserved before the
+  first call and released if nothing came back. Shown as "up to" on the pricing
+  cards, because the monthly cap can end the month first.
+- **Monthly spend cap**, above. Customers see it as a percentage ("AI Helper
+  allowance, 40% used"), never in dollars. Staff see dollars on the customer's
+  admin page.
+
+No usage emails for either.
 
 ## Privacy
 

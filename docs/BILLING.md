@@ -26,6 +26,7 @@ Defined once, in `src/lib/billing/plans.ts`. That file is the price list.
 | Automated DMs / month | 1,000 | 25,000 | 300,000 | ∞ |
 | AI replies / month | 0 | 1,000 | 10,000 | ∞ |
 | AI Helper questions / **week** | 5 | 20 | 50 | ∞ |
+| AI Helper spend cap / month (hard, worst-case) | $1.00 | $1.58 | $6.58 | $1.00 |
 | Core AutoDM, story replies & mentions, DM keywords, comment replies, inbox starters, link in bio | ✓ | ✓ | ✓ | ✓ |
 | Every safety feature | ✓ | ✓ | ✓ | ✓ |
 | Advanced flows (delay, condition, randomizer, custom fields) | | ✓ | ✓ | ✓ |
@@ -94,6 +95,10 @@ workspace past its limit. Prisma's API cannot express a conditional increment.
 - **AI replies** — reserved before the model is called. When exhausted, the AI
   step falls back to the knowledge-base article or the fallback message, exactly
   as it does when no model key is configured. A flow never stops for this.
+- **AI Helper spend** — metric `helper_spend`, in micro-dollars, per month.
+  Each model call reserves its worst-case cost first and settles to the real
+  cost after; the cap is never exceeded. Rules and numbers in
+  `docs/HELPER.md` §The cap.
 - **AI Helper questions** — per week, on every plan. One per question, reserved before the model is
   called and released if nothing at all came back. No usage email: it affects
   only the customer's own dashboard, never anything their followers see. The

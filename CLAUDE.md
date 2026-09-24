@@ -138,6 +138,13 @@ directly, and don't let a working branch become a second trunk.
    messages or username; it may only *propose* an automation, which a person
    creates switched off. See `docs/HELPER.md`.
 
+15. **The AI Helper can never cost more than 10% of what a customer pays, or $1
+   a month for anyone who pays nothing.** Every model call reserves its
+   worst-case cost against that monthly cap before it's made, and isn't made if
+   the cap can't cover it. Don't add retries, fallbacks, models without a price,
+   or unbounded input to the helper — each would break the guarantee. The cap
+   comes from `helperBudgetMicros` in `plans.ts`. See `docs/HELPER.md` §The cap.
+
 ## Plans and billing
 
 The price list is `src/lib/billing/plans.ts`; the only place that decides what a

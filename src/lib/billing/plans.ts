@@ -159,6 +159,25 @@ export const PLANS: Record<PlanKey, Plan> = {
   },
 };
 
+/**
+ * The AI Helper's hard spending cap, in millionths of a US dollar per calendar
+ * month. See docs/HELPER.md §Cost.
+ *
+ * A paid plan may spend at most 10% of the CHEAPEST way to buy it — the annual
+ * price per month — so the cap holds whichever interval the customer chose. A
+ * plan that earns nothing (Free, and the internal Unlimited, which nobody pays
+ * for) gets a flat $1. The cap is enforced against worst-case cost before
+ * every model call, so no customer can ever cost more than this.
+ */
+export const HELPER_BUDGET_SHARE = 0.1;
+export const UNPAID_HELPER_BUDGET_USD = 1;
+
+export function helperBudgetMicros(plan: Plan): number {
+  if (!plan.price || plan.price.year === 0) return UNPAID_HELPER_BUDGET_USD * 1_000_000;
+  const cheapestPerMonth = Math.min(plan.price.month, plan.price.year / 12);
+  return Math.floor(cheapestPerMonth * HELPER_BUDGET_SHARE * 1_000_000);
+}
+
 export function isPlanKey(value: unknown): value is PlanKey {
   return typeof value === "string" && value in PLANS;
 }

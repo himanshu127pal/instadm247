@@ -20,8 +20,8 @@ const bodySchema = z.object({
    * new question cost more than the last.
    */
   history: z
-    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(3000) }))
-    .max(10)
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(2000) }))
+    .max(8)
     .default([]),
   page: z
     .string()

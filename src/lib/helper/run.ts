@@ -1,6 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { env } from "@/lib/env";
 import { guideText } from "./guide";
+import { helperBudget } from "@/lib/plan";
+import { chargeHelperSpend, releaseHelperSpend, reserveHelperSpend } from "@/lib/billing/usage";
+import { actualMicros, modelPrice, worstCaseMicros } from "./pricing";
 import { HELPER_TOOLS, TOOL_STATUS, runHelperTool, type DraftProposal, type HelperWorkspace } from "./tools";
 
 /**
@@ -18,8 +21,8 @@ export type HelperEvent =
   | { type: "text"; text: string }
   | { type: "status"; text: string }
   | { type: "proposal"; proposal: DraftProposal }
-  | { type: "done"; truncated?: boolean }
-  | { type: "error"; message: string };
+  | { type: "done"; truncated?: boolean; /** Stopped because the month's cap was reached. */ budget?: boolean }
+  | { type: "error"; message: string; code?: "budget" };
 
 /**
  * The ceiling on what one question can cost. Every round is a paid call, and
@@ -62,18 +65,25 @@ ${guideText()}`;
 
 let client: Anthropic | null = null;
 function anthropic(): Anthropic {
-  client ??= new Anthropic({ apiKey: env.anthropicApiKey });
+  // No automatic retries: a retried request can be billed again, and each
+  // call's worst case is reserved exactly once. A failed question is simply
+  // asked again by the customer, and reserved again.
+  client ??= new Anthropic({ apiKey: env.anthropicApiKey, maxRetries: 0 });
   return client;
 }
 
 /**
- * Server-side refusal fallback, where the model supports it: a declined
- * request is re-run on Anthropic's recommended fallback model in the same call
- * instead of ending the customer's question with nothing.
+ * Exact token count of the fixed prefix (tools + the shared system prompt) per
+ * model, learned from the API's first report. Until then its byte count stands
+ * in, which is always larger. See pricing.ts.
  */
-function fallbackParams(model: string): Pick<Anthropic.Beta.MessageCreateParams, "betas" | "fallbacks"> {
-  return model === "claude-opus-5" ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" } : {};
-}
+const prefixTokens = new Map<string, number>();
+
+/** Tool output is bounded too, so what a later round can cost is bounded. */
+const MAX_TOOL_RESULT_CHARS = 8_000;
+
+export const OUT_OF_BUDGET =
+  "You've reached this month's AI Helper allowance on your plan. It resets on the 1st.";
 
 export async function* runHelper(params: {
   workspace: HelperWorkspace;
@@ -84,6 +94,16 @@ export async function* runHelper(params: {
   signal?: AbortSignal;
 }): AsyncGenerator<HelperEvent> {
   const model = env.helperModel;
+  // No price, no bound — and no bound, no call. Server-side refusal fallback
+  // is deliberately off for the same reason: it can bill a different model.
+  const price = modelPrice(model);
+  if (!price) {
+    console.error(`[helper] no price for model ${model}; refusing to run unbounded`);
+    yield { type: "error", message: "The AI Helper is temporarily unavailable on our side. Please try again later." };
+    return;
+  }
+  const cap = helperBudget(params.workspace);
+
   const messages: Anthropic.Beta.BetaMessageParam[] = [
     ...params.history.map((t) => ({ role: t.role, content: t.content })),
     { role: "user", content: params.question },
@@ -97,9 +117,30 @@ export async function* runHelper(params: {
   ]
     .filter(Boolean)
     .join(" ");
+  const prefixText = HELPER_SYSTEM + JSON.stringify(HELPER_TOOLS);
 
   let wroteText = false;
+  let priorOutputTokens = 0;
   for (let round = 0; round < MAX_ROUNDS; round++) {
+    // Reserve the most this call could cost before making it. If the month's
+    // cap can't cover the worst case, the call isn't made.
+    const bound = Math.ceil(
+      worstCaseMicros({
+      price,
+      prefixText,
+      prefixTokens: prefixTokens.get(model),
+      restText: context + JSON.stringify(messages),
+      priorOutputTokens,
+      maxTokens: MAX_TOKENS_PER_ROUND,
+      }),
+    );
+    const reservedAt = new Date();
+    if (!(await reserveHelperSpend(params.workspace.id, bound, cap, reservedAt))) {
+      if (round === 0) yield { type: "error", message: OUT_OF_BUDGET, code: "budget" };
+      else yield { type: "done", truncated: true, budget: true };
+      return;
+    }
+
     const stream = anthropic().beta.messages.stream(
       {
         model,
@@ -114,22 +155,51 @@ export async function* runHelper(params: {
         // validate rather than streamed eagerly; runHelperTool re-validates.
         tools: HELPER_TOOLS,
         messages,
-        ...fallbackParams(model),
       },
       { signal: params.signal },
     );
+    // Failures surface through the iteration below; this only stops the
+    // stream's own promise from also reporting them as unhandled.
+    stream.on("error", () => undefined);
 
-    // Pass text through as it arrives, and keep what the model says after a
-    // lookup apart from what it said before it.
-    let first = true;
-    for await (const event of stream) {
-      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-        yield { type: "text", text: first && wroteText ? `\n\n${event.delta.text}` : event.delta.text };
-        first = false;
-        wroteText = true;
+    let message: Anthropic.Beta.BetaMessage;
+    try {
+      // Pass text through as it arrives, and keep what the model says after a
+      // lookup apart from what it said before it.
+      let first = true;
+      for await (const event of stream) {
+        if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+          yield { type: "text", text: first && wroteText ? `\n\n${event.delta.text}` : event.delta.text };
+          first = false;
+          wroteText = true;
+        }
       }
+      message = await stream.finalMessage();
+    } catch (error) {
+      // Rejected with an HTTP error, the request wasn't run or billed, so the
+      // reservation goes back. Anything else — a dropped connection, the page
+      // closing mid-answer — may have been billed for any amount up to the
+      // bound, so the whole reservation stays spent.
+      if (error instanceof Anthropic.APIError && error.status !== undefined) {
+        await releaseHelperSpend(params.workspace.id, bound, reservedAt);
+      }
+      throw error;
     }
-    const message = await stream.finalMessage();
+
+    // Settle: keep what the call actually cost, give back the rest.
+    const usage = message.usage;
+    const cost = actualMicros(price, usage);
+    if (cost > bound) {
+      // The bound is meant to be impossible to beat. If it ever is, record
+      // what was really spent and say so loudly: the cap needs fixing.
+      console.error(`[helper] call cost ${cost} µ$, over its ${bound} µ$ bound`);
+      await chargeHelperSpend(params.workspace.id, cost - bound, reservedAt);
+    } else {
+      await releaseHelperSpend(params.workspace.id, bound - cost, reservedAt);
+    }
+    priorOutputTokens += usage.output_tokens ?? 0;
+    const cached = (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0);
+    if (cached > 0) prefixTokens.set(model, cached);
 
     if (message.stop_reason === "refusal") {
       yield { type: "error", message: "I can't help with that one. Try asking another way, or email support." };
@@ -154,7 +224,12 @@ export async function* runHelper(params: {
         return { content: "That lookup failed. Answer without it, and say you couldn't check.", isError: true };
       });
       if ("proposal" in outcome && outcome.proposal) yield { type: "proposal", proposal: outcome.proposal };
-      results.push({ type: "tool_result", tool_use_id: block.id, content: outcome.content, is_error: outcome.isError });
+      results.push({
+        type: "tool_result",
+        tool_use_id: block.id,
+        content: outcome.content.slice(0, MAX_TOOL_RESULT_CHARS),
+        is_error: outcome.isError,
+      });
     }
     // Every result goes back in one message, so the model can keep calling in parallel.
     messages.push({ role: "user", content: results });

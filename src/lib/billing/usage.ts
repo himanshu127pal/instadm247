@@ -121,19 +121,93 @@ export async function releaseUsage(
   `;
 }
 
-/** This month's DMs and AI replies, and this week's AI Helper questions. */
-export type UsageSnapshot = Record<Metric, number>;
+/**
+ * This month's DMs and AI replies, this week's AI Helper questions, and this
+ * month's AI Helper spend in micro-dollars.
+ */
+export type UsageSnapshot = Record<Metric, number> & { helperSpend: number };
 
 export async function getUsage(workspaceId: string, at: Date = new Date()): Promise<UsageSnapshot> {
   const rows = await prisma.usageCounter.findMany({
     where: { workspaceId, period: { in: [periodKey(at), weekKey(at)] } },
     select: { metric: true, period: true, count: true },
   });
-  const usage: UsageSnapshot = { dms: 0, ai_replies: 0, helper: 0 };
+  const usage: UsageSnapshot = { dms: 0, ai_replies: 0, helper: 0, helperSpend: 0 };
   for (const row of rows) {
-    if (row.metric in usage && row.period === periodFor(row.metric as Metric, at)) {
+    if (row.metric === "helper_spend" && row.period === periodKey(at)) usage.helperSpend = row.count;
+    else if (row.metric in usage && row.period === periodFor(row.metric as Metric, at)) {
       usage[row.metric as Metric] = row.count;
     }
   }
   return usage;
+}
+
+// --- AI Helper spend ----------------------------------------------------------
+
+/**
+ * The AI Helper's spend, in micro-dollars, per calendar month. See
+ * docs/HELPER.md §Cost.
+ *
+ * Money, not a count: before every model call the helper reserves the most that
+ * call could possibly cost, and afterwards gives back whatever it didn't. The
+ * reservation is the same single conditional UPDATE as above, so it can never
+ * take the month's total past the cap — not with one huge call, and not with
+ * several questions racing each other.
+ */
+const SPEND_METRIC = "helper_spend";
+
+export async function reserveHelperSpend(
+  workspaceId: string,
+  micros: number,
+  cap: number,
+  at: Date = new Date(),
+): Promise<boolean> {
+  const amount = Math.ceil(micros);
+  if (amount <= 0) return true;
+  if (amount > cap) return false;
+  const period = periodKey(at);
+  await prisma.$executeRaw`
+    INSERT INTO "UsageCounter" ("id", "workspaceId", "period", "metric", "count", "updatedAt")
+    VALUES (${randomUUID()}, ${workspaceId}, ${period}, ${SPEND_METRIC}, 0, now())
+    ON CONFLICT ("workspaceId", "period", "metric") DO NOTHING
+  `;
+  const updated = await prisma.$queryRaw<{ count: number }[]>`
+    UPDATE "UsageCounter" SET "count" = "count" + ${amount}, "updatedAt" = now()
+    WHERE "workspaceId" = ${workspaceId} AND "period" = ${period} AND "metric" = ${SPEND_METRIC}
+      AND "count" + ${amount} <= ${cap}
+    RETURNING "count"
+  `;
+  return updated.length > 0;
+}
+
+/** Give back the part of a reservation the call didn't use. Same `at` as the reservation. */
+export async function releaseHelperSpend(workspaceId: string, micros: number, at: Date = new Date()): Promise<void> {
+  const amount = Math.floor(micros);
+  if (amount <= 0) return;
+  await prisma.$executeRaw`
+    UPDATE "UsageCounter" SET "count" = GREATEST("count" - ${amount}, 0), "updatedAt" = now()
+    WHERE "workspaceId" = ${workspaceId} AND "period" = ${periodKey(at)} AND "metric" = ${SPEND_METRIC}
+  `;
+}
+
+/**
+ * Record spend beyond a reservation. Only for a call that beat its worst-case
+ * bound, which shouldn't happen: the books must still say what it cost.
+ */
+export async function chargeHelperSpend(workspaceId: string, micros: number, at: Date = new Date()): Promise<void> {
+  const amount = Math.ceil(micros);
+  if (amount <= 0) return;
+  await prisma.$executeRaw`
+    UPDATE "UsageCounter" SET "count" = "count" + ${amount}, "updatedAt" = now()
+    WHERE "workspaceId" = ${workspaceId} AND "period" = ${periodKey(at)} AND "metric" = ${SPEND_METRIC}
+  `;
+}
+
+/** This month's helper spend so far, in micro-dollars. */
+export async function getHelperSpend(workspaceId: string, at: Date = new Date()): Promise<number> {
+  const row = await prisma.usageCounter.findUnique({
+    where: { workspaceId_period_metric: { workspaceId, period: periodKey(at), metric: SPEND_METRIC } },
+    select: { count: true },
+  });
+  return row?.count ?? 0;
 }

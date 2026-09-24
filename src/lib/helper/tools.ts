@@ -2,7 +2,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
-import { effectivePlan } from "@/lib/plan";
+import { effectivePlan, helperBudget } from "@/lib/plan";
 import { FEATURE_LABELS, type Feature } from "@/lib/billing/plans";
 import { getUsage } from "@/lib/billing/usage";
 import { getAccountIds, getSkipBreakdown } from "@/lib/queries";
@@ -183,6 +183,7 @@ async function workspaceOverview(workspace: HelperWorkspace) {
         limit: limit(plan.limits.helperQuestionsPerWeek),
         resetsOn: "Monday 00:00 UTC",
       },
+      helperMonthlyAllowanceUsedPercent: Math.min(100, Math.round((usage.helperSpend / helperBudget(workspace)) * 100)),
     },
     instagramAccounts: {
       limit: limit(plan.limits.instagramAccounts),

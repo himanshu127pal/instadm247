@@ -10,13 +10,15 @@ import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import type { PrismaClient } from "@prisma/client";
 import { env } from "../src/lib/env";
-import { hasFeature } from "../src/lib/plan";
-import { PLANS } from "../src/lib/billing/plans";
-import { getUsage, nextWeekStart, reserveUsage, weekKey } from "../src/lib/billing/usage";
+import { hasFeature, helperBudget } from "../src/lib/plan";
+import { PLANS, helperBudgetMicros } from "../src/lib/billing/plans";
+import { getHelperSpend, getUsage, nextWeekStart, periodKey, reserveHelperSpend, reserveUsage, weekKey } from "../src/lib/billing/usage";
 import { GUIDE } from "../src/lib/helper/guide";
 import { buildDraftGraph, checkDraft, customizeSchema, type Draft } from "../src/lib/helper/draft";
 import { runHelperTool } from "../src/lib/helper/tools";
 import { HELPER_SYSTEM, runHelper, type HelperEvent } from "../src/lib/helper/run";
+import { HELPER_TOOLS } from "../src/lib/helper/tools";
+import { actualMicros, modelPrice, worstCaseMicros } from "../src/lib/helper/pricing";
 
 type Check = (label: string, condition: boolean, detail?: string) => void;
 type Section = (title: string) => void;
@@ -65,8 +67,20 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
         PLANS.pro.limits.helperQuestionsPerWeek === 20 &&
         PLANS.business.limits.helperQuestionsPerWeek === 50,
     );
+    check(
+      "Free, and anything nobody pays for, can cost at most $1 a month",
+      helperBudgetMicros(PLANS.free) === 1_000_000 && helperBudgetMicros(PLANS.unlimited) === 1_000_000,
+    );
+    check(
+      "a paid plan can cost at most 10% of the cheapest way to pay for it",
+      (["pro", "business"] as const).every((k) => {
+        const p = PLANS[k].price!;
+        return helperBudgetMicros(PLANS[k]) <= 0.1 * Math.min(p.month, p.year / 12) * 1_000_000;
+      }),
+    );
     mutableEnv.billing.enabled = false;
     check("with billing off, everyone has it", hasFeature({ planKey: "free" }, "aiHelper"));
+    check("but capped at $1 a month, since nobody's paying yet", helperBudget({ planKey: "business" }) === 1_000_000);
   } finally {
     mutableEnv.billing.enabled = saved.billing;
   }
@@ -97,6 +111,10 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
     check("running low on questions sends no email", (await prisma.emailMessage.count()) === emailsBefore);
     check("the week's count shows on the billing page", (await getUsage(workspace.id, at)).helper === PLANS.pro.limits.helperQuestionsPerWeek);
     check("and doesn't touch the month's DM count", (await getUsage(workspace.id, at)).dms === 0);
+
+    const racing = await Promise.all(Array.from({ length: 5 }, () => reserveHelperSpend(other.id, 300_000, 1_000_000, at)));
+    check("questions racing each other can't take the month past its cap", racing.filter(Boolean).length === 3);
+    check("a single call dearer than the whole cap is refused", !(await reserveHelperSpend(other.id, 1_000_001, 1_000_000, at)));
 
     const free = { id: other.id, planKey: "free" };
     const asked = [];
@@ -231,7 +249,8 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
   section("AI Helper: the conversation");
 
   const requests: Array<{ headers: Headers; body: Record<string, unknown> }> = [];
-  const replies = [
+  type Reply = string | (() => Response);
+  const replies: Reply[] = [
     sse([{ type: "tool_use", id: "toolu_1", name: "list_automations", input: {} }], "tool_use"),
     sse([{ type: "text", text: "You have one automation, **Mine**." }], "end_turn"),
   ];
@@ -240,7 +259,9 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
     const href = typeof url === "string" ? url : url instanceof URL ? url.href : url.url;
     if (href.startsWith("https://api.anthropic.com/")) {
       requests.push({ headers: new Headers(init?.headers), body: JSON.parse(String(init?.body)) });
-      return new Response(replies.shift() ?? sse([{ type: "text", text: "?" }], "end_turn"), {
+      const reply = replies.shift() ?? sse([{ type: "text", text: "?" }], "end_turn");
+      if (typeof reply === "function") return reply();
+      return new Response(reply, {
         status: 200,
         headers: { "content-type": "text/event-stream", "request-id": "req_e2e" },
       });
@@ -265,12 +286,109 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
     check("the shared prompt is cached", Boolean(system?.[0]?.cache_control) && system[0].text === HELPER_SYSTEM);
     check("the page they came from goes after the cache, not in it", Boolean(system?.[1]?.text.includes("/dashboard/automations")));
     check(
-      "a declined request falls back to another model instead of ending the answer",
-      first.fallbacks === "default" && (requests[0]?.headers.get("anthropic-beta") ?? "").includes("server-side-fallback-2026-07-01"),
+      "no fallback model is used, so every call runs on the model it was priced for",
+      first.fallbacks === undefined && !(requests[0]?.headers.get("anthropic-beta") ?? "").includes("fallback"),
     );
     const second = requests[1]?.body.messages as Array<{ role: string; content: unknown }>;
     const toolResult = JSON.stringify(second?.at(-1)?.content ?? "");
     check("the lookup's result goes back to the model", toolResult.includes("tool_result") && toolResult.includes("Mine"));
+
+    // --- Money ----------------------------------------------------------------
+
+    section("AI Helper: it never costs more than the plan allows");
+
+    const price = modelPrice("claude-opus-5")!;
+    const cap = helperBudget(ws);
+    const spend = () => getHelperSpend(ws.id);
+    const setSpend = (micros: number) =>
+      prisma.usageCounter.upsert({
+        where: { workspaceId_period_metric: { workspaceId: ws.id, period: periodKey(), metric: "helper_spend" } },
+        create: { workspaceId: ws.id, period: periodKey(), metric: "helper_spend", count: micros },
+        update: { count: micros },
+      });
+    const ask = async (question = "How do I schedule a post?") => {
+      const events: HelperEvent[] = [];
+      for await (const e of runHelper({ workspace: ws, history: [], question })) events.push(e);
+      return events;
+    };
+
+    // The two calls above were settled at what they really cost.
+    const usage = { input_tokens: 900, cache_read_input_tokens: 6_000, cache_creation_input_tokens: 0, output_tokens: 400 };
+    const expected = 2 * actualMicros(price, usage);
+    check("each call is charged what it actually cost, not its worst case", Math.abs((await spend()) - expected) <= 2, `${await spend()} vs ${expected}`);
+
+    await setSpend(cap - 1_000);
+    requests.length = 0;
+    replies.length = 0;
+    const refused = await ask();
+    check(
+      "when the month's cap can't cover a call's worst case, no call is made",
+      requests.length === 0 && refused.some((e) => e.type === "error" && e.code === "budget"),
+    );
+    check("and nothing is charged for it", (await spend()) === cap - 1_000);
+
+    // Round one fits, round two doesn't: stop between them.
+    await setSpend(0);
+    const firstRound = worstCaseMicros({
+      price,
+      prefixText: HELPER_SYSTEM + JSON.stringify(HELPER_TOOLS),
+      prefixTokens: 6_000,
+      restText: "x".repeat(2_000),
+      priorOutputTokens: 0,
+      maxTokens: 4_096,
+    });
+    await setSpend(cap - Math.ceil(firstRound * 1.6));
+    requests.length = 0;
+    replies.length = 0;
+    replies.push(
+      sse([{ type: "tool_use", id: "toolu_2", name: "list_automations", input: {} }], "tool_use", {
+        ...usage,
+        output_tokens: 4_000,
+      }),
+    );
+    const cut = await ask();
+    check(
+      "when the money runs out mid-answer, it stops there and says so",
+      requests.length === 1 && cut.at(-1)?.type === "done" && (cut.at(-1) as { budget?: boolean }).budget === true,
+      JSON.stringify(cut.slice(-2)),
+    );
+    check("and the month never goes over the cap", (await spend()) <= cap);
+
+    // A call that fails part-way may have been billed for anything up to its
+    // worst case, so that's what stays charged; one the API refused, nothing.
+    await setSpend(0);
+    replies.length = 0;
+    replies.push(() => {
+      throw new TypeError("socket hang up");
+    });
+    await ask().catch(() => undefined);
+    const afterDrop = await spend();
+    check("a dropped call keeps its whole worst case charged", afterDrop > 50_000, String(afterDrop));
+    await setSpend(0);
+    replies.push(() => new Response(JSON.stringify({ type: "error", error: { type: "api_error", message: "down" } }), { status: 500 }));
+    await ask().catch(() => undefined);
+    check("a call the API refused costs nothing", (await spend()) === 0, String(await spend()));
+    check("and it isn't retried behind our back", requests.at(-1) !== undefined && replies.length === 0);
+
+    // The worst case really is the worst: bill a call at every limit at once.
+    await setSpend(0);
+    const huge = "🔥".repeat(2_000);
+    replies.push(
+      sse([{ type: "text", text: "ok" }], "max_tokens", {
+        input_tokens: Buffer.byteLength(JSON.stringify([{ role: "user", content: huge }])) + 1_000,
+        cache_creation_input_tokens: 6_000,
+        cache_read_input_tokens: 0,
+        output_tokens: 4_096,
+      }),
+    );
+    await ask(huge);
+    check("even a call billed at every limit stays inside what was reserved", (await spend()) <= cap);
+
+    mutableEnv.helperModel = "claude-some-future-model";
+    requests.length = 0;
+    const unpriced = await ask();
+    check("a model we have no price for is never called", requests.length === 0 && unpriced.some((e) => e.type === "error"));
+    mutableEnv.helperModel = "claude-opus-5";
   } finally {
     globalThis.fetch = realFetch;
     mutableEnv.anthropicApiKey = saved.key;
@@ -280,7 +398,16 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
 }
 
 /** One streamed Messages API response, in Anthropic's server-sent events format. */
-function sse(blocks: Array<{ type: "text"; text: string } | { type: "tool_use"; id: string; name: string; input: object }>, stopReason: string): string {
+function sse(
+  blocks: Array<{ type: "text"; text: string } | { type: "tool_use"; id: string; name: string; input: object }>,
+  stopReason: string,
+  usage: { input_tokens: number; cache_read_input_tokens: number; cache_creation_input_tokens: number; output_tokens: number } = {
+    input_tokens: 900,
+    cache_read_input_tokens: 6_000,
+    cache_creation_input_tokens: 0,
+    output_tokens: 400,
+  },
+): string {
   const events: Array<[string, object]> = [
     [
       "message_start",
@@ -294,7 +421,12 @@ function sse(blocks: Array<{ type: "text"; text: string } | { type: "tool_use"; 
           content: [],
           stop_reason: null,
           stop_sequence: null,
-          usage: { input_tokens: 1, output_tokens: 1 },
+          usage: {
+            input_tokens: usage.input_tokens,
+            cache_read_input_tokens: usage.cache_read_input_tokens,
+            cache_creation_input_tokens: usage.cache_creation_input_tokens,
+            output_tokens: 1,
+          },
         },
       },
     ],
@@ -315,7 +447,7 @@ function sse(blocks: Array<{ type: "text"; text: string } | { type: "tool_use"; 
     }
     events.push(["content_block_stop", { type: "content_block_stop", index }]);
   });
-  events.push(["message_delta", { type: "message_delta", delta: { stop_reason: stopReason, stop_sequence: null }, usage: { output_tokens: 5 } }]);
+  events.push(["message_delta", { type: "message_delta", delta: { stop_reason: stopReason, stop_sequence: null }, usage: { output_tokens: usage.output_tokens } }]);
   events.push(["message_stop", { type: "message_stop" }]);
   return events.map(([name, data]) => `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`).join("");
 }

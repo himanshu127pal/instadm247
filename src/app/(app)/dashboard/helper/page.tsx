@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/auth";
 import { isAiConfigured } from "@/lib/env";
-import { effectivePlan, hasFeature } from "@/lib/plan";
+import { effectivePlan, hasFeature, helperBudget } from "@/lib/plan";
 import { PLANS, cheapestPlanWith } from "@/lib/billing/plans";
 import { getUsage } from "@/lib/billing/usage";
 import { isImpersonating } from "@/lib/impersonation";
@@ -52,7 +52,9 @@ export default async function HelperPage({ searchParams }: { searchParams: Promi
 
   const plan = effectivePlan(workspace);
   const limit = plan.limits.helperQuestionsPerWeek;
-  const used = (await getUsage(workspace.id)).helper;
+  const usage = await getUsage(workspace.id);
+  const used = usage.helper;
+  const allowanceUsed = Math.min(100, Math.round((usage.helperSpend / helperBudget(workspace)) * 100));
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
@@ -60,6 +62,7 @@ export default async function HelperPage({ searchParams }: { searchParams: Promi
       <HelperChat
         available={isAiConfigured()}
         remaining={Number.isFinite(limit) ? Math.max(0, limit - used) : null}
+        allowanceUsed={allowanceUsed}
         upgradeTo={plan.key === "free" ? "Pro" : plan.key === "pro" ? "Business" : undefined}
         from={from && /^\/dashboard(\/[\w-]+)*$/.test(from) ? from : undefined}
       />
