@@ -29,8 +29,10 @@ export async function forwardLead(
 ): Promise<ForwardResult[]> {
   if (!lead.email) return [];
 
+  // Email tools only; Google Sheets takes every lead, email or not, and is
+  // written from its own path (google-sheets.ts).
   const integrations = await prisma.integration.findMany({
-    where: { workspaceId, enabled: true },
+    where: { workspaceId, enabled: true, provider: { in: ["kit", "flodesk"] } },
   });
   if (integrations.length === 0) return [];
 

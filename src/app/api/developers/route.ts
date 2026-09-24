@@ -4,8 +4,9 @@ import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { ok, parseBody, route } from "@/lib/api";
 import { createApiKey } from "@/lib/api-keys";
-import { encrypt, randomToken } from "@/lib/crypto";
+import { decrypt, encrypt, randomToken } from "@/lib/crypto";
 import { verifyCredential } from "@/lib/integrations";
+import { PROVIDER as GOOGLE_SHEETS, revoke as revokeGoogle } from "@/lib/integrations/google-sheets";
 
 export const runtime = "nodejs";
 
@@ -113,6 +114,12 @@ export const DELETE = route(async ({ workspace, request }) => {
     });
     if (!integration) throw new AuthError("Integration not found.", 404);
     await prisma.integration.delete({ where: { id } });
+    // Give the Google grant back too, so it doesn't linger in their account.
+    // The spreadsheet itself is theirs and stays.
+    if (integration.provider === GOOGLE_SHEETS) {
+      const token = decrypt(integration.apiKeyEnc);
+      if (token) await revokeGoogle(token);
+    }
   }
 
   return ok();

@@ -95,6 +95,16 @@ export const env = {
     },
   },
 
+  /**
+   * Google OAuth client for the Google Sheets integration. See
+   * docs/INTEGRATIONS.md. Optional: without it the Sheets card says it isn't
+   * available and everything else works.
+   */
+  google: {
+    clientId: str("GOOGLE_CLIENT_ID"),
+    clientSecret: str("GOOGLE_CLIENT_SECRET"),
+  },
+
   limits: {
     messagesPerHour: int("RATE_LIMIT_MESSAGES_PER_HOUR", 180),
     privateRepliesPerHour: int("RATE_LIMIT_PRIVATE_REPLIES_PER_HOUR", 600),
@@ -121,6 +131,11 @@ export function isBillingConfigured(): boolean {
       dodo.products.pro.month &&
       dodo.products.business.month,
   );
+}
+
+/** True when customers can connect Google Sheets. */
+export function isGoogleConfigured(): boolean {
+  return Boolean(env.google.clientId && env.google.clientSecret);
 }
 
 export function isAiConfigured(): boolean {
