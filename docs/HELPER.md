@@ -88,20 +88,46 @@ dashboard/helper page ──POST /api/helper──▶ route.ts
   and carry a cache breakpoint, so they're one shared prompt cache across the
   product. Anything per-request (date, the page they came from) goes in a second
   system block after the breakpoint. `pnpm e2e` checks this.
-- Rough cost per question on `claude-opus-5`: a few US cents — about $0.03–0.10
-  for a typical one or two lookups. At the full allowance that's roughly
-  $5–15/month for a Pro workspace (150) and $15–50 for Business (500); most
-  customers use far fewer. Setting `AI_HELPER_MODEL=claude-sonnet-5` cuts that by
-  more than half, with somewhat less careful answers. Measure real usage before
-  changing either the model or the allowances.
+- **What one question can cost is capped in code** (`run.ts`): at most 4 model
+  calls, at most 4,096 output tokens each (thinking included), and at most the
+  last 10 chat turns of 3,000 characters sent back as history.
+
+### Cost
+
+On `claude-opus-5` ($5 / $25 per million input / output tokens; the shared
+prompt read from cache at $0.50):
+
+| | Per question |
+|---|---|
+| Typical (one or two lookups, a normal-length answer) | ~$0.03–0.10 |
+| Hard ceiling (4 rounds, every one at 4,096 tokens, full history) | under ~$1 |
+
+Per workspace per month, if they use the **whole** weekly allowance every week
+(~4.35 weeks a month):
+
+| Plan | Allowance | Questions / month | Typical | Ceiling | Plan price |
+|---|---|---|---|---|---|
+| Free | 5 / week | ~22 | ~$0.65–2.20 | ~$22 | $0 |
+| Pro | 20 / week | ~87 | ~$2.60–8.70 | ~$87 | $19 / month ($190 / year) |
+| Business | 50 / week | ~217 | ~$6.50–22 | ~$217 | $79 / month ($790 / year) |
+
+The ceiling needs every single question to max out every limit, which normal
+questions don't come near; most customers won't use the whole allowance either.
+The number to watch is Free: it earns nothing, so its cost is acquisition spend.
+Setting `AI_HELPER_MODEL=claude-sonnet-5` ($2 / $10) cuts every figure above by
+more than half, with somewhat less careful answers. These are estimates —
+measure real usage (Anthropic's console shows spend) before changing the model
+or the allowances.
 
 ## Plans
 
-Pro and Business (`aiHelper` feature), metered as `helperQuestionsPerMonth`
-(Free 0, Pro 150, Business 500). One question = one unit, reserved before the
-model is called and released if nothing came back. No usage email. While
-`BILLING_ENABLED` is off, everyone has it, unlimited. Free workspaces see an
-upgrade card instead of the chat.
+Every plan (`aiHelper` feature), metered **per workspace, per week** as
+`helperQuestionsPerWeek`: Free 5, Pro 20, Business 50. The week is an ISO week
+in UTC and resets Monday 00:00 UTC (`UsageCounter.period` = `YYYY-Www`). One
+question = one unit, reserved before the model is called and released if
+nothing came back. No usage email; when a Free or Pro workspace runs out, the
+chat links to the plan with more. While `BILLING_ENABLED` is off, everyone has
+it, unlimited.
 
 ## Privacy
 

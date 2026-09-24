@@ -177,8 +177,12 @@ async function workspaceOverview(workspace: HelperWorkspace) {
     thisMonth: {
       automatedDms: { used: usage.dms, limit: limit(plan.limits.dmsPerMonth) },
       aiReplies: { used: usage.ai_replies, limit: limit(plan.limits.aiRepliesPerMonth) },
-      helperQuestions: { used: usage.helper, limit: limit(plan.limits.helperQuestionsPerMonth) },
       resetsOn: "the 1st of next month (UTC)",
+      helperQuestionsThisWeek: {
+        used: usage.helper,
+        limit: limit(plan.limits.helperQuestionsPerWeek),
+        resetsOn: "Monday 00:00 UTC",
+      },
     },
     instagramAccounts: {
       limit: limit(plan.limits.instagramAccounts),

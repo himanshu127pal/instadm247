@@ -150,7 +150,12 @@ export default async function BillingPage({
             hint="Resets on the 1st. Replies you type yourself never count."
           />
           <Meter label="AI replies" used={usage.ai_replies} cap={plan.limits.aiRepliesPerMonth} />
-          <Meter label="AI Helper questions" used={usage.helper} cap={plan.limits.helperQuestionsPerMonth} />
+          <Meter
+            label="AI Helper questions"
+            used={usage.helper}
+            cap={plan.limits.helperQuestionsPerWeek}
+            hint="Per week. Resets every Monday."
+          />
           <Meter label="Instagram accounts" used={accounts} cap={plan.limits.instagramAccounts} />
         </div>
       </SectionCard>

@@ -25,13 +25,13 @@ Defined once, in `src/lib/billing/plans.ts`. That file is the price list.
 | Instagram accounts | 1 | 3 | 10 | ∞ |
 | Automated DMs / month | 1,000 | 25,000 | 300,000 | ∞ |
 | AI replies / month | 0 | 1,000 | 10,000 | ∞ |
-| AI Helper questions / month | 0 | 150 | 500 | ∞ |
+| AI Helper questions / **week** | 5 | 20 | 50 | ∞ |
 | Core AutoDM, story replies & mentions, DM keywords, comment replies, inbox starters, link in bio | ✓ | ✓ | ✓ | ✓ |
 | Every safety feature | ✓ | ✓ | ✓ | ✓ |
 | Advanced flows (delay, condition, randomizer, custom fields) | | ✓ | ✓ | ✓ |
 | Lead capture, coupons, templates, DM planner, rewind | | ✓ | ✓ | ✓ |
 | Broadcasts, scheduler, Kit / Flodesk | | ✓ | ✓ | ✓ |
-| AI agent, AI Helper | | ✓ | ✓ | ✓ |
+| AI agent | | ✓ | ✓ | ✓ |
 | Public API, outbound webhooks, HTTP request node | | | ✓ | ✓ |
 
 `unlimited` is not sold. It is what staff, comps and every workspace that existed
@@ -78,7 +78,8 @@ shows which plan each workspace *would* be on.
 ## Metering
 
 `UsageCounter` holds one row per workspace, calendar month (UTC, `YYYY-MM`) and
-metric. Metrics are `dms`, `ai_replies` and `helper`.
+metric. Metrics are `dms`, `ai_replies` and `helper`. `helper` is the exception
+to "calendar month": its period is the ISO week (`YYYY-Www`, Monday 00:00 UTC).
 
 A quota is **reserved before** the action and **released** if the action does
 not complete, using a single conditional `UPDATE … WHERE count < limit`. That is
@@ -93,7 +94,7 @@ workspace past its limit. Prisma's API cannot express a conditional increment.
 - **AI replies** — reserved before the model is called. When exhausted, the AI
   step falls back to the knowledge-base article or the fallback message, exactly
   as it does when no model key is configured. A flow never stops for this.
-- **AI Helper questions** — one per question, reserved before the model is
+- **AI Helper questions** — per week, on every plan. One per question, reserved before the model is
   called and released if nothing at all came back. No usage email: it affects
   only the customer's own dashboard, never anything their followers see. The
   allowance exists because every question is a paid model call — see

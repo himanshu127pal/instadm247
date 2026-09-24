@@ -76,11 +76,14 @@ const newId = () => Math.random().toString(36).slice(2, 10);
 export function HelperChat({
   available,
   remaining: initialRemaining,
+  upgradeTo,
   from,
 }: {
   available: boolean;
-  /** Questions left this month; null when unlimited. */
+  /** Questions left this week; null when unlimited. */
   remaining: number | null;
+  /** The plan with more questions, if there is one to move to. */
+  upgradeTo?: string;
   from?: string;
 }) {
   const [turns, setTurns] = React.useState<Turn[]>([]);
@@ -125,11 +128,11 @@ export function HelperChat({
 
     const history = turns
       .filter((t) => !t.error && t.text.trim())
-      .slice(-20)
+      .slice(-10)
       .map((t) => {
         // Drafts it offered are cards, not text; tell it what it already offered.
         const drafts = t.proposals?.length ? `\n\n(Draft offered: ${t.proposals.map((p) => p.name).join(", ")})` : "";
-        return { role: t.role, content: `${t.text}${drafts}`.slice(0, 8000) };
+        return { role: t.role, content: `${t.text}${drafts}`.slice(0, 3000) };
       });
     const answerId = newId();
     setTurns((all) => [
@@ -217,7 +220,15 @@ export function HelperChat({
         <p className="text-[12px] font-medium text-[var(--text-muted)]">
           {remaining === null
             ? "Answers come from InstaDM247's own guide and your account's setup."
-            : `${remaining} question${remaining === 1 ? "" : "s"} left this month`}
+            : `${remaining} question${remaining === 1 ? "" : "s"} left this week`}
+          {outOfQuestions && upgradeTo && (
+            <>
+              {" · "}
+              <Link href="/dashboard/billing" className="font-semibold text-[var(--accent)] underline underline-offset-2">
+                {upgradeTo} has more
+              </Link>
+            </>
+          )}
         </p>
         {turns.length > 0 && (
           <Button variant="ghost" size="sm" onClick={reset}>
@@ -273,7 +284,7 @@ export function HelperChat({
           maxLength={2000}
           disabled={outOfQuestions}
           placeholder={
-            outOfQuestions ? "You've used this month's questions. They reset on the 1st." : "How do I… / Help me set up… / Why didn't…"
+            outOfQuestions ? "You've used this week's questions. They reset on Monday." : "How do I… / Help me set up… / Why didn't…"
           }
           aria-label="Ask the AI Helper"
           className="min-h-[44px] flex-1 resize-none rounded-xl border-2 border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[13.5px] outline-none focus:border-[var(--accent)] disabled:opacity-60"

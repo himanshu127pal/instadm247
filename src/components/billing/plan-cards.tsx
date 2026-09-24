@@ -31,8 +31,8 @@ function highlights(key: PlanKey): string[] {
     plan.limits.aiRepliesPerMonth > 0
       ? `${formatNumber(plan.limits.aiRepliesPerMonth)} AI replies / month`
       : "Post, Reel & Story AutoDM",
-    ...(plan.limits.helperQuestionsPerMonth > 0
-      ? [`AI Helper: ${formatNumber(plan.limits.helperQuestionsPerMonth)} questions / month`]
+    ...(plan.limits.helperQuestionsPerWeek > 0
+      ? [`AI Helper: ${formatNumber(plan.limits.helperQuestionsPerWeek)} questions / week`]
       : []),
   ];
   const below: PlanKey | null = key === "business" ? "pro" : key === "pro" ? "free" : null;

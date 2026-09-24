@@ -30,7 +30,7 @@ export default async function HelperPage({ searchParams }: { searchParams: Promi
         <EmptyState
           icon={<Sparkles />}
           title={`The AI Helper is part of ${plan.name}`}
-          description={`Get step-by-step answers about any feature, automation plans for your goals, and one-click draft automations — ${plan.limits.helperQuestionsPerMonth} questions a month on ${plan.name}.`}
+          description={`Get step-by-step answers about any feature, automation plans for your goals, and one-click draft automations — ${plan.limits.helperQuestionsPerWeek} questions a week on ${plan.name}.`}
           action={
             <Link href="/dashboard/billing">
               <Button variant="gradient">See plans</Button>
@@ -50,7 +50,8 @@ export default async function HelperPage({ searchParams }: { searchParams: Promi
     );
   }
 
-  const limit = effectivePlan(workspace).limits.helperQuestionsPerMonth;
+  const plan = effectivePlan(workspace);
+  const limit = plan.limits.helperQuestionsPerWeek;
   const used = (await getUsage(workspace.id)).helper;
 
   return (
@@ -59,6 +60,7 @@ export default async function HelperPage({ searchParams }: { searchParams: Promi
       <HelperChat
         available={isAiConfigured()}
         remaining={Number.isFinite(limit) ? Math.max(0, limit - used) : null}
+        upgradeTo={plan.key === "free" ? "Pro" : plan.key === "pro" ? "Business" : undefined}
         from={from && /^\/dashboard(\/[\w-]+)*$/.test(from) ? from : undefined}
       />
     </div>

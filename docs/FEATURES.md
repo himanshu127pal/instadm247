@@ -143,7 +143,7 @@ than parity.
   the account owner: step-by-step answers about any feature, automation plans
   for a goal, one-click *draft* automations (created switched off), and
   troubleshooting from the workspace's own setup and skip reasons. Read-only;
-  Pro and Business only, metered per question. `docs/HELPER.md`
+  every plan, metered per week (Free 5, Pro 20, Business 50). `docs/HELPER.md`
 - **Account and notification email** (built on the owner's request) — email
   verification, password reset, and notices for subscription changes, failed
   payments, renewals, usage limits, Instagram reconnects and suspensions, via

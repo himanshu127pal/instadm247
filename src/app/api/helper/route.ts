@@ -14,10 +14,14 @@ export const maxDuration = 120;
 
 const bodySchema = z.object({
   question: z.string().trim().min(1).max(2000),
-  /** Earlier turns, kept by the page. Capped so a long chat can't grow without bound. */
+  /**
+   * Earlier turns, kept by the page. Capped because the whole history is sent
+   * to the model with every question: a long chat would otherwise make each
+   * new question cost more than the last.
+   */
   history: z
-    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(8000) }))
-    .max(20)
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(3000) }))
+    .max(10)
     .default([]),
   page: z
     .string()
@@ -44,10 +48,11 @@ export const POST = route(async ({ workspace, request }) => {
   const reservedAt = new Date();
   if (!(await reserveUsage(workspace, "helper", reservedAt))) {
     const plan = effectivePlan(workspace);
-    const more = plan.key === "pro" ? " — or move to Business for more" : "";
+    const upgradeTo = plan.key === "free" ? "pro" : "business";
+    const more = plan.key === "business" ? "" : ` — or move to ${upgradeTo === "pro" ? "Pro" : "Business"} for more`;
     throw new PlanLimitError(
-      `You've used this month's ${plan.limits.helperQuestionsPerMonth} AI Helper questions. They reset on the 1st${more}.`,
-      "business",
+      `You've used this week's ${plan.limits.helperQuestionsPerWeek} AI Helper questions. They reset on Monday${more}.`,
+      upgradeTo,
     );
   }
 

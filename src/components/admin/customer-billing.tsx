@@ -101,7 +101,7 @@ export function CustomerBilling({
           </p>
           <Meter label="Automated DMs" used={data.usage.dms} cap={data.limits.dmsPerMonth} />
           <Meter label="AI replies" used={data.usage.ai_replies} cap={data.limits.aiRepliesPerMonth} />
-          <Meter label="AI Helper" used={data.usage.helper} cap={data.limits.helperQuestionsPerMonth} />
+          <Meter label="AI Helper (this week)" used={data.usage.helper} cap={data.limits.helperQuestionsPerWeek} />
           <Meter label="Instagram accounts" used={data.accounts} cap={data.limits.instagramAccounts} />
         </div>
       </div>

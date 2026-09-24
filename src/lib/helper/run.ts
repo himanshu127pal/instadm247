@@ -21,8 +21,15 @@ export type HelperEvent =
   | { type: "done"; truncated?: boolean }
   | { type: "error"; message: string };
 
-/** Enough for several lookups and a correction; a loop that needs more is stuck. */
-const MAX_ROUNDS = 6;
+/**
+ * The ceiling on what one question can cost. Every round is a paid call, and
+ * `max_tokens` bounds each round's output (thinking included). Four rounds is
+ * a couple of lookups, a draft and a correction; a loop needing more is stuck.
+ * 4096 tokens is several times a long answer; one that hits it is shown as cut
+ * short. See docs/HELPER.md §Cost before raising either.
+ */
+const MAX_ROUNDS = 4;
+const MAX_TOKENS_PER_ROUND = 4096;
 
 /**
  * Everything here is the same for every customer, so it's one cached prefix
@@ -96,7 +103,7 @@ export async function* runHelper(params: {
     const stream = anthropic().beta.messages.stream(
       {
         model,
-        max_tokens: 16000,
+        max_tokens: MAX_TOKENS_PER_ROUND,
         thinking: { type: "adaptive" },
         output_config: { effort: "medium" },
         system: [

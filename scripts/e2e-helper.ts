@@ -12,7 +12,7 @@ import type { PrismaClient } from "@prisma/client";
 import { env } from "../src/lib/env";
 import { hasFeature } from "../src/lib/plan";
 import { PLANS } from "../src/lib/billing/plans";
-import { reserveUsage } from "../src/lib/billing/usage";
+import { getUsage, nextWeekStart, reserveUsage, weekKey } from "../src/lib/billing/usage";
 import { GUIDE } from "../src/lib/helper/guide";
 import { buildDraftGraph, checkDraft, customizeSchema, type Draft } from "../src/lib/helper/draft";
 import { runHelperTool } from "../src/lib/helper/tools";
@@ -58,12 +58,12 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
   const saved = { billing: mutableEnv.billing.enabled, key: mutableEnv.anthropicApiKey, model: mutableEnv.helperModel };
   try {
     mutableEnv.billing.enabled = true;
-    check("Free doesn't include it", !hasFeature({ planKey: "free" }, "aiHelper") && PLANS.free.limits.helperQuestionsPerMonth === 0);
-    check("Pro and Business do", hasFeature({ planKey: "pro" }, "aiHelper") && hasFeature({ planKey: "business" }, "aiHelper"));
+    check("every plan includes it, Free too", ["free", "pro", "business"].every((k) => hasFeature({ planKey: k }, "aiHelper")));
     check(
-      "Business gets more questions than Pro",
-      PLANS.business.limits.helperQuestionsPerMonth > PLANS.pro.limits.helperQuestionsPerMonth &&
-        PLANS.pro.limits.helperQuestionsPerMonth > 0,
+      "5 questions a week on Free, 20 on Pro, 50 on Business",
+      PLANS.free.limits.helperQuestionsPerWeek === 5 &&
+        PLANS.pro.limits.helperQuestionsPerWeek === 20 &&
+        PLANS.business.limits.helperQuestionsPerWeek === 50,
     );
     mutableEnv.billing.enabled = false;
     check("with billing off, everyone has it", hasFeature({ planKey: "free" }, "aiHelper"));
@@ -76,20 +76,32 @@ export async function runHelperChecks(prisma: PrismaClient, check: Check, sectio
     data: { name: `e2e helper ${tag}`, slug: `e2e-helper-${tag}`, planKey: "pro" },
   });
   const other = await prisma.workspace.create({
-    data: { name: `e2e helper other ${tag}`, slug: `e2e-helper-other-${tag}`, planKey: "pro" },
+    data: { name: `e2e helper other ${tag}`, slug: `e2e-helper-other-${tag}`, planKey: "free" },
   });
 
   try {
     mutableEnv.billing.enabled = true;
-    const at = new Date();
+    // A Wednesday, so the week runs Monday 22nd to Sunday 28th.
+    const at = new Date("2026-09-23T12:00:00Z");
+    check("weeks are ISO weeks in UTC", weekKey(at) === "2026-W39" && weekKey(new Date("2027-01-01T00:00:00Z")) === "2026-W53");
+    check("a week resets on Monday 00:00 UTC", nextWeekStart(at).toISOString() === "2026-09-28T00:00:00.000Z");
+    check("Sunday night is still the same week", weekKey(new Date("2026-09-27T23:59:59Z")) === "2026-W39");
+
     const emailsBefore = await prisma.emailMessage.count();
     await prisma.usageCounter.create({
-      data: { workspaceId: workspace.id, period: `${at.getUTCFullYear()}-${String(at.getUTCMonth() + 1).padStart(2, "0")}`, metric: "helper", count: PLANS.pro.limits.helperQuestionsPerMonth - 1 },
+      data: { workspaceId: workspace.id, period: weekKey(at), metric: "helper", count: PLANS.pro.limits.helperQuestionsPerWeek - 1 },
     });
-    check("the last question of the month is allowed", await reserveUsage(workspace, "helper", at));
+    check("the last question of the week is allowed", await reserveUsage(workspace, "helper", at));
     check("the one after it isn't", !(await reserveUsage(workspace, "helper", at)));
+    check("next Monday, they can ask again", await reserveUsage(workspace, "helper", new Date("2026-09-28T00:00:01Z")));
     check("running low on questions sends no email", (await prisma.emailMessage.count()) === emailsBefore);
-    check("Free can't ask at all", !(await reserveUsage({ id: other.id, planKey: "free" }, "helper", at)));
+    check("the week's count shows on the billing page", (await getUsage(workspace.id, at)).helper === PLANS.pro.limits.helperQuestionsPerWeek);
+    check("and doesn't touch the month's DM count", (await getUsage(workspace.id, at)).dms === 0);
+
+    const free = { id: other.id, planKey: "free" };
+    const asked = [];
+    for (let i = 0; i < 6; i++) asked.push(await reserveUsage(free, "helper", at));
+    check("Free gets exactly 5 a week", asked.filter(Boolean).length === 5 && asked[5] === false);
   } finally {
     mutableEnv.billing.enabled = saved.billing;
   }

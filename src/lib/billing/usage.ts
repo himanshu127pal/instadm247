@@ -4,7 +4,9 @@ import { getLimits } from "@/lib/plan";
 import { notifyUsageIfCrossed } from "@/lib/email/notify";
 
 /**
- * Monthly usage metering. See docs/BILLING.md §Metering.
+ * Usage metering. See docs/BILLING.md §Metering. DMs and AI replies are counted
+ * per calendar month; AI Helper questions per week, so a customer who runs out
+ * waits days, not weeks.
  *
  * A quota is RESERVED before the action and RELEASED if the action does not
  * complete. The reservation is a single conditional UPDATE, so the check and the
@@ -15,15 +17,37 @@ import { notifyUsageIfCrossed } from "@/lib/email/notify";
 
 export type Metric = "dms" | "ai_replies" | "helper";
 
-const LIMIT_FOR: Record<Metric, "dmsPerMonth" | "aiRepliesPerMonth" | "helperQuestionsPerMonth"> = {
+const LIMIT_FOR: Record<Metric, "dmsPerMonth" | "aiRepliesPerMonth" | "helperQuestionsPerWeek"> = {
   dms: "dmsPerMonth",
   ai_replies: "aiRepliesPerMonth",
-  helper: "helperQuestionsPerMonth",
+  helper: "helperQuestionsPerWeek",
 };
 
 /** UTC calendar month, `YYYY-MM`. Usage resets on the 1st, not the billing date. */
 export function periodKey(at: Date = new Date()): string {
   return `${at.getUTCFullYear()}-${String(at.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/** ISO week in UTC, `YYYY-Www`. Weeks start on Monday 00:00 UTC. */
+export function weekKey(at: Date = new Date()): string {
+  // The ISO year is the year of the week's Thursday.
+  const d = new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yearStart = Date.UTC(d.getUTCFullYear(), 0, 1);
+  const week = Math.ceil(((d.getTime() - yearStart) / 86_400_000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+
+/** When the week containing `at` ends: the next Monday, 00:00 UTC. */
+export function nextWeekStart(at: Date = new Date()): Date {
+  const day = at.getUTCDay() || 7;
+  return new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate() + 8 - day));
+}
+
+/** The counter row a metric uses at a moment: a month, or for the helper a week. */
+export function periodFor(metric: Metric, at: Date = new Date()): string {
+  return metric === "helper" ? weekKey(at) : periodKey(at);
 }
 
 async function ensureRow(workspaceId: string, period: string, metric: Metric): Promise<void> {
@@ -46,7 +70,7 @@ export async function reserveUsage(
   metric: Metric,
   at: Date = new Date(),
 ): Promise<boolean> {
-  const period = periodKey(at);
+  const period = periodFor(metric, at);
   const limit = getLimits(workspace)[LIMIT_FOR[metric]];
 
   await ensureRow(workspace.id, period, metric);
@@ -93,18 +117,23 @@ export async function releaseUsage(
 ): Promise<void> {
   await prisma.$executeRaw`
     UPDATE "UsageCounter" SET "count" = GREATEST("count" - 1, 0), "updatedAt" = now()
-    WHERE "workspaceId" = ${workspaceId} AND "period" = ${periodKey(at)} AND "metric" = ${metric}
+    WHERE "workspaceId" = ${workspaceId} AND "period" = ${periodFor(metric, at)} AND "metric" = ${metric}
   `;
 }
 
+/** This month's DMs and AI replies, and this week's AI Helper questions. */
 export type UsageSnapshot = Record<Metric, number>;
 
 export async function getUsage(workspaceId: string, at: Date = new Date()): Promise<UsageSnapshot> {
   const rows = await prisma.usageCounter.findMany({
-    where: { workspaceId, period: periodKey(at) },
-    select: { metric: true, count: true },
+    where: { workspaceId, period: { in: [periodKey(at), weekKey(at)] } },
+    select: { metric: true, period: true, count: true },
   });
   const usage: UsageSnapshot = { dms: 0, ai_replies: 0, helper: 0 };
-  for (const row of rows) if (row.metric in usage) usage[row.metric as Metric] = row.count;
+  for (const row of rows) {
+    if (row.metric in usage && row.period === periodFor(row.metric as Metric, at)) {
+      usage[row.metric as Metric] = row.count;
+    }
+  }
   return usage;
 }
