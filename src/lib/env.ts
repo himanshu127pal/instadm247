@@ -45,6 +45,33 @@ export const env = {
 
   anthropicApiKey: str("ANTHROPIC_API_KEY"),
 
+  /**
+   * Transactional email via Amazon SES. See docs/EMAIL.md. With no provider
+   * set, nothing is sent: messages are recorded as skipped, and outside
+   * production the text is printed to the console so links can be followed.
+   *
+   * AWS credentials come from the SDK's default chain — AWS_ACCESS_KEY_ID and
+   * AWS_SECRET_ACCESS_KEY on a VPS — and are never read here.
+   */
+  email: {
+    provider: str("EMAIL_PROVIDER"),
+    sesRegion: str("SES_REGION", str("AWS_REGION")),
+    configurationSet: str("SES_CONFIGURATION_SET"),
+    /**
+     * One sender per kind of mail, so a filter or a reputation problem on one
+     * doesn't take the others with it — and so a customer can tell at a
+     * glance whether an email is about signing in, money, or something
+     * needing attention. All three share the verified domain, so none of them
+     * needs a mailbox; replies go to Reply-To.
+     */
+    from: {
+      accounts: str("EMAIL_FROM_ACCOUNTS", "InstaDM247 <accounts@instadm247.com>"),
+      billing: str("EMAIL_FROM_BILLING", "InstaDM247 Billing <billing@instadm247.com>"),
+      alerts: str("EMAIL_FROM_ALERTS", "InstaDM247 Alerts <alerts@instadm247.com>"),
+    },
+    replyTo: str("EMAIL_REPLY_TO", "support@instadm247.com"),
+  },
+
   /** See docs/BILLING.md. Nothing is enforced until `enabled` is true. */
   billing: {
     enabled: str("BILLING_ENABLED") === "true",
@@ -80,6 +107,11 @@ export function isInstagramConfigured(): boolean {
 }
 
 /** True when the AI agent node can actually call a model. */
+/** True when email can actually be delivered. */
+export function isEmailConfigured(): boolean {
+  return env.email.provider === "ses" && Boolean(env.email.sesRegion);
+}
+
 /** True when checkout can be offered: the provider is reachable and priced. */
 export function isBillingConfigured(): boolean {
   const { dodo } = env.billing;
@@ -119,6 +151,8 @@ export function assertProductionSecrets(): void {
     if (!env.billing.dodo.apiKey) problems.push("DODO_PAYMENTS_API_KEY");
     if (!env.billing.dodo.webhookSecret) problems.push("DODO_PAYMENTS_WEBHOOK_SECRET");
   }
+  // Asked for SES but told it nothing about where: every send would fail.
+  if (env.email.provider === "ses" && !env.email.sesRegion) problems.push("SES_REGION");
   if (problems.length) {
     throw new Error(
       `Refusing to start in production with unset/default secrets: ${problems.join(", ")}`,

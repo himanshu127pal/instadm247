@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { env, isBillingConfigured } from "@/lib/env";
+import { env, isBillingConfigured, isEmailConfigured } from "@/lib/env";
 import { AuthError } from "@/lib/auth";
 import { ok, parseBody, route } from "@/lib/api";
 import { isImpersonating } from "@/lib/impersonation";
@@ -27,6 +27,13 @@ export const POST = route(async ({ workspace, user, request }) => {
   // tested end to end in Dodo's test mode before anyone is charged.
   if (!env.billing.enabled && !(await getPlatformStaff())) {
     throw new AuthError("Upgrading isn't available yet.", 403);
+  }
+
+  // Receipts, failed-payment warnings and renewal notices go to this address,
+  // so it has to be one they can read. Only asked for when we can send the
+  // verification email; otherwise it would be a wall with no door.
+  if (isEmailConfigured() && !user.emailVerified) {
+    throw new AuthError("Confirm your email first — use the link we sent you, or resend it from the banner above.", 403);
   }
 
   const { plan, interval } = await parseBody(request, schema);

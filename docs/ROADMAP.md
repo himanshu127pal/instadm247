@@ -235,6 +235,8 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
 
 - [x] Pricing, plans and quota enforcement — Free / Pro / Business via Dodo
       Payments, inert behind `BILLING_ENABLED`. See `docs/BILLING.md`.
+- [x] Transactional email via Amazon SES — verification, password reset,
+      billing and account alerts, logged at `/admin/emails`. See `docs/EMAIL.md`.
 - [ ] Team seats, roles and permissions
 - [ ] Facebook AutoDM (deferred by the owner — needs Facebook Login, Page
       tokens and a second App Review)

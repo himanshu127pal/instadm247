@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { AdminAccessError, audit, requirePlatformStaff } from "@/lib/admin";
+import { notifyPlanGranted } from "@/lib/email/notify";
 import { recomputeWorkspacePlan } from "@/lib/billing/resolve";
 import { DodoError, fetchSubscription, scheduleCancel } from "@/lib/billing/dodo";
 import { applySubscription } from "@/lib/billing/webhook";
@@ -17,6 +18,8 @@ const schema = z.discriminatedUnion("action", [
     workspaceId: z.string().min(1),
     plan: z.enum(["free", "pro", "business", "unlimited"]),
     until: z.string().datetime().optional(),
+    /** Email the customer. Off for grants that are internal, like test accounts. */
+    notify: z.boolean().optional().default(true),
     reason,
   }),
   z.object({ action: z.literal("clear_override"), workspaceId: z.string().min(1), reason }),
@@ -80,6 +83,13 @@ export async function POST(request: Request) {
           },
         });
         const change = await recomputeWorkspacePlan(workspace.id);
+        // Only when it actually raised their plan — a grant under what they
+        // already pay for changes nothing they'd notice.
+        if (body.notify && change && change.before !== change.after) {
+          await notifyPlanGranted(workspace.id, change.after, until, new Date()).catch((error) =>
+            console.error("[admin] plan granted email failed", error),
+          );
+        }
         return NextResponse.json({ ok: true, plan: change?.after });
       }
 

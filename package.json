@@ -22,6 +22,7 @@
     "seed": "tsx --env-file-if-exists=.env prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.1138.0",
     "@prisma/client": "^6.19.3",
     "@xyflow/react": "^12.11.3",
     "bullmq": "^6.1.0",

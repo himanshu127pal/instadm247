@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { getLimits } from "@/lib/plan";
+import { notifyUsageIfCrossed } from "@/lib/email/notify";
 
 /**
  * Monthly usage metering. See docs/BILLING.md §Metering.
@@ -59,12 +60,20 @@ export async function reserveUsage(
 
   // The WHERE clause is the limit check. Zero rows updated means the counter
   // was already at the limit, and nothing was changed.
-  const updated = await prisma.$executeRaw`
+  const updated = await prisma.$queryRaw<{ count: number }[]>`
     UPDATE "UsageCounter" SET "count" = "count" + 1, "updatedAt" = now()
     WHERE "workspaceId" = ${workspace.id} AND "period" = ${period} AND "metric" = ${metric}
       AND "count" < ${limit}
+    RETURNING "count"
   `;
-  return updated > 0;
+  if (updated.length === 0) return false;
+
+  // The count this reservation produced. Exactly one reservation lands on each
+  // warning threshold, so this is where the "80% used" email comes from.
+  await notifyUsageIfCrossed(workspace, metric, Number(updated[0].count), period, at).catch((error) =>
+    console.error("[usage] threshold email failed", error),
+  );
+  return true;
 }
 
 /**

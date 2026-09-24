@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { AdminAccessError, audit, requirePlatformStaff } from "@/lib/admin";
+import { notifySuspension } from "@/lib/email/notify";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,9 @@ export async function POST(request: Request) {
       );
     }
 
+    const before = await prisma.workspace.findUnique({ where: { id: workspaceId }, select: { suspendedAt: true } });
+    if (!before) return NextResponse.json({ error: "No such customer." }, { status: 404 });
+
     await audit({
       actorUserId: staff.id,
       action: suspended ? "workspace.suspend" : "workspace.unsuspend",
@@ -34,10 +38,11 @@ export async function POST(request: Request) {
       reason: reason?.trim(),
     });
 
+    const at = new Date();
     await prisma.workspace.update({
       where: { id: workspaceId },
       data: suspended
-        ? { suspendedAt: new Date(), suspendedReason: reason!.trim(), suspendedById: staff.id }
+        ? { suspendedAt: at, suspendedReason: reason!.trim(), suspendedById: staff.id }
         : { suspendedAt: null, suspendedReason: null, suspendedById: null },
     });
 
@@ -49,6 +54,14 @@ export async function POST(request: Request) {
         select: { userId: true },
       });
       await prisma.session.deleteMany({ where: { userId: { in: members.map((m) => m.userId) } } });
+    }
+
+    // Tell the owner — the reason is the one they'd see at sign-in. Only on an
+    // actual change, so re-saving a suspension doesn't email again.
+    if (suspended !== Boolean(before.suspendedAt)) {
+      await notifySuspension(workspaceId, suspended, reason?.trim() ?? null, at).catch((error) =>
+        console.error("[admin] suspension email failed", error),
+      );
     }
 
     return NextResponse.json({ ok: true });

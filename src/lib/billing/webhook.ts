@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
+import { notifySubscriptionChange } from "@/lib/email/notify";
 import {
   planForProduct,
   verifyDodoSignature,
@@ -243,7 +244,15 @@ export async function applySubscription(
 
   const existing = await prisma.subscription.findUnique({
     where: { providerSubscriptionId: sub.subscription_id },
-    select: { lastEventAt: true },
+    select: {
+      lastEventAt: true,
+      status: true,
+      planKey: true,
+      interval: true,
+      cancelAtPeriodEnd: true,
+      currentPeriodEnd: true,
+      graceEndsAt: true,
+    },
   });
   if (existing?.lastEventAt && eventAt < existing.lastEventAt) return { kind: "stale" };
 
@@ -269,6 +278,12 @@ export async function applySubscription(
   });
 
   const change = await recomputeWorkspacePlan(workspaceId);
+
+  // Judged on before/after, so the several events Dodo sends for one change —
+  // and its retries — produce one email. Never allowed to fail the webhook.
+  await notifySubscriptionChange(workspaceId, sub.subscription_id, existing, fields, eventAt).catch((error) =>
+    console.error("[billing:webhook] subscription email failed", error),
+  );
   const plan = change && change.before !== change.after
     ? `plan ${change.before} → ${change.after}`
     : `plan unchanged (${change?.after ?? "?"})`;
