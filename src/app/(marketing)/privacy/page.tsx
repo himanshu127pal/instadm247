@@ -46,6 +46,13 @@ export default function PrivacyPage() {
           enable the AI agent, messages are sent to the model provider solely to generate
           that specific reply.
         </li>
+        <li>
+          When you ask the in-dashboard AI Helper a question, your question and the parts of
+          your account setup it needs to answer — such as your automations&rsquo; names and
+          settings, your plan and usage — are sent to the same AI model provider to write the
+          answer. It never sees your followers&rsquo; messages or usernames, and it can&rsquo;t
+          change anything in your account.
+        </li>
         <li>We never access endpoints beyond the permissions you granted.</li>
       </ul>
 
@@ -87,7 +94,8 @@ export default function PrivacyPage() {
       <h2>Sub-processors</h2>
       <p>
         We use Meta Platforms (the Instagram API), our hosting and database provider, and
-        — only if the account owner enables the AI agent — an AI model provider.
+        — only if the account owner enables the AI agent or asks the AI Helper a question — an
+        AI model provider.
       </p>
       <p>
         If you buy a paid plan, your email address, your name (or your workspace&rsquo;s

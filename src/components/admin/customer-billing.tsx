@@ -101,6 +101,13 @@ export function CustomerBilling({
           </p>
           <Meter label="Automated DMs" used={data.usage.dms} cap={data.limits.dmsPerMonth} />
           <Meter label="AI replies" used={data.usage.ai_replies} cap={data.limits.aiRepliesPerMonth} />
+          <Meter label="AI Helper (this week)" used={data.usage.helper} cap={data.limits.helperQuestionsPerWeek} />
+          <p className="flex justify-between text-[12.5px] font-bold">
+            <span>AI Helper spend (this month)</span>
+            <span className="tabular-nums text-[var(--text-muted)]">
+              ${(data.usage.helperSpend / 1_000_000).toFixed(2)} / ${(data.helperBudget / 1_000_000).toFixed(2)}
+            </span>
+          </p>
           <Meter label="Instagram accounts" used={data.accounts} cap={data.limits.instagramAccounts} />
         </div>
       </div>

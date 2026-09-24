@@ -1148,7 +1148,7 @@ model UsageCounter {
   workspaceId String
   /// YYYY-MM, UTC
   period      String
-  /// dms | ai_replies
+  /// dms | ai_replies | helper
   metric      String
   count       Int      @default(0)
   updatedAt   DateTime @updatedAt

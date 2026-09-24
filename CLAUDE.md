@@ -60,7 +60,7 @@ Down mode. Full detail in `docs/ARCHITECTURE.md`.
 ## Repo layout
 
 ```
-docs/                  Memory + specs (FEATURES, ARCHITECTURE, META_API, SETUP, ROADMAP, BILLING, EMAIL, INTEGRATIONS)
+docs/                  Memory + specs (FEATURES, ARCHITECTURE, META_API, SETUP, ROADMAP, BILLING, EMAIL, INTEGRATIONS, HELPER)
 prisma/schema.prisma   All domain models
 src/app/(marketing)/   Public landing site
 src/app/(auth)/        Login / signup
@@ -69,6 +69,7 @@ src/app/api/           Route handlers (auth, oauth, webhooks, REST for dashboard
 src/lib/meta/          Graph client, OAuth, webhook parsing, message sending
 src/lib/engine/        Trigger matching, node executor, queues, rate limiter, window guard
 src/lib/ai/            AI agent + knowledge base retrieval
+src/lib/helper/        AI Helper: product guide, read-only tools, draft automations
 src/lib/email/         SES sending, templates, verification/reset tokens, notifications
 src/lib/billing/       Plans, metering, plan resolution, Dodo, payment trace
 src/components/        UI (marketing/, dashboard/, flow/, ui/)
@@ -129,6 +130,20 @@ directly, and don't let a working branch become a second trunk.
    their own published list shows, "Not listed" otherwise (never ✗), carry an
    "as of" date, and say where they're ahead. Blog posts describe Instagram's
    rules as `dispatch.ts` enforces them. `pnpm e2e` checks links and the sitemap.
+
+14. **The AI Helper's guide is part of the UI.** `src/lib/helper/guide.ts` is
+   everything the helper knows about the product. A PR that renames a page,
+   button or field, or changes what a feature does, updates the guide in the
+   same PR. The helper's tools are read-only and never return a follower's
+   messages or username; it may only *propose* an automation, which a person
+   creates switched off. See `docs/HELPER.md`.
+
+15. **The AI Helper can never cost more than 10% of what a customer pays, or $1
+   a month for anyone who pays nothing.** Every model call reserves its
+   worst-case cost against that monthly cap before it's made, and isn't made if
+   the cap can't cover it. Don't add retries, fallbacks, models without a price,
+   or unbounded input to the helper — each would break the guarantee. The cap
+   comes from `helperBudgetMicros` in `plans.ts`. See `docs/HELPER.md` §The cap.
 
 ## Plans and billing
 

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { requireNodesAllowed } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { assertAccount, ok, parseBody, route } from "@/lib/api";
-import { getPreset } from "@/lib/engine/presets";
+import { buildDraftGraph, customizeSchema } from "@/lib/helper/draft";
 
 export const runtime = "nodejs";
 
@@ -25,6 +25,8 @@ const createSchema = z.object({
   keywords: z.array(z.string().min(1)).default([]),
   mediaIds: z.array(z.string()).default([]),
   presetId: z.string().default("blank"),
+  /** The customer's own words on top of the template — from an AI Helper draft. */
+  customize: customizeSchema.default({}),
 });
 
 export const GET = route(async ({ workspace }) => {
@@ -43,8 +45,7 @@ export const POST = route(async ({ workspace, request }) => {
   const body = await parseBody(request, createSchema);
   await assertAccount(workspace.id, body.accountId);
 
-  const preset = getPreset(body.presetId);
-  const graph = preset.build();
+  const graph = buildDraftGraph(body.presetId, body.customize);
   // A preset can include gated steps (an AI reply, lead capture). Refuse at
   // creation rather than let someone build a flow their plan won't run.
   requireNodesAllowed(workspace, graph.nodes.map((n) => n.type));

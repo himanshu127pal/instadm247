@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { env, isBillingConfigured } from "@/lib/env";
 import { getPlatformStaff } from "@/lib/admin";
 import { isImpersonating } from "@/lib/impersonation";
-import { PLANS, planFor } from "@/lib/billing/plans";
+import { PLANS, helperBudgetMicros, planFor } from "@/lib/billing/plans";
 import { getUsage } from "@/lib/billing/usage";
 import { PageHeader, SectionCard } from "@/components/dashboard/bits";
 import { PlanCards } from "@/components/billing/plan-cards";
@@ -13,7 +13,20 @@ import { formatNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-function Meter({ label, used, cap, hint }: { label: string; used: number; cap: number; hint?: string }) {
+function Meter({
+  label,
+  used,
+  cap,
+  hint,
+  percent = false,
+}: {
+  label: string;
+  used: number;
+  cap: number;
+  hint?: string;
+  /** Show only the share used — for allowances whose units mean nothing to a customer. */
+  percent?: boolean;
+}) {
   const finite = Number.isFinite(cap);
   const pct = finite && cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
   return (
@@ -21,7 +34,7 @@ function Meter({ label, used, cap, hint }: { label: string; used: number; cap: n
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-[13.5px] font-bold">{label}</p>
         <p className="text-[13px] font-semibold tabular-nums text-[var(--text-muted)]">
-          {formatNumber(used)} of {finite ? formatNumber(cap) : "unlimited"}
+          {percent ? `${pct}% used` : `${formatNumber(used)} of ${finite ? formatNumber(cap) : "unlimited"}`}
         </p>
       </div>
       <div className="mt-1.5 h-2 overflow-hidden rounded-full border border-[var(--border-soft)] bg-[var(--bg-sunken)]">
@@ -37,12 +50,13 @@ function Meter({ label, used, cap, hint }: { label: string; used: number; cap: n
         />
       </div>
       {hint && <p className="mt-1 text-[11.5px] text-[var(--text-faint)]">{hint}</p>}
-      {finite && pct >= 80 && pct < 100 && (
+      {/* These warnings are about automated sends; a percent meter carries its own hint. */}
+      {!percent && finite && pct >= 80 && pct < 100 && (
         <p className="mt-1 text-[12px] font-semibold text-[var(--color-zap-500)]">
           {pct}% used — upgrade before you run out, so nothing stops mid-campaign.
         </p>
       )}
-      {finite && pct >= 100 && (
+      {!percent && finite && pct >= 100 && (
         <p className="mt-1 text-[12px] font-semibold text-[var(--color-zonk-500)]">
           Used up for this month. Automated sends are paused until the 1st, or until you upgrade.
         </p>
@@ -142,7 +156,7 @@ export default async function BillingPage({
         }
         actions={ws.billingCustomerId && !impersonating ? <ManageSubscriptionButton /> : undefined}
       >
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <Meter
             label="Automated DMs"
             used={usage.dms}
@@ -150,6 +164,23 @@ export default async function BillingPage({
             hint="Resets on the 1st. Replies you type yourself never count."
           />
           <Meter label="AI replies" used={usage.ai_replies} cap={plan.limits.aiRepliesPerMonth} />
+          <Meter
+            label="AI Helper questions"
+            used={usage.helper}
+            cap={plan.limits.helperQuestionsPerWeek}
+            hint="Per week. Resets every Monday."
+          />
+          <Meter
+            label="AI Helper allowance"
+            used={usage.helperSpend}
+            cap={helperBudgetMicros(plan)}
+            percent
+            hint={
+              usage.helperSpend >= helperBudgetMicros(plan) * 0.8
+                ? "Nearly used up for this month. Resets on the 1st; a bigger plan has more."
+                : "This month. Longer questions use more of it. Resets on the 1st."
+            }
+          />
           <Meter label="Instagram accounts" used={accounts} cap={plan.limits.instagramAccounts} />
         </div>
       </SectionCard>

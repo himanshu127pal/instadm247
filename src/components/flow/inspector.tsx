@@ -15,13 +15,22 @@ import { cn } from "@/lib/utils";
  * Everything writes through `onChange(nextNode)`; the builder owns the graph.
  */
 
+/** A lead form an "Ask a question" step can save its answer into. */
+export type FormOption = {
+  id: string;
+  name: string;
+  fields: Array<{ id: string; label: string; type: string; options?: string[] }>;
+};
+
 export function NodeInspector({
   node,
+  forms = [],
   onChange,
   onDelete,
   onClose,
 }: {
   node: FlowNode;
+  forms?: FormOption[];
   onChange: (node: FlowNode) => void;
   onDelete: () => void;
   onClose: () => void;
@@ -64,7 +73,7 @@ export function NodeInspector({
           />
         </Field>
 
-        <NodeFields node={node} patch={patch} />
+        <NodeFields node={node} forms={forms} patch={patch} />
       </div>
 
       {node.type !== "TRIGGER" && (
@@ -83,9 +92,11 @@ export function NodeInspector({
 
 function NodeFields({
   node,
+  forms,
   patch,
 }: {
   node: FlowNode;
+  forms: FormOption[];
   // The discriminated union makes a precise type here impractical; the builder
   // re-validates the whole graph with Zod before saving.
   patch: (data: Record<string, unknown>) => void;
@@ -229,9 +240,74 @@ function NodeFields({
         </>
       );
 
-    case "COLLECT_INPUT":
+    case "COLLECT_INPUT": {
+      const form = forms.find((f) => f.id === node.data.formId);
+      // Answer types a form question can have that this step can ask.
+      const askable = (type: string) =>
+        ["text", "email", "phone", "number", "choice", "rating"].includes(type) ? type : "text";
       return (
         <>
+          <Field
+            label="Save to a lead form"
+            hint={
+              forms.length
+                ? "Answers are saved as a form response — that's what exports, and what goes to Google Sheets, Kit and Flodesk."
+                : "Create one under Lead forms to collect responses you can export or sync."
+            }
+          >
+            <Select
+              value={node.data.formId ?? ""}
+              onChange={(e) => {
+                const next = forms.find((f) => f.id === e.target.value);
+                const first = next?.fields[0];
+                patch(
+                  next && first
+                    ? {
+                        formId: next.id,
+                        variable: first.id,
+                        fieldType: askable(first.type),
+                        options: first.options,
+                        prompt: node.data.prompt || first.label,
+                      }
+                    : { formId: undefined },
+                );
+              }}
+            >
+              <option value="">Don&rsquo;t save to a form</option>
+              {forms.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {form && (
+            <Field
+              label="Which question"
+              hint={
+                form.fields.length > 1
+                  ? `Add one "Ask a question" step per question. The response is complete once all ${form.fields.length} are answered.`
+                  : undefined
+              }
+            >
+              <Select
+                value={node.data.variable}
+                onChange={(e) => {
+                  const field = form.fields.find((f) => f.id === e.target.value);
+                  if (field) {
+                    patch({ variable: field.id, fieldType: askable(field.type), options: field.options, prompt: field.label });
+                  }
+                }}
+              >
+                {!form.fields.some((f) => f.id === node.data.variable) && <option value="">Choose a question…</option>}
+                {form.fields.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.label || f.id}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
           <Field label="What to ask">
             <Textarea
               value={node.data.prompt}
@@ -239,18 +315,20 @@ function NodeFields({
               placeholder="What's the best email to send this to?"
             />
           </Field>
-          <Field
-            label="Save the answer as"
-            hint="Use it later with {{variable}} in any message."
-          >
-            <Input
-              value={node.data.variable}
-              onChange={(e) =>
-                patch({ variable: e.target.value.replace(/[^\w]/g, "_").toLowerCase() })
-              }
-              placeholder="email"
-            />
-          </Field>
+          {!form && (
+            <Field
+              label="Save the answer as"
+              hint="Use it later with {{variable}} in any message."
+            >
+              <Input
+                value={node.data.variable}
+                onChange={(e) =>
+                  patch({ variable: e.target.value.replace(/[^\w]/g, "_").toLowerCase() })
+                }
+                placeholder="email"
+              />
+            </Field>
+          )}
           <Field label="Answer type">
             <Select
               value={node.data.fieldType}
@@ -292,6 +370,7 @@ function NodeFields({
           </Field>
         </>
       );
+    }
 
     case "AI_REPLY":
       return (

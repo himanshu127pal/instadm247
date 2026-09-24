@@ -29,6 +29,11 @@ export type Feature =
   | "coupons"
   /** The AI_REPLY node and the AI agent settings. Metered separately. */
   | "aiAgent"
+  /**
+   * The in-dashboard AI Helper: how-to answers about InstaDM247 and draft
+   * automations. Metered as `helperQuestionsPerWeek`. See docs/HELPER.md.
+   */
+  | "aiHelper"
   | "templates"
   | "dmPlanner"
   | "rewind"
@@ -52,6 +57,11 @@ export type Limits = {
   dmsPerMonth: number;
   aiRepliesPerMonth: number;
   /**
+   * Questions to the AI Helper, per week (Monday 00:00 UTC). Each one is a paid
+   * model call, so it's capped — weekly, so running out means days, not weeks.
+   */
+  helperQuestionsPerWeek: number;
+  /**
    * Custom DMs after the starter DM. A product constraint mirroring LinkDM's
    * published maximum, the same on every plan — not a paywall.
    */
@@ -73,6 +83,7 @@ const ALL_FEATURES: Feature[] = [
   "leadCapture",
   "coupons",
   "aiAgent",
+  "aiHelper",
   "templates",
   "dmPlanner",
   "rewind",
@@ -95,9 +106,12 @@ export const PLANS: Record<PlanKey, Plan> = {
       instagramAccounts: 1,
       dmsPerMonth: 1_000,
       aiRepliesPerMonth: 0,
+      helperQuestionsPerWeek: 5,
       flowSteps: FLOW_STEPS,
     },
-    features: new Set<Feature>(),
+    // The helper is how a new account gets its first automation working, so
+    // Free gets a taste of it; the weekly cap keeps its cost small.
+    features: new Set<Feature>(["aiHelper"]),
   },
   pro: {
     key: "pro",
@@ -110,6 +124,7 @@ export const PLANS: Record<PlanKey, Plan> = {
       instagramAccounts: 3,
       dmsPerMonth: 25_000,
       aiRepliesPerMonth: 1_000,
+      helperQuestionsPerWeek: 20,
       flowSteps: FLOW_STEPS,
     },
     features: new Set<Feature>(ALL_FEATURES.filter((f) => f !== "apiAccess")),
@@ -123,6 +138,7 @@ export const PLANS: Record<PlanKey, Plan> = {
       instagramAccounts: 10,
       dmsPerMonth: 300_000,
       aiRepliesPerMonth: 10_000,
+      helperQuestionsPerWeek: 50,
       flowSteps: FLOW_STEPS,
     },
     features: new Set<Feature>(ALL_FEATURES),
@@ -136,11 +152,31 @@ export const PLANS: Record<PlanKey, Plan> = {
       instagramAccounts: Infinity,
       dmsPerMonth: Infinity,
       aiRepliesPerMonth: Infinity,
+      helperQuestionsPerWeek: Infinity,
       flowSteps: FLOW_STEPS,
     },
     features: new Set<Feature>(ALL_FEATURES),
   },
 };
+
+/**
+ * The AI Helper's hard spending cap, in millionths of a US dollar per calendar
+ * month. See docs/HELPER.md §Cost.
+ *
+ * A paid plan may spend at most 10% of the CHEAPEST way to buy it — the annual
+ * price per month — so the cap holds whichever interval the customer chose. A
+ * plan that earns nothing (Free, and the internal Unlimited, which nobody pays
+ * for) gets a flat $1. The cap is enforced against worst-case cost before
+ * every model call, so no customer can ever cost more than this.
+ */
+export const HELPER_BUDGET_SHARE = 0.1;
+export const UNPAID_HELPER_BUDGET_USD = 1;
+
+export function helperBudgetMicros(plan: Plan): number {
+  if (!plan.price || plan.price.year === 0) return UNPAID_HELPER_BUDGET_USD * 1_000_000;
+  const cheapestPerMonth = Math.min(plan.price.month, plan.price.year / 12);
+  return Math.floor(cheapestPerMonth * HELPER_BUDGET_SHARE * 1_000_000);
+}
 
 export function isPlanKey(value: unknown): value is PlanKey {
   return typeof value === "string" && value in PLANS;
@@ -162,6 +198,7 @@ export const FEATURE_LABELS: Record<Feature, string> = {
   leadCapture: "Lead capture",
   coupons: "DM coupons",
   aiAgent: "AI agent",
+  aiHelper: "AI Helper",
   templates: "DM templates",
   dmPlanner: "DM Planner",
   rewind: "Rewind",
