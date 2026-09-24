@@ -393,6 +393,10 @@ model Contact {
   optedOut   Boolean   @default(false)
   optedOutAt DateTime?
 
+  /// Last automated DM that carried the Free-plan branding line. It goes out at
+  /// most once a day per person — see src/lib/branding.ts.
+  brandedAt DateTime?
+
   firstSeenAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

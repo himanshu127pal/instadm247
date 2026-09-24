@@ -130,6 +130,11 @@
   --halftone: rgba(18, 17, 14, 0.14);
   --shadow-ink: #12110e;
   --shadow-color: 45 20% 20%;
+
+  /* Tells the browser which palette to draw its OWN widgets in — the popup of
+     a <select>, date pickers, scrollbars. Without it they stay light in dark
+     mode, which is how dropdown options ended up white-on-white. */
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -155,6 +160,8 @@
     --halftone: rgba(255, 255, 255, 0.09);
     --shadow-ink: #000000;
     --shadow-color: 260 40% 3%;
+
+    color-scheme: dark;
   }
 }
 
@@ -180,6 +187,8 @@
   --halftone: rgba(255, 255, 255, 0.09);
   --shadow-ink: #000000;
   --shadow-color: 260 40% 3%;
+
+  color-scheme: dark;
 }
 
 /* --- Theme-swapped assets -------------------------------------------------
@@ -215,6 +224,15 @@
     font-weight: 600;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+
+  /* Belt and braces for the options list: some platforms (Chrome on Windows)
+     paint it from these rather than from color-scheme. Inherit the select's
+     own palette so it matches whichever theme is active. */
+  select option,
+  select optgroup {
+    background-color: var(--bg-raised);
+    color: var(--text);
   }
 
   ::selection {

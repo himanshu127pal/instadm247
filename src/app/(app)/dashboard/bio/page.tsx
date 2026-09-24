@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { PageHeader } from "@/components/dashboard/bits";
 import { BioEditor } from "@/components/dashboard/bio-editor";
+import { isBranded } from "@/lib/branding";
 
 export default async function BioPagesPage() {
   const workspace = await getActiveWorkspace();
@@ -31,6 +32,7 @@ export default async function BioPagesPage() {
         description="A hosted page for your Instagram bio link — with click tracking on every block, so you can see what people actually tap."
       />
       <BioEditor
+        branded={isBranded(workspace)}
         appUrl={env.appUrl}
         accounts={accounts}
         pages={pages.map((page) => ({
