@@ -22,6 +22,7 @@ import { runBillingChecks } from "./e2e-billing";
 import { runEmailChecks } from "./e2e-email";
 import { runRefundChecks } from "./e2e-refund";
 import { runBrandingChecks } from "./e2e-branding";
+import { runSheetsChecks } from "./e2e-sheets";
 import { runParityChecks } from "./e2e-parity";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
@@ -977,6 +978,7 @@ async function main() {
   await runEmailChecks(prisma, check, section);
   await runRefundChecks(prisma, check, section);
   await runBrandingChecks(prisma, check, section);
+  await runSheetsChecks(prisma, check, section);
   await runParityChecks(prisma, check, section);
 
   section("Tenant boundary in the customer UI");
@@ -1004,6 +1006,8 @@ async function main() {
       "DODO_PAYMENTS",
       "BILLING_ENABLED",
       "webhookSecret",
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET",
       "EMAIL_PROVIDER",
       "SES_REGION",
       "AWS_",

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AlertTriangle, Key, Plug, Plus, Trash2, Webhook } from "lucide-react";
+import { AlertTriangle, FileSpreadsheet, Key, Plug, Plus, Trash2, Webhook } from "lucide-react";
 import { Badge, Button, EmptyState, Field, Input, Select } from "@/components/ui";
 import { CopyField, SectionCard, Tabs } from "@/components/dashboard/bits";
 import { timeAgo } from "@/lib/utils";
@@ -35,6 +35,8 @@ type Integration = {
   enabled: boolean;
   lastSyncAt: string | null;
   lastError: string | null;
+  /** Google Sheets: the spreadsheet, to open it. */
+  url?: string | null;
 };
 
 const WEBHOOK_EVENTS = [
@@ -46,17 +48,33 @@ const WEBHOOK_EVENTS = [
 ];
 
 export function DevelopersView({
+  initialTab = "keys",
+  googleResult,
+  googleAvailable,
   appUrl,
   keys,
   endpoints,
   integrations,
 }: {
+  initialTab?: string;
+  /** Where Google's sign-in sent them back from, if it just did. */
+  googleResult: { status: string; reason: string | null } | null;
+  googleAvailable: boolean;
   appUrl: string;
   keys: ApiKeyRow[];
   endpoints: Endpoint[];
   integrations: Integration[];
 }) {
-  const [tab, setTab] = React.useState("keys");
+  const [tab, setTab] = React.useState(initialTab);
+
+  React.useEffect(() => {
+    if (!googleResult) return;
+    if (googleResult.status === "connected") toast.success("Google Sheets connected — new leads will appear in your sheet.");
+    else if (googleResult.status === "cancelled") toast("Google Sheets wasn't connected.");
+    else toast.error(googleResult.reason ?? "Google Sheets couldn't be connected.");
+    // Drop the result from the address bar so a refresh doesn't repeat it.
+    window.history.replaceState(null, "", "/dashboard/developers?tab=integrations");
+  }, [googleResult]);
 
   return (
     <div className="space-y-5">
@@ -72,7 +90,7 @@ export function DevelopersView({
 
       {tab === "keys" && <KeysTab appUrl={appUrl} keys={keys} />}
       {tab === "webhooks" && <WebhooksTab endpoints={endpoints} />}
-      {tab === "integrations" && <IntegrationsTab integrations={integrations} />}
+      {tab === "integrations" && <IntegrationsTab integrations={integrations} googleAvailable={googleAvailable} />}
     </div>
   );
 }
@@ -379,7 +397,14 @@ function WebhooksTab({ endpoints }: { endpoints: Endpoint[] }) {
   );
 }
 
-function IntegrationsTab({ integrations }: { integrations: Integration[] }) {
+function IntegrationsTab({
+  integrations,
+  googleAvailable,
+}: {
+  integrations: Integration[];
+  googleAvailable: boolean;
+}) {
+  const sheets = integrations.find((i) => i.provider === "google_sheets");
   const router = useRouter();
   const [provider, setProvider] = React.useState("kit");
   const [apiKey, setApiKey] = React.useState("");
@@ -425,6 +450,45 @@ function IntegrationsTab({ integrations }: { integrations: Integration[] }) {
 
   return (
     <div className="space-y-4">
+      <SectionCard
+        title="Google Sheets"
+        description="Every completed lead form lands in a spreadsheet in your Google Drive — one tab per form, one row per person."
+      >
+        {sheets ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {sheets.url && (
+              <a href={sheets.url} target="_blank" rel="noopener noreferrer">
+                <Button variant="primary">
+                  <FileSpreadsheet className="h-4 w-4" /> Open your leads sheet
+                </Button>
+              </a>
+            )}
+            <a href="/api/integrations/google/start">
+              <Button variant="ghost">Reconnect</Button>
+            </a>
+            <p className="w-full text-[12px] font-medium text-[var(--text-muted)]">
+              We can only see and edit the spreadsheet we created for you — nothing else in your Drive.
+            </p>
+          </div>
+        ) : googleAvailable ? (
+          <div className="space-y-2">
+            <a href="/api/integrations/google/start">
+              <Button variant="primary">
+                <FileSpreadsheet className="h-4 w-4" /> Connect Google Sheets
+              </Button>
+            </a>
+            <p className="text-[12px] font-medium text-[var(--text-muted)]">
+              We&rsquo;ll create a spreadsheet called &ldquo;InstaDM247 leads&rdquo; in your Drive. We can
+              only see and edit that one file.
+            </p>
+          </div>
+        ) : (
+          <p className="text-[13px] font-medium text-[var(--text-muted)]">
+            Google Sheets isn&rsquo;t available right now. Please check back soon.
+          </p>
+        )}
+      </SectionCard>
+
       <SectionCard
         title="Connect an email tool"
         description="Every email captured by a lead form gets forwarded automatically."
