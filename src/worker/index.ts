@@ -24,6 +24,8 @@ import { runRewind } from "@/lib/engine/rewind";
 import { scanPlannedAutomations } from "@/lib/engine/planner";
 import { publishDuePosts } from "@/lib/engine/scheduler";
 import { refreshExpiringTokens } from "@/lib/meta/account";
+import { reconcilePlans } from "@/lib/billing/resolve";
+import { purgeRejectedPaymentEvents } from "@/lib/billing/trace";
 import type { OutboundMessage } from "@/lib/meta/types";
 
 /**
@@ -144,6 +146,15 @@ workers.push(
           if (purged) {
             log("maintenance", `purged ${purged} webhook payloads past ${WEBHOOK_RETENTION_DAYS}d`);
           }
+          // Rejected payment hits are unauthenticated input and go with them.
+          // Verified ones are the financial record and are kept.
+          const rejected = await purgeRejectedPaymentEvents();
+          if (rejected) log("maintenance", `purged ${rejected} rejected payment hits`);
+          return;
+        }
+        case "reconcile_plans": {
+          const changed = await reconcilePlans();
+          if (changed) log("maintenance", `reconciled ${changed} workspace plans`);
           return;
         }
       }

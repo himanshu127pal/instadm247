@@ -60,7 +60,8 @@ export default function PrivacyPage() {
       <h2>How long we keep it</h2>
       <p>
         Conversation and analytics data stays while your account is active. Raw webhook
-        payloads are retained for 30 days for troubleshooting. Delete a connected
+        payloads are retained for 30 days for troubleshooting. Records of payments and
+        subscriptions are kept for as long as tax and accounting law requires. Delete a connected
         Instagram account and its contacts, conversations, messages and statistics are
         deleted with it.
       </p>
@@ -86,9 +87,17 @@ export default function PrivacyPage() {
       <h2>Sub-processors</h2>
       <p>
         We use Meta Platforms (the Instagram API), our hosting and database provider, and
-        — only if the account owner enables the AI agent — an AI model provider. We do not
-        share data with anyone else.
+        — only if the account owner enables the AI agent — an AI model provider.
       </p>
+      <p>
+        If you buy a paid plan, your email address, your name (or your workspace&rsquo;s
+        name, if you haven&rsquo;t set one) and an internal account ID are shared with Dodo
+        Payments, our payment processor and merchant of record, to take payment and issue
+        receipts. You enter your card or other payment details on Dodo&rsquo;s own
+        checkout; they never reach our servers. Nothing about the people who message you
+        is ever shared with Dodo.
+      </p>
+      <p>We do not share data with anyone else.</p>
 
       <h2>Contact</h2>
       <p>

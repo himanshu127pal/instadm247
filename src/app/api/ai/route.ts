@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { ok, parseBody, route } from "@/lib/api";
@@ -22,6 +23,8 @@ const agentSchema = z.object({
 
 export const PATCH = route(async ({ workspace, request }) => {
   const body = await parseBody(request, agentSchema);
+  // Only switching the agent ON is gated; turning it off must always work.
+  if (body.enabled === true) requireFeature(workspace, "aiAgent");
 
   const agent = await prisma.aiAgent.findFirst({
     where: { id: body.id, workspaceId: workspace.id },
@@ -40,6 +43,7 @@ const docSchema = z.object({
 });
 
 export const POST = route(async ({ workspace, request }) => {
+  requireFeature(workspace, "aiAgent");
   const body = await parseBody(request, docSchema);
 
   // A small keyword index is what retrieval scores against — good enough for

@@ -1,4 +1,5 @@
 import { createHmac } from "node:crypto";
+import { hasFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 
 /**
@@ -37,6 +38,14 @@ export async function emitWebhook(
     return;
   }
   if (endpoints.length === 0) return;
+
+  // Endpoints outlive a downgrade; delivery must not. Checked after the empty
+  // case so a workspace with no endpoints pays for no extra query.
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { planKey: true },
+  });
+  if (!hasFeature(workspace, "apiAccess")) return;
 
   const body = JSON.stringify({
     event,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireNodesAllowed } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { assertAccount, ok, parseBody, route } from "@/lib/api";
 import { getPreset } from "@/lib/engine/presets";
@@ -44,6 +45,9 @@ export const POST = route(async ({ workspace, request }) => {
 
   const preset = getPreset(body.presetId);
   const graph = preset.build();
+  // A preset can include gated steps (an AI reply, lead capture). Refuse at
+  // creation rather than let someone build a flow their plan won't run.
+  requireNodesAllowed(workspace, graph.nodes.map((n) => n.type));
 
   const automation = await prisma.automation.create({
     data: {

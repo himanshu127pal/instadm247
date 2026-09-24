@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { hasFeature } from "@/lib/plan";
 import { getClientForAccount } from "@/lib/meta/account";
 import type { NormalizedEvent } from "@/lib/meta/types";
 import { canEnterFlow, evaluateKeywords } from "./match";
@@ -192,9 +193,25 @@ export async function findRewindCandidates(
 export async function runRewind(rewindJobId: string): Promise<void> {
   const job = await prisma.rewindJob.findUnique({
     where: { id: rewindJobId },
-    include: { automation: true, account: { select: { igUserId: true } } },
+    include: { automation: true, account: { select: { igUserId: true, workspaceId: true } } },
   });
   if (!job || job.status === "running" || job.status === "completed") return;
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: job.account.workspaceId },
+    select: { planKey: true },
+  });
+  if (!hasFeature(workspace, "rewind")) {
+    await prisma.rewindJob.update({
+      where: { id: job.id },
+      data: {
+        status: "failed",
+        error: "Rewind isn't included in your current plan, so this wasn't run.",
+        completedAt: new Date(),
+      },
+    });
+    return;
+  }
 
   await prisma.rewindJob.update({
     where: { id: job.id },

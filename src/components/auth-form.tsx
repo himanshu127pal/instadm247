@@ -5,7 +5,18 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button, Field, Input } from "@/components/ui";
 
-export function AuthForm({ mode }: { mode: "login" | "signup" }) {
+export function AuthForm({
+  mode,
+  toBilling = false,
+}: {
+  mode: "login" | "signup";
+  /**
+   * Land on the billing page after sign-up — set when someone chose a paid plan
+   * on the pricing page. A flag, not a URL: a `next=` parameter would be an
+   * open redirect, and there is only one place this ever needs to go.
+   */
+  toBilling?: boolean;
+}) {
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -36,7 +47,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       }
 
       toast.success(mode === "signup" ? "Account created" : "Welcome back");
-      router.push("/dashboard");
+      router.push(toBilling ? "/dashboard/billing" : "/dashboard");
       router.refresh();
     } catch {
       setError("Couldn't reach the server. Check your connection and try again.");

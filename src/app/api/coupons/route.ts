@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { ok, parseBody, route } from "@/lib/api";
@@ -33,6 +34,7 @@ export const GET = route(async ({ workspace }) => {
 });
 
 export const POST = route(async ({ workspace, request }) => {
+  requireFeature(workspace, "coupons");
   const body = await parseBody(request, createSchema);
 
   if (body.mode === "SHARED" && !body.sharedCode) {

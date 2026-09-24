@@ -2,6 +2,7 @@ import type { Contact } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { env, isAiConfigured } from "@/lib/env";
 import { normalizeText } from "@/lib/engine/match";
+import { releaseUsage, reserveUsage } from "@/lib/billing/usage";
 
 /**
  * The AI agent node.
@@ -53,17 +54,25 @@ export async function generateAiReply(params: {
 
   const docs = await retrieveDocs(params.workspaceId, agent?.id, question);
 
-  if (!isAiConfigured()) {
-    // No model configured. Try to be useful from the knowledge base alone
-    // rather than silently doing nothing.
-    if (docs.length > 0) {
-      return {
-        text: docs[0].content.slice(0, 900),
-        answered: true,
-        usedDocs: docs.map((d) => d.id),
-      };
-    }
-    return { text: fallback, answered: false, usedDocs: [] };
+  // Without a model call, be useful from the knowledge base alone rather than
+  // silently doing nothing. Used both when no model is configured and when the
+  // plan's AI allowance for the month is spent — either way the flow carries on.
+  const withoutModel = (): AiReply =>
+    docs.length > 0
+      ? { text: docs[0].content.slice(0, 900), answered: true, usedDocs: docs.map((d) => d.id) }
+      : { text: fallback, answered: false, usedDocs: [] };
+
+  if (!isAiConfigured()) return withoutModel();
+
+  // Only the model call costs money, so only it is metered — reserved here,
+  // after every guardrail that could have answered without it.
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: params.workspaceId },
+    select: { id: true, planKey: true },
+  });
+  const reservedAt = new Date();
+  if (!workspace || !(await reserveUsage(workspace, "ai_replies", reservedAt))) {
+    return withoutModel();
   }
 
   try {
@@ -84,6 +93,9 @@ export async function generateAiReply(params: {
     return { text: text.slice(0, 950), answered: true, usedDocs: docs.map((d) => d.id) };
   } catch (error) {
     console.error("[ai] generation failed", (error as Error).message);
+    // The call failed, so no reply was generated: give the allowance back. A
+    // [[HANDOFF]] above is NOT released — the model ran and was billed.
+    await releaseUsage(workspace.id, "ai_replies", reservedAt);
     return { text: fallback, answered: false, usedDocs: [] };
   }
 }

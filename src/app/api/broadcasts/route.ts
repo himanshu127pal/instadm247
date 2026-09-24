@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { assertAccount, ok, parseBody, route } from "@/lib/api";
 import { previewAudience, runBroadcast, type SegmentFilter } from "@/lib/engine/broadcast";
@@ -30,6 +31,7 @@ const createSchema = z.object({
 });
 
 export const POST = route(async ({ workspace, request }) => {
+  requireFeature(workspace, "broadcasts");
   const body = await parseBody(request, createSchema);
   await assertAccount(workspace.id, body.accountId);
 
