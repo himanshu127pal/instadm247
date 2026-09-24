@@ -202,7 +202,16 @@ export function AutomationEditor({
               <Field label="Trigger">
                 <Select
                   value={automation.triggerType}
-                  onChange={(e) => patch({ triggerType: e.target.value })}
+                  onChange={(e) =>
+                    patch({
+                      triggerType: e.target.value,
+                      // Reaction / written-reply modes only mean something for story replies.
+                      ...(e.target.value !== "STORY_REPLY" &&
+                      (automation.matchMode === "REACTION" || automation.matchMode === "REPLY")
+                        ? { matchMode: "KEYWORD" }
+                        : {}),
+                    })
+                  }
                 >
                   {[
                     ["COMMENT", "Comment on a post or Reel"],
@@ -238,6 +247,12 @@ export function AutomationEditor({
                 >
                   <option value="KEYWORD">Only specific keywords</option>
                   <option value="ALL">Everyone, whatever they say</option>
+                  {automation.triggerType === "STORY_REPLY" && (
+                    <>
+                      <option value="REACTION">Emoji reactions only</option>
+                      <option value="REPLY">Written replies only</option>
+                    </>
+                  )}
                 </Select>
               </Field>
 

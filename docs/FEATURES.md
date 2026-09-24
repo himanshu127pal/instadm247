@@ -73,6 +73,30 @@ Filtered to actual product capabilities; quotas and support tiers are marked.
 | 24 | Full history **Link in Bio Analytics** | Done | Per-block click tracking |
 | 25 | **Remove Link in Bio Badge** | Done | Toggle on the page; locked on for Free, where the page title also carries "· InstaDM247" |
 
+## B2. Reachlee — added by the owner, 2026-09-24
+
+https://www.reachlee.co. Unlike §A and §B this list is **search-derived**: the
+site itself is blocked from the build environment, so it was assembled from
+their indexed pages and blog. Re-check it against their site when it can be
+read. The owner chose to build every gap found (all four below).
+
+| # | Reachlee capability | Status | Where it lives |
+|---|---|---|---|
+| 1 | Comment / keyword → DM | Done | `COMMENT`, `DM_KEYWORD` |
+| 2 | **Story reactions** fire a DM | Done | `STORY_REPLY` with match mode `REACTION` (emoji-only replies — how Instagram delivers a quick reaction; see `docs/META_API.md` §4). `REPLY` is the reverse. Preset: "Thank people who react to your story" |
+| 3 | Growth Gate (follow to unlock) | Done | `FOLLOWER_CHECK` / `ASK_FOR_FOLLOW` |
+| 4 | Email capture in the DM | Done | `COLLECT_INPUT`, lead forms |
+| 5 | **Leads to Google Sheets** | Done | Google sign-in (`drive.file`), one tab per form, every completed response a row — `src/lib/integrations/google-sheets.ts`, `docs/INTEGRATIONS.md` |
+| 6 | Tracked links | Done | `/r/[code]` |
+| 7 | Scheduled messages | Done | Scheduled broadcasts |
+| 8 | Live multi-account inbox **with sound** | Done | Inbox refreshes itself (10s / 30s in background), chime and optional desktop alert on new messages (`inbox-live.tsx`) |
+| 9 | **Follow-up nudges** when a conversation stalls | Done | CONDITION field `replied` ("Replied since your last message") + preset "Follow up if they don't reply" (4h, then 23h, inside the 24h window) |
+| 10 | Automation re-runs | Done | Rewind |
+| 11 | AI replies | Done | `AI_REPLY` |
+
+Pricing observed: Free (1,000 DMs, 500 contacts), Pro $9/mo, Business $29/mo.
+Not acted on — pricing is the owner's call.
+
 ---
 
 ## C. Deferred by explicit decision
