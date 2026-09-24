@@ -9,8 +9,10 @@ import { Logo, ThemeToggle } from "./bits";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  { label: "How it works", href: "/#how-it-works" },
-  { label: "Safety", href: "/#safety" },
+  { label: "Features", href: "/features" },
+  { label: "Safety", href: "/features/account-safety" },
+  { label: "Compare", href: "/compare" },
+  { label: "Blog", href: "/blog" },
 ];
 
 export function MarketingNav() {

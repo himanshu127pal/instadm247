@@ -22,6 +22,7 @@ import { runBillingChecks } from "./e2e-billing";
 import { runEmailChecks } from "./e2e-email";
 import { runRefundChecks } from "./e2e-refund";
 import { runBrandingChecks } from "./e2e-branding";
+import { runContentChecks } from "./e2e-content";
 import { runSheetsChecks } from "./e2e-sheets";
 import { runParityChecks } from "./e2e-parity";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
@@ -978,6 +979,7 @@ async function main() {
   await runEmailChecks(prisma, check, section);
   await runRefundChecks(prisma, check, section);
   await runBrandingChecks(prisma, check, section);
+  await runContentChecks(check, section);
   await runSheetsChecks(prisma, check, section);
   await runParityChecks(prisma, check, section);
 

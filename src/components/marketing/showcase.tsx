@@ -348,7 +348,7 @@ const COMPARISON = [
   { feature: "Visual drag-and-drop flow builder", us: true, linkdm: false, senddm: false },
   { feature: "Follower-growth gate (skip existing followers)", us: true, linkdm: "Pro", senddm: true },
   { feature: "Multi-slide carousel DMs", us: "10 slides", linkdm: "10 slides", senddm: false },
-  { feature: "Lead forms, surveys & quizzes in DM", us: true, linkdm: false, senddm: true },
+  { feature: "Lead forms, surveys & quizzes in DM", us: true, linkdm: "Email only", senddm: true },
   { feature: "AI replies grounded in your knowledge base", us: true, linkdm: false, senddm: "Basic" },
   { feature: "DM Planner (schedule before you post)", us: true, linkdm: "Pro", senddm: false },
   { feature: "Broadcasts & smart re-engagement", us: true, linkdm: "Pro", senddm: true },

@@ -14,6 +14,8 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui";
+import { JsonLd } from "@/components/marketing/content";
+import { env } from "@/lib/env";
 import { PhoneDemo } from "@/components/marketing/phone-demo";
 import {
   Accordion,
@@ -34,6 +36,30 @@ import {
 export default function LandingPage() {
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "InstaDM247",
+              url: env.appUrl,
+              logo: `${env.appUrl}/icon.png`,
+              email: "support@instadm247.com",
+            },
+            {
+              "@type": "SoftwareApplication",
+              name: "InstaDM247",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              url: env.appUrl,
+              description:
+                "Instagram DM automation built on Meta's official API: comment-to-DM, story replies and reactions, lead capture, AI replies and a live inbox.",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: "Free plan" },
+            },
+          ],
+        }}
+      />
       <Hero />
       <SocialProof />
       <Triggers />
