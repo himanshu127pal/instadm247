@@ -26,6 +26,7 @@ import { runContentChecks } from "./e2e-content";
 import { runSheetsChecks } from "./e2e-sheets";
 import { runParityChecks } from "./e2e-parity";
 import { runHelperChecks } from "./e2e-helper";
+import { runDodoCheckChecks } from "./e2e-dodo-check";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -984,6 +985,7 @@ async function main() {
   await runSheetsChecks(prisma, check, section);
   await runParityChecks(prisma, check, section);
   await runHelperChecks(prisma, check, section);
+  await runDodoCheckChecks(check, section);
 
   section("Tenant boundary in the customer UI");
   {
