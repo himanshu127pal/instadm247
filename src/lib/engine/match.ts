@@ -113,6 +113,23 @@ function fuzzyBudget(needle: string): number {
 
 export type KeywordDecision = { matched: boolean; keyword?: string; reason?: string };
 
+// Pictographs plus the pieces emoji are built from: skin tones, the joiner in
+// 👨‍👩‍👧, the variation selector in ❤️, flags' regional indicators, keycaps.
+const PICTOGRAPH = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
+const EMOJI_PARTS = /[\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Regional_Indicator}\u200D\uFE0F\u20E3\s]/gu;
+
+/**
+ * A message made of nothing but emoji — how a story reaction arrives. Tapping
+ * the quick-reaction bar under a story sends the creator a story reply whose
+ * text is just that emoji; Instagram has no separate story-reaction webhook
+ * (its `message_reactions` field covers reactions to DMs only, and heart
+ * "likes" on a story are never sent to apps). See docs/META_API.md §4.
+ */
+export function isEmojiOnly(text: string | undefined): boolean {
+  if (!text?.trim()) return false;
+  return PICTOGRAPH.test(text) && text.replace(EMOJI_PARTS, "").length === 0;
+}
+
 export function evaluateKeywords(
   text: string | undefined,
   automation: Pick<
@@ -137,6 +154,18 @@ export function evaluateKeywords(
 
   // LinkDM's "All Comments" trigger type.
   if (automation.matchMode === "ALL") return { matched: true, reason: "matches all messages" };
+
+  // Story replies split two ways: a quick emoji reaction, or something written.
+  if (automation.matchMode === "REACTION") {
+    return isEmojiOnly(text)
+      ? { matched: true, reason: "an emoji reaction" }
+      : { matched: false, reason: "not an emoji reaction" };
+  }
+  if (automation.matchMode === "REPLY") {
+    return text?.trim() && !isEmojiOnly(text)
+      ? { matched: true, reason: "a written reply" }
+      : { matched: false, reason: "an emoji reaction, not a written reply" };
+  }
 
   if (!text) return { matched: false, reason: "no text to match against" };
   if (automation.keywords.length === 0) return { matched: false, reason: "no keywords configured" };

@@ -96,6 +96,17 @@ comment_poll_response, story_poll_response, share_to_story
 `pnpm e2e` checks `WEBHOOK_FIELDS` against that set, so an invalid name fails in
 CI rather than on a customer's account.
 
+**Story reactions have no webhook of their own that we can use.** Tapping the
+quick-reaction bar under a story sends the creator a story reply
+(`message.reply_to.story`) whose text is just the emoji, so a reaction is
+recognised as an emoji-only story reply (`isEmojiOnly`, match mode `REACTION`).
+`message_reactions` is reactions to *DMs* (it carries only the reacted
+message's `mid`), and heart "likes" on a story are not sent to apps at all.
+`story_reactions` appears in the set of field names Instagram accepts (above)
+but has no published payload or documentation, so it is **not** subscribed to —
+building on it would break the "documented endpoints only" rule. Revisit if
+Meta documents it.
+
 **`mentions` is not story mentions.** Story mentions arrive on `messages` as an
 attachment of type `story_mention`; `mentions` is caption and comment @mentions,
 which is not a feature in `docs/FEATURES.md`. Don't subscribe to it without
