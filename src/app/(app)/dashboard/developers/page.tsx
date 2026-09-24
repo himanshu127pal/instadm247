@@ -1,10 +1,16 @@
 import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { env } from "@/lib/env";
+import { env, isGoogleConfigured } from "@/lib/env";
+import { PROVIDER as GOOGLE_SHEETS, sheetUrl } from "@/lib/integrations/google-sheets";
 import { PageHeader } from "@/components/dashboard/bits";
 import { DevelopersView } from "@/components/dashboard/developers-view";
 
-export default async function DevelopersPage() {
+export default async function DevelopersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string; google?: string; reason?: string }>;
+}) {
+  const sp = await searchParams;
   const workspace = await getActiveWorkspace();
   if (!workspace) return null;
 
@@ -27,9 +33,12 @@ export default async function DevelopersPage() {
     <div className="mx-auto max-w-4xl space-y-5">
       <PageHeader
         title="Developers"
-        description="API keys, outbound webhooks, and native connections to Kit and Flodesk."
+        description="API keys, outbound webhooks, and native connections to Kit, Flodesk and Google Sheets."
       />
       <DevelopersView
+        initialTab={sp.tab === "integrations" || sp.tab === "webhooks" ? sp.tab : "keys"}
+        googleResult={sp.google ? { status: sp.google, reason: sp.reason ?? null } : null}
+        googleAvailable={isGoogleConfigured()}
         appUrl={env.appUrl}
         keys={keys.map((k) => ({
           id: k.id,
@@ -56,6 +65,7 @@ export default async function DevelopersPage() {
           enabled: i.enabled,
           lastSyncAt: i.lastSyncAt?.toISOString() ?? null,
           lastError: i.lastError,
+          url: i.provider === GOOGLE_SHEETS && i.targetId ? sheetUrl(i.targetId) : null,
         }))}
       />
     </div>

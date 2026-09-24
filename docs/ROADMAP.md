@@ -242,6 +242,8 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
 - [x] SEO: sitemap, robots, structured data; `/features/*` (10 pages),
       `/compare/*` (LinkDM, SendDM, Reachlee, ManyChat), `/blog` with 5 guides and
       RSS; footer and nav link them. Content lives in `src/content/`.
+- [x] Google Sheets for captured leads (OAuth, `drive.file`), one tab per form.
+      See `docs/INTEGRATIONS.md`.
 - [x] Transactional email via Amazon SES — verification, password reset,
       billing and account alerts, logged at `/admin/emails`. See `docs/EMAIL.md`.
 - [ ] Team seats, roles and permissions

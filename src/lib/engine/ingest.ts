@@ -8,6 +8,7 @@ import { resumeFlowRun, startFlowRun } from "./run";
 import { recordEvent } from "./analytics";
 import { recordInboundAndCheckSpike } from "./viral";
 import { forwardLead } from "@/lib/integrations";
+import { appendLead } from "@/lib/integrations/google-sheets";
 import { emitWebhook } from "./outbound-webhooks";
 
 /**
@@ -212,7 +213,7 @@ async function saveLeadAnswer(
   if (completed) {
     const run = await prisma.flowRun.findUnique({
       where: { id: flowRunId },
-      include: { account: { select: { workspaceId: true } } },
+      include: { account: { select: { workspaceId: true, workspace: { select: { planKey: true } } } } },
     });
     if (run) {
       await recordEvent({
@@ -234,6 +235,22 @@ async function saveLeadAnswer(
         form_id: formId,
         answers,
       }).catch(() => undefined);
+
+      // Google Sheets gets every completed response, with or without an email.
+      const questions = (Array.isArray(form?.fields) ? (form.fields as Array<{ id?: string; label?: string }>) : [])
+        .filter((f) => f.id)
+        .map((f) => ({ key: f.id!, label: f.label || f.id! }));
+      void appendLead(
+        { id: run.account.workspaceId, planKey: run.account.workspace.planKey },
+        {
+          formName: form?.name ?? "Leads",
+          questions,
+          answers,
+          username: contact?.username ?? null,
+          name: contact?.name ?? null,
+          at: new Date(),
+        },
+      ).catch(() => undefined);
 
       if (email) {
         void forwardLead(run.account.workspaceId, {

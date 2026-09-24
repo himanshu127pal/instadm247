@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Privacy policy" };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy policy" updated="August 2026">
+    <LegalPage title="Privacy policy" updated="September 2026">
       <p>
         This policy explains what InstaDM247 collects when you connect an Instagram
         professional account, why we collect it, and how you get rid of it.
@@ -104,6 +104,23 @@ export default function PrivacyPage() {
         emails. We keep a record of each email we send (who it went to, its subject and whether
         it was delivered) for troubleshooting. Links that sign you in or reset your password are
         never stored.
+      </p>
+      <p>
+        If you connect Google Sheets, we ask Google only for your email address and for access
+        to files our app creates (the <code>drive.file</code> permission). We create one
+        spreadsheet in your Google Drive and write the lead-form answers you collect into it —
+        the respondent&rsquo;s Instagram username and name, and their answers. We cannot see or
+        change anything else in your Drive. We keep an encrypted Google access token so rows can
+        be added while you&rsquo;re away; disconnecting in Developers → Integrations deletes it
+        and revokes our access, and the spreadsheet stays yours. InstaDM247&rsquo;s use and
+        transfer of information received from Google APIs will adhere to the{" "}
+        <a
+          href="https://developers.google.com/terms/api-services-user-data-policy"
+          className="text-[var(--accent)] underline"
+        >
+          Google API Services User Data Policy
+        </a>
+        , including the Limited Use requirements.
       </p>
       <p>We do not share data with anyone else.</p>
 
