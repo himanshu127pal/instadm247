@@ -12,7 +12,7 @@ const updateSchema = z.object({
   enabled: z.boolean().optional(),
   triggerType: z.string().optional(),
   scope: z.enum(["SPECIFIC", "ALL_MEDIA", "UNIVERSAL", "AD"]).optional(),
-  matchMode: z.enum(["ALL", "KEYWORD"]).optional(),
+  matchMode: z.enum(["ALL", "KEYWORD", "REACTION", "REPLY"]).optional(),
   matchType: z.enum(["CONTAINS", "EXACT", "STARTS_WITH", "REGEX"]).optional(),
   keywords: z.array(z.string()).optional(),
   negativeKeywords: z.array(z.string()).optional(),

@@ -23,6 +23,7 @@ import { runEmailChecks } from "./e2e-email";
 import { runRefundChecks } from "./e2e-refund";
 import { runBrandingChecks } from "./e2e-branding";
 import { runContentChecks } from "./e2e-content";
+import { runParityChecks } from "./e2e-parity";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -978,6 +979,7 @@ async function main() {
   await runRefundChecks(prisma, check, section);
   await runBrandingChecks(prisma, check, section);
   await runContentChecks(check, section);
+  await runParityChecks(prisma, check, section);
 
   section("Tenant boundary in the customer UI");
   {

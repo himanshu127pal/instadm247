@@ -624,7 +624,7 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
 
 // --- Condition evaluation ---------------------------------------------------
 
-async function evaluateCondition(
+export async function evaluateCondition(
   ctx: RunContext,
   condition: { field: string; operator: string; key?: string; value?: string },
 ): Promise<boolean> {
@@ -649,6 +649,22 @@ async function evaluateCondition(
     case "hour_of_day":
       actual = new Date().getHours();
       break;
+    case "replied": {
+      // "Since our last message", not "since the flow began": the message that
+      // triggered the run is itself inbound, and a nudge only makes sense
+      // relative to the last thing we said.
+      const lastSent = await prisma.message.findFirst({
+        where: { flowRunId: ctx.run.id, direction: "outbound", status: "sent" },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      });
+      const since = lastSent?.createdAt ?? ctx.run.startedAt;
+      actual =
+        (await prisma.message.count({
+          where: { contactId: ctx.contact.id, direction: "inbound", createdAt: { gt: since } },
+        })) > 0;
+      break;
+    }
     case "is_first_time": {
       const count = await prisma.flowRun.count({
         where: { automationId: ctx.run.automationId, contactId: ctx.contact.id },

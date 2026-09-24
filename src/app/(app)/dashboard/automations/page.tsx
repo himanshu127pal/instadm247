@@ -12,7 +12,7 @@ const TRIGGER_LABELS: Record<string, string> = {
   COMMENT: "Comment",
   AD_COMMENT: "Ad comment",
   LIVE_COMMENT: "Live comment",
-  STORY_REPLY: "Story reply",
+  STORY_REPLY: "Story reply / reaction",
   STORY_MENTION: "Story mention",
   DM_KEYWORD: "DM keyword",
   ICE_BREAKER: "Conversation starter",
@@ -129,6 +129,16 @@ export default async function AutomationsPage() {
                   {automation.matchMode === "ALL" && (
                     <p className="mt-2.5 text-[12px] text-[var(--text-faint)]">
                       Responds to everything — no keyword needed.
+                    </p>
+                  )}
+                  {automation.matchMode === "REACTION" && (
+                    <p className="mt-2.5 text-[12px] text-[var(--text-faint)]">
+                      Responds to emoji reactions on your stories.
+                    </p>
+                  )}
+                  {automation.matchMode === "REPLY" && (
+                    <p className="mt-2.5 text-[12px] text-[var(--text-faint)]">
+                      Responds to written story replies; ignores emoji reactions.
                     </p>
                   )}
                 </div>

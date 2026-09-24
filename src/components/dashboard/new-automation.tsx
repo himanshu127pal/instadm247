@@ -45,7 +45,12 @@ const TRIGGERS = [
     label: "Comment on a post or Reel",
     hint: "The classic comment-to-DM",
   },
-  { id: "STORY_REPLY", icon: MessagesSquare, label: "Story reply", hint: "Someone replies to a story" },
+  {
+    id: "STORY_REPLY",
+    icon: MessagesSquare,
+    label: "Story reply or reaction",
+    hint: "Someone replies to a story, or reacts with an emoji",
+  },
   { id: "STORY_MENTION", icon: AtSign, label: "Story @mention", hint: "Great for giveaways" },
   { id: "LIVE_COMMENT", icon: Radio, label: "Live comment", hint: "During a broadcast" },
   { id: "DM_KEYWORD", icon: MessagesSquare, label: "DM keyword", hint: "Someone messages you" },
@@ -93,6 +98,13 @@ export function NewAutomationWizard({
     .map((k) => k.trim())
     .filter(Boolean);
 
+  // Reaction and written-reply modes only exist for story replies.
+  React.useEffect(() => {
+    if (triggerType !== "STORY_REPLY" && (matchMode === "REACTION" || matchMode === "REPLY")) {
+      setMatchMode("KEYWORD");
+    }
+  }, [triggerType, matchMode]);
+
   const accountMedia = media.filter((m) => m.accountId === accountId);
   const supportsMedia = MEDIA_TRIGGERS.has(triggerType);
 
@@ -102,7 +114,7 @@ export function NewAutomationWizard({
     step === 0
       ? Boolean(accountId && triggerType)
       : step === 1
-        ? matchMode === "ALL" || keywords.length > 0
+        ? matchMode !== "KEYWORD" || keywords.length > 0
         : Boolean(presetId);
 
   async function create() {
@@ -113,7 +125,9 @@ export function NewAutomationWizard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           accountId,
-          name: name.trim() || suggestName(triggerType, keywords),
+          name:
+            name.trim() ||
+            suggestName(triggerType === "STORY_REPLY" && matchMode === "REACTION" ? "STORY_REACTION" : triggerType, keywords),
           triggerType,
           scope: supportsMedia ? scope : "ALL_MEDIA",
           matchMode,
@@ -242,8 +256,25 @@ export function NewAutomationWizard({
                   {
                     id: "ALL",
                     title: "Everyone",
-                    body: "Fires on every comment or message, whatever they say.",
+                    body:
+                      triggerType === "STORY_REPLY"
+                        ? "Fires on every reply and every emoji reaction to your stories."
+                        : "Fires on every comment or message, whatever they say.",
                   },
+                  ...(triggerType === "STORY_REPLY"
+                    ? [
+                        {
+                          id: "REACTION",
+                          title: "Emoji reactions only",
+                          body: "Fires when someone taps an emoji under your story. Heart likes aren't shared with apps, so they can't trigger it.",
+                        },
+                        {
+                          id: "REPLY",
+                          title: "Written replies only",
+                          body: "Fires when someone types a reply, and ignores emoji-only reactions.",
+                        },
+                      ]
+                    : []),
                 ].map((option) => (
                   <button
                     key={option.id}
@@ -445,6 +476,7 @@ function suggestName(triggerType: string, keywords: string[]): string {
     AD_COMMENT: "Ad comment to DM",
     LIVE_COMMENT: "Live comment to DM",
     STORY_REPLY: "Story reply auto-reply",
+    STORY_REACTION: "Story reaction auto-reply",
     STORY_MENTION: "Story mention auto-reply",
     DM_KEYWORD: "DM keyword auto-reply",
     ICE_BREAKER: "Conversation starter",

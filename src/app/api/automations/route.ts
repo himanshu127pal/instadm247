@@ -21,7 +21,7 @@ const createSchema = z.object({
     "AD_COMMENT",
   ]),
   scope: z.enum(["SPECIFIC", "ALL_MEDIA", "UNIVERSAL", "AD"]).default("ALL_MEDIA"),
-  matchMode: z.enum(["ALL", "KEYWORD"]).default("KEYWORD"),
+  matchMode: z.enum(["ALL", "KEYWORD", "REACTION", "REPLY"]).default("KEYWORD"),
   keywords: z.array(z.string().min(1)).default([]),
   mediaIds: z.array(z.string()).default([]),
   presetId: z.string().default("blank"),

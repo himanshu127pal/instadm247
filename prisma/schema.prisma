@@ -272,7 +272,9 @@ model Automation {
   /// SPECIFIC | ALL_MEDIA | UNIVERSAL | AD  — which content it listens to
   scope String @default("SPECIFIC")
 
-  /// ALL | KEYWORD — LinkDM's "All Comments" vs "Specific Keywords"
+  /// ALL | KEYWORD — LinkDM's "All Comments" vs "Specific Keywords".
+  /// STORY_REPLY also takes REACTION (emoji-only replies — how a story
+  /// reaction arrives) and REPLY (written replies only).
   matchMode String @default("KEYWORD")
 
   keywords         String[] @default([])
