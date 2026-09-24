@@ -29,6 +29,11 @@ export type Feature =
   | "coupons"
   /** The AI_REPLY node and the AI agent settings. Metered separately. */
   | "aiAgent"
+  /**
+   * The in-dashboard AI Helper: how-to answers about InstaDM247 and draft
+   * automations. Metered as `helperQuestionsPerMonth`. See docs/HELPER.md.
+   */
+  | "aiHelper"
   | "templates"
   | "dmPlanner"
   | "rewind"
@@ -51,6 +56,8 @@ export type Limits = {
   /** Automated DMs — flows, AI, broadcasts. Human Inbox replies never count. */
   dmsPerMonth: number;
   aiRepliesPerMonth: number;
+  /** Questions to the AI Helper. It costs us a model call each, so it's capped. */
+  helperQuestionsPerMonth: number;
   /**
    * Custom DMs after the starter DM. A product constraint mirroring LinkDM's
    * published maximum, the same on every plan — not a paywall.
@@ -73,6 +80,7 @@ const ALL_FEATURES: Feature[] = [
   "leadCapture",
   "coupons",
   "aiAgent",
+  "aiHelper",
   "templates",
   "dmPlanner",
   "rewind",
@@ -95,6 +103,7 @@ export const PLANS: Record<PlanKey, Plan> = {
       instagramAccounts: 1,
       dmsPerMonth: 1_000,
       aiRepliesPerMonth: 0,
+      helperQuestionsPerMonth: 0,
       flowSteps: FLOW_STEPS,
     },
     features: new Set<Feature>(),
@@ -110,6 +119,7 @@ export const PLANS: Record<PlanKey, Plan> = {
       instagramAccounts: 3,
       dmsPerMonth: 25_000,
       aiRepliesPerMonth: 1_000,
+      helperQuestionsPerMonth: 150,
       flowSteps: FLOW_STEPS,
     },
     features: new Set<Feature>(ALL_FEATURES.filter((f) => f !== "apiAccess")),
@@ -123,6 +133,7 @@ export const PLANS: Record<PlanKey, Plan> = {
       instagramAccounts: 10,
       dmsPerMonth: 300_000,
       aiRepliesPerMonth: 10_000,
+      helperQuestionsPerMonth: 500,
       flowSteps: FLOW_STEPS,
     },
     features: new Set<Feature>(ALL_FEATURES),
@@ -136,6 +147,7 @@ export const PLANS: Record<PlanKey, Plan> = {
       instagramAccounts: Infinity,
       dmsPerMonth: Infinity,
       aiRepliesPerMonth: Infinity,
+      helperQuestionsPerMonth: Infinity,
       flowSteps: FLOW_STEPS,
     },
     features: new Set<Feature>(ALL_FEATURES),
@@ -162,6 +174,7 @@ export const FEATURE_LABELS: Record<Feature, string> = {
   leadCapture: "Lead capture",
   coupons: "DM coupons",
   aiAgent: "AI agent",
+  aiHelper: "AI Helper",
   templates: "DM templates",
   dmPlanner: "DM Planner",
   rewind: "Rewind",

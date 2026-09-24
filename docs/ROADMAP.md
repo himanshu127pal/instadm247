@@ -94,6 +94,12 @@ holds the researched competitor matrix, this holds what actually exists.
 - [x] DM Planner with caption draft codes
 - [x] Templates, tracked links, conversation starters
 - [x] AI agent with knowledge base and guardrails
+- [x] AI Helper — how-to answers, goal plans, one-click draft automations and
+      troubleshooting for the account owner (`docs/HELPER.md`)
+- [x] "Ask a question" steps save into a lead form (**Save to a lead form** →
+      **Which question**). Until this, nothing could set `formId`, so no form
+      response was ever recorded from a flow — and Google Sheets, Kit, Flodesk
+      and `lead.captured` never fired
 - [x] Analytics: per-automation table, link clicks, funnels
 - [x] Interactive marketing site + legal pages
 
@@ -266,6 +272,19 @@ break because someone else's CDN blipped is not a deploy. All three faces are
 OFL licensed, so shipping the files is fine. Don't switch back.
 
 ## Known gaps worth knowing about
+
+Found while writing the AI Helper's guide, which had to describe every screen
+exactly. The helper is told the truth about each, so it won't send anyone
+looking for these:
+
+- **A lead form's "Message after they finish" is never sent.** It's saved, but
+  nothing reads it. The guide tells people to add a Send DM step after the last
+  question instead.
+- **Saved message templates can't be inserted into a flow.** They're for
+  copying; the Templates page's "drop them into any flow" means paste.
+- **A coupon step takes a pasted pool ID**, not a picker.
+- **Contacts export in the UI is CSV only.** The route also does `?format=xlsx`,
+  but no button offers it.
 
 - **Prisma migrations** — `prisma/migrations/0_init` is the baseline, generated
   from the schema and verified to reproduce it with no drift. CI applies the

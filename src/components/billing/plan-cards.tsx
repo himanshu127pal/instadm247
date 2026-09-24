@@ -31,13 +31,17 @@ function highlights(key: PlanKey): string[] {
     plan.limits.aiRepliesPerMonth > 0
       ? `${formatNumber(plan.limits.aiRepliesPerMonth)} AI replies / month`
       : "Post, Reel & Story AutoDM",
+    ...(plan.limits.helperQuestionsPerMonth > 0
+      ? [`AI Helper: ${formatNumber(plan.limits.helperQuestionsPerMonth)} questions / month`]
+      : []),
   ];
   const below: PlanKey | null = key === "business" ? "pro" : key === "pro" ? "free" : null;
   const added = [...plan.features].filter((f: Feature) => !below || !PLANS[below].features.has(f));
   if (key === "free") {
     lines.push("Story mentions, DM keywords, comment replies", "Inbox starters & link in bio");
   } else {
-    lines.push(...added.map((f) => FEATURE_LABELS[f]));
+    // The helper already has its own line, with its allowance.
+    lines.push(...added.filter((f) => f !== "aiHelper").map((f) => FEATURE_LABELS[f]));
   }
   return lines;
 }

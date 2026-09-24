@@ -13,11 +13,12 @@ import { notifyUsageIfCrossed } from "@/lib/email/notify";
  * is why this is the one place the codebase uses raw SQL.
  */
 
-export type Metric = "dms" | "ai_replies";
+export type Metric = "dms" | "ai_replies" | "helper";
 
-const LIMIT_FOR: Record<Metric, "dmsPerMonth" | "aiRepliesPerMonth"> = {
+const LIMIT_FOR: Record<Metric, "dmsPerMonth" | "aiRepliesPerMonth" | "helperQuestionsPerMonth"> = {
   dms: "dmsPerMonth",
   ai_replies: "aiRepliesPerMonth",
+  helper: "helperQuestionsPerMonth",
 };
 
 /** UTC calendar month, `YYYY-MM`. Usage resets on the 1st, not the billing date. */
@@ -69,10 +70,14 @@ export async function reserveUsage(
   if (updated.length === 0) return false;
 
   // The count this reservation produced. Exactly one reservation lands on each
-  // warning threshold, so this is where the "80% used" email comes from.
-  await notifyUsageIfCrossed(workspace, metric, Number(updated[0].count), period, at).catch((error) =>
-    console.error("[usage] threshold email failed", error),
-  );
+  // warning threshold, so this is where the "80% used" email comes from. The
+  // helper has no email: running low is shown on its own page, and nothing a
+  // customer's followers see depends on it.
+  if (metric !== "helper") {
+    await notifyUsageIfCrossed(workspace, metric, Number(updated[0].count), period, at).catch((error) =>
+      console.error("[usage] threshold email failed", error),
+    );
+  }
   return true;
 }
 
@@ -99,7 +104,7 @@ export async function getUsage(workspaceId: string, at: Date = new Date()): Prom
     where: { workspaceId, period: periodKey(at) },
     select: { metric: true, count: true },
   });
-  const usage: UsageSnapshot = { dms: 0, ai_replies: 0 };
+  const usage: UsageSnapshot = { dms: 0, ai_replies: 0, helper: 0 };
   for (const row of rows) if (row.metric in usage) usage[row.metric as Metric] = row.count;
   return usage;
 }

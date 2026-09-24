@@ -44,6 +44,12 @@ export const env = {
   },
 
   anthropicApiKey: str("ANTHROPIC_API_KEY"),
+  /**
+   * The model behind the in-dashboard AI Helper (docs/HELPER.md). Each question
+   * is one or a few calls to it, so this is the main cost lever: a smaller
+   * model is cheaper per question and somewhat less careful.
+   */
+  helperModel: str("AI_HELPER_MODEL", "claude-opus-5"),
 
   /**
    * Transactional email via Amazon SES. See docs/EMAIL.md. With no provider

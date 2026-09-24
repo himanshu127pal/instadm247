@@ -139,6 +139,11 @@ than parity.
 - **Follower-growth gate** and **ask-for-follow** as first-class flow steps
 - **In-DM forms, surveys and quizzes** with CSV *and* Excel export
 - **Broadcast eligibility preview** — the reachable count before you send
+- **AI Helper** (built on the owner's request) — an in-dashboard assistant for
+  the account owner: step-by-step answers about any feature, automation plans
+  for a goal, one-click *draft* automations (created switched off), and
+  troubleshooting from the workspace's own setup and skip reasons. Read-only;
+  Pro and Business only, metered per question. `docs/HELPER.md`
 - **Account and notification email** (built on the owner's request) — email
   verification, password reset, and notices for subscription changes, failed
   payments, renewals, usage limits, Instagram reconnects and suspensions, via

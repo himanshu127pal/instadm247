@@ -25,6 +25,7 @@ import { runBrandingChecks } from "./e2e-branding";
 import { runContentChecks } from "./e2e-content";
 import { runSheetsChecks } from "./e2e-sheets";
 import { runParityChecks } from "./e2e-parity";
+import { runHelperChecks } from "./e2e-helper";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -982,6 +983,7 @@ async function main() {
   await runContentChecks(check, section);
   await runSheetsChecks(prisma, check, section);
   await runParityChecks(prisma, check, section);
+  await runHelperChecks(prisma, check, section);
 
   section("Tenant boundary in the customer UI");
   {
@@ -998,6 +1000,8 @@ async function main() {
       "src/components/marketing",
       // What customers read in their inbox is customer-facing too.
       "src/lib/email/templates.ts",
+      // So is everything the AI Helper knows: it can repeat any of it.
+      "src/lib/helper",
     ];
     const FORBIDDEN = [
       "webhookVerifyToken",
@@ -1013,6 +1017,7 @@ async function main() {
       "EMAIL_PROVIDER",
       "SES_REGION",
       "AWS_",
+      "AI_HELPER_MODEL",
     ];
 
     function walk(dir: string): string[] {

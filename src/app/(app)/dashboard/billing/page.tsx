@@ -142,7 +142,7 @@ export default async function BillingPage({
         }
         actions={ws.billingCustomerId && !impersonating ? <ManageSubscriptionButton /> : undefined}
       >
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <Meter
             label="Automated DMs"
             used={usage.dms}
@@ -150,6 +150,7 @@ export default async function BillingPage({
             hint="Resets on the 1st. Replies you type yourself never count."
           />
           <Meter label="AI replies" used={usage.ai_replies} cap={plan.limits.aiRepliesPerMonth} />
+          <Meter label="AI Helper questions" used={usage.helper} cap={plan.limits.helperQuestionsPerMonth} />
           <Meter label="Instagram accounts" used={accounts} cap={plan.limits.instagramAccounts} />
         </div>
       </SectionCard>

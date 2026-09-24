@@ -23,6 +23,7 @@ import {
   MessagesSquare,
   Settings,
   ShieldCheck,
+  Sparkles,
   Users,
   Workflow,
   X,
@@ -65,6 +66,7 @@ const NAV = [
     items: [
       { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
       { href: "/dashboard/ai", label: "AI agent", icon: Bot },
+      { href: "/dashboard/helper", label: "AI Helper", icon: Sparkles },
     ],
   },
   {
@@ -223,6 +225,16 @@ export function DashboardShell({
           </button>
 
           <div className="flex-1" />
+
+          {!pathname.startsWith("/dashboard/helper") && (
+            <Link
+              href={`/dashboard/helper?from=${encodeURIComponent(pathname)}`}
+              className="flex items-center gap-1.5 rounded-xl border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)] px-3 py-1.5 text-[12.5px] font-extrabold text-[#12110e] shadow-[2px_2px_0_0_var(--shadow-ink)] transition-transform hover:-translate-y-0.5"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Ask AI</span>
+            </Link>
+          )}
 
           <Badge tone={accounts.length ? "success" : "neutral"}>
             {accounts.length
