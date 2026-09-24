@@ -86,7 +86,10 @@ second App Review track — a large parallel integration for one line item.
 ### Plans and billing (LinkDM #13, #24, #25; SendDM #1, #2)
 Free / Pro / Business, sold through Dodo Payments, defined once in
 `src/lib/billing/plans.ts`. Every gated action asks `src/lib/plan.ts`; no feature
-code hardcodes a quota. Inert until `BILLING_ENABLED` is set. Safety features are
+code hardcodes a quota. Inert until `BILLING_ENABLED` is set. Refund policy at
+`/refunds` (monthly: none; annual: on request, less the months used at the
+monthly price; nothing else), processed by
+staff from the customer page. Safety features are
 included on every plan — unlike both competitors, who charge for them. Full design
 in `docs/BILLING.md`.
 

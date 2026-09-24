@@ -173,6 +173,18 @@ export function PlanCards({
         Post Protection, the 24-hour messaging window and rate limits under Instagram&rsquo;s own.
         Keeping your account safe is not an upgrade.
       </p>
+
+      {/* The pricing page carries this in its own footnote. */}
+      {mode === "dashboard" && (
+        <p className="text-center text-[12.5px] font-semibold text-[var(--text-faint)]">
+          Monthly plans aren&rsquo;t refundable. Annual plans can be refunded, less the months used
+          at the monthly price —{" "}
+          <Link href="/refunds" className="underline hover:text-[var(--text-muted)]">
+            refund policy
+          </Link>
+          .
+        </p>
+      )}
     </div>
   );
 }

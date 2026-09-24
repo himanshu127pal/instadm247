@@ -235,6 +235,8 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
 
 - [x] Pricing, plans and quota enforcement — Free / Pro / Business via Dodo
       Payments, inert behind `BILLING_ENABLED`. See `docs/BILLING.md`.
+- [x] Refund policy (`/refunds`) and a staff tool that refunds an annual plan,
+      less the months used at the monthly price, through Dodo. See `docs/BILLING.md` §Refunds.
 - [x] Transactional email via Amazon SES — verification, password reset,
       billing and account alerts, logged at `/admin/emails`. See `docs/EMAIL.md`.
 - [ ] Team seats, roles and permissions

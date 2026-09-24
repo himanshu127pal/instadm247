@@ -46,6 +46,7 @@ const SAMPLE: { [K in TemplateName]: TemplateParams[K] } = {
   subscription_payment_recovered: { name: "Alex", plan: "Pro" },
   subscription_on_hold: { name: "Alex", plan: "Pro" },
   subscription_ended: { name: "Alex", plan: "Pro" },
+  refund_issued: { name: "Alex", plan: "Pro", amount: "$171.00", monthsUsed: 1 },
   renewal_reminder: { name: "Alex", plan: "Pro", renewsOn: "30 September 2026" },
   plan_ending_reminder: { name: "Alex", plan: "Pro", endsOn: "26 September 2026" },
   plan_granted: { name: "Alex", plan: "Business", until: null },

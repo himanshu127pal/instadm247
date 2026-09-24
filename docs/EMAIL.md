@@ -37,6 +37,7 @@ gets a reputation problem it doesn't take password resets down with it.
 | `subscription_on_hold` | Becomes `on_hold` | Per billing period |
 | `subscription_ended` | A running plan becomes `cancelled`/`expired`/`failed` | Once per subscription |
 | `renewal_reminder` | Daily job: **yearly** plans renewing in 5–8 days | Per billing period |
+| `refund_issued` | Staff refund an annual plan under the refund policy (replaces `subscription_ended` for that cancellation) | Per payment |
 | `plan_ending_reminder` | Daily job: cancelled plans ending in 1–4 days | Per billing period |
 | `usage_threshold` | A DM or AI-reply reservation lands on 80 % or 100 % of the monthly quota | Per workspace, month, metric, threshold |
 | `plan_granted` | Staff override that actually raises the plan (a checkbox, on by default) | Per grant |

@@ -32,7 +32,12 @@ export default async function PricingPage() {
       </div>
       <p className="mt-10 text-center text-[12.5px] font-semibold text-[var(--text-faint)]">
         Prices in USD. Taxes are calculated at checkout for your country. Payments are processed
-        by Dodo Payments, our merchant of record.
+        by Dodo Payments, our merchant of record. Monthly plans aren&rsquo;t refundable; annual
+        plans can be refunded, less the months used at the monthly price —{" "}
+        <a href="/refunds" className="underline hover:text-[var(--text-muted)]">
+          refund policy
+        </a>
+        .
       </p>
     </div>
   );

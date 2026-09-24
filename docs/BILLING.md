@@ -13,6 +13,7 @@ Pricing, plans, metering and payments. Read this before touching anything under
 | Safety | **Never gated, on any plan** | The product's promise is that creators don't get banned. Competitors charge for Slow Down and viral protection; we don't. The window, rate limits and dedupe are also hard rules in `dispatch.ts` — gating them would mean weakening the dispatcher. |
 | Human replies | **Never blocked and never counted** | A person answering their own customer in the Inbox is not what the plan meters. Same principle as the opt-out rule, which also exempts human replies. |
 | Failed payment | Dodo's own dunning decides | `past_due` keeps the plan through Dodo's grace window; `on_hold` degrades to Free. No data is deleted on a downgrade. |
+| Refunds | **Monthly: none. Annual: on request, less the months used at the monthly price. Nothing else** | Owner's policy, published at `/refunds`. Used months at the monthly rate, so an annual discount can't be used to buy months cheaply and refund the rest. No "charged in error" refunds either — it can't be verified. See §Refunds. |
 | Rollout | **Inert behind `BILLING_ENABLED`** | Metering runs and plans resolve from day one, but nothing is enforced until the flag is on — so the deploy that ships this is not the deploy that starts charging. |
 
 ## Plans
@@ -129,6 +130,8 @@ against the SDK before changing any of it.
 | Customer portal | `POST /customers/{id}/customer-portal/session?return_url=…` → `{ link }` | Manage subscription, invoices, card |
 | Get subscription | `GET /subscriptions/{id}` | Admin "resync from Dodo" |
 | Schedule cancel | `PATCH /subscriptions/{id}` `{ cancel_at_next_billing_date: true, cancellation_comment }` | Admin cancel |
+| Cancel now | `PATCH /subscriptions/{id}` `{ status: "cancelled", cancel_reason: "cancelled_by_merchant", cancellation_comment }` | Only with an annual refund |
+| Partial refund | `POST /refunds` `{ payment_id, items: [{ item_id: <product_id>, amount, tax_inclusive: true }], reason }` → `{ refund_id, status, … }` | Annual refund. `amount` is in the payment's smallest currency unit |
 
 Webhooks are mapped to a workspace by **`data.customer.customer_id`** first,
 because we create that customer ourselves and store it on the workspace. Checkout
@@ -170,6 +173,54 @@ We act on every `subscription.*` event by applying the subscription payload
 events are recorded for tracing but change nothing, because the subscription
 events that accompany them carry the state. Everything else is logged and
 acknowledged.
+
+## Refunds
+
+The policy, published at **`/refunds`** and linked from the footer, terms,
+pricing, sign-up and billing pages:
+
+- **Monthly plans are not refundable.** Cancelling stops renewal; the paid month
+  runs out.
+- **Annual plans** are refunded, on request to `support@instadm247.com`: what
+  was paid for the year, less the months used charged at the plan's **monthly**
+  list price. The month in progress counts as used. In list terms
+  `refund = yearly − used × monthly`; applied as that share of what was
+  actually paid, so tax and a local currency come back in proportion:
+  `paid × (yearly − used × monthly) ÷ yearly`, rounded down to the minor unit.
+  With "two months free" pricing nothing is left from the 10th month. The plan
+  then ends immediately.
+- **Nothing else is refunded** — not partial months, not unused allowances, and
+  not claims of a mistaken charge, which can't be verified. A genuine payment
+  dispute goes through Dodo as merchant of record.
+
+Prices come from `src/lib/billing/plans.ts` at the time of the request, so a
+customer who bought before a price change is refunded against today's prices.
+The arithmetic is `src/lib/billing/refund.ts`, and the page says the same thing;
+change them together.
+
+**Processing a request (staff):**
+
+1. Check it came from the workspace owner's address — the customer page lists
+   members. If not, reply asking the owner to write in.
+2. Customer page → the annual subscription → **Refund annual plan**. Enter the
+   date the email arrived, then **Preview refund**. The payment and amount come
+   from our own trace of Dodo's `payment.succeeded`, never typed in.
+3. Admin only: give the reason (who asked, when) and **Refund … and end the plan**.
+   That issues the partial refund, then cancels the subscription now. The refund
+   goes first: if the cancel fails, the customer has their money and keeps the
+   plan until you retry — and a retry sees the recorded refund and only retries
+   the cancel.
+4. The customer gets the `refund_issued` email from `billing@`. Dodo then sends
+   `refund.*` and `subscription.cancelled` webhooks, which land in the trace and
+   move the workspace to Free. The usual "plan has ended" email is suppressed for
+   a subscription we just refunded.
+
+The tool refuses, with the reason, when the plan is monthly, not active, already
+refunded somewhere else (e.g. in Dodo's dashboard), or has no payment on record
+for the year — handle those in Dodo's dashboard.
+
+Every refund is in the audit log (`billing.refund`) and the payment trace
+(`refund.create`, `subscription.cancel_now`).
 
 ## The payment trace log
 

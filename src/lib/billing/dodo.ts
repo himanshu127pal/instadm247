@@ -241,6 +241,38 @@ export async function scheduleCancel(subscriptionId: string, comment: string): P
   });
 }
 
+/**
+ * End a subscription now rather than at period end. Only used together with a
+ * refund: without one it would take away time the customer paid for.
+ */
+export async function cancelNow(subscriptionId: string, comment: string): Promise<void> {
+  await dodo("PATCH", `/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+    body: { status: "cancelled", cancel_reason: "cancelled_by_merchant", cancellation_comment: comment.slice(0, 500) },
+  });
+}
+
+export type DodoRefund = { refund_id: string; status: string; amount?: number | null; currency?: string | null };
+
+/**
+ * Refund part of a payment. `amount` is in the payment's smallest currency
+ * unit and includes tax — Dodo's `tax_inclusive` default, stated anyway.
+ * `POST /refunds` with `items` is a partial refund of that product line.
+ */
+export async function createRefund(input: {
+  paymentId: string;
+  productId: string;
+  amount: number;
+  reason: string;
+}): Promise<DodoRefund> {
+  return dodo<DodoRefund>("POST", "/refunds", {
+    body: {
+      payment_id: input.paymentId,
+      items: [{ item_id: input.productId, amount: input.amount, tax_inclusive: true }],
+      reason: input.reason.slice(0, 3000),
+    },
+  });
+}
+
 // --- Webhook signatures (Standard Webhooks) ---------------------------------
 
 export const WEBHOOK_TOLERANCE_SECONDS = 5 * 60;

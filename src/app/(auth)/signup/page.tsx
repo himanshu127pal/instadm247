@@ -44,6 +44,10 @@ export default async function SignupPage({
         <Link href="/privacy" className="underline hover:text-[var(--text-muted)]">
           privacy policy
         </Link>
+        . Paid plans are covered by our{" "}
+        <Link href="/refunds" className="underline hover:text-[var(--text-muted)]">
+          refund policy
+        </Link>
         .
       </p>
     </div>
