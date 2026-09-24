@@ -4,7 +4,10 @@ import { prisma } from "@/lib/db";
 import { AdminAccessError, audit, requirePlatformStaff } from "@/lib/admin";
 import { notifyPlanGranted } from "@/lib/email/notify";
 import { recomputeWorkspacePlan } from "@/lib/billing/resolve";
-import { DodoError, fetchSubscription, scheduleCancel } from "@/lib/billing/dodo";
+import { DodoError, cancelNow, createRefund, fetchSubscription, scheduleCancel } from "@/lib/billing/dodo";
+import { formatMinor, prepareAnnualRefund } from "@/lib/billing/refund";
+import { planFor } from "@/lib/billing/plans";
+import { emailWorkspaceOwner } from "@/lib/email/send";
 import { applySubscription } from "@/lib/billing/webhook";
 import { traceOutbound } from "@/lib/billing/trace";
 
@@ -30,6 +33,22 @@ const schema = z.discriminatedUnion("action", [
     subscriptionId: z.string().min(1),
     reason,
   }),
+  z.object({
+    action: z.literal("refund_quote"),
+    workspaceId: z.string().min(1),
+    subscriptionId: z.string().min(1),
+    /** When the customer's request reached support. Defaults to now. */
+    requestedAt: z.string().datetime().optional(),
+  }),
+  z.object({
+    action: z.literal("refund_annual"),
+    workspaceId: z.string().min(1),
+    subscriptionId: z.string().min(1),
+    requestedAt: z.string().datetime().optional(),
+    /** The amount the preview showed — refused if the numbers moved since. */
+    expectedAmount: z.number().int().positive(),
+    reason,
+  }),
 ]);
 
 /**
@@ -37,6 +56,8 @@ const schema = z.discriminatedUnion("action", [
  *
  *   override / clear_override / cancel — admin only: they change what a
  *     customer pays for or receives.
+ *   refund_quote — support too: it only reads our records and does the sums.
+ *   refund_annual — admin only: money leaves. See docs/BILLING.md §Refunds.
  *   resync — support too: it only pulls Dodo's own record and applies it, so it
  *     can't grant anything that isn't real, and it's the first thing to try on
  *     a "I paid but I'm still on Free" ticket.
@@ -51,7 +72,9 @@ export async function POST(request: Request) {
       );
     }
     const body = parsed.data;
-    const staff = await requirePlatformStaff(body.action === "resync" ? "support" : "admin");
+    const staff = await requirePlatformStaff(
+      body.action === "resync" || body.action === "refund_quote" ? "support" : "admin",
+    );
 
     const workspace = await prisma.workspace.findUnique({
       where: { id: body.workspaceId },
@@ -140,6 +163,123 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: true, note: result.kind === "applied" ? result.note : "" });
       }
 
+      case "refund_quote": {
+        const at = requestDate(body.requestedAt);
+        if (!at) return NextResponse.json({ error: "The request date can't be in the future." }, { status: 400 });
+        const prepared = await prepareAnnualRefund(workspace.id, body.subscriptionId, at);
+        if (!prepared.ok) return NextResponse.json({ error: prepared.reason }, { status: 409 });
+        return NextResponse.json({
+          ok: true,
+          quote: {
+            paid: formatMinor(prepared.paid, prepared.currency),
+            refund: formatMinor(prepared.amount, prepared.currency),
+            amount: prepared.amount,
+            monthsUsed: prepared.monthsUsed,
+            monthsUnused: prepared.monthsUnused,
+            paymentId: prepared.paymentId,
+            refundAlreadyIssued: prepared.refundAlreadyIssued,
+          },
+        });
+      }
+
+      case "refund_annual": {
+        const at = requestDate(body.requestedAt);
+        if (!at) return NextResponse.json({ error: "The request date can't be in the future." }, { status: 400 });
+        const prepared = await prepareAnnualRefund(workspace.id, body.subscriptionId, at);
+        if (!prepared.ok) return NextResponse.json({ error: prepared.reason }, { status: 409 });
+        if (prepared.amount !== body.expectedAmount) {
+          return NextResponse.json(
+            { error: "The refund amount changed since the preview. Preview it again before refunding." },
+            { status: 409 },
+          );
+        }
+
+        const refundText = formatMinor(prepared.amount, prepared.currency);
+        await audit({
+          actorUserId: staff.id,
+          action: "billing.refund",
+          targetType: "workspace",
+          targetId: workspace.id,
+          reason: body.reason,
+          meta: {
+            subscriptionId: body.subscriptionId,
+            paymentId: prepared.paymentId,
+            amount: prepared.amount,
+            currency: prepared.currency,
+            monthsUnused: prepared.monthsUnused,
+            requestedAt: at.toISOString(),
+          },
+        });
+
+        // Refund first, then end the plan. If the cancel fails the customer
+        // has their money and keeps the plan until it's retried — never the
+        // other way round. A retry sees our recorded refund and skips it.
+        if (!prepared.refundAlreadyIssued) {
+          try {
+            const refund = await createRefund({
+              paymentId: prepared.paymentId,
+              productId: prepared.productId,
+              amount: prepared.amount,
+              reason: `Annual plan, ${prepared.monthsUnused} unused months. ${body.reason}`,
+            });
+            await traceOutbound("refund.create", {
+              workspaceId: workspace.id,
+              providerSubscriptionId: body.subscriptionId,
+              providerPaymentId: prepared.paymentId,
+              amount: prepared.amount,
+              currency: prepared.currency,
+              status: "ok",
+              note: `By staff: ${refundText} for ${prepared.monthsUnused} unused months (${refund.status})`,
+              payload: refund,
+            });
+          } catch (error) {
+            await traceOutbound("refund.create", {
+              workspaceId: workspace.id,
+              providerSubscriptionId: body.subscriptionId,
+              providerPaymentId: prepared.paymentId,
+              amount: prepared.amount,
+              currency: prepared.currency,
+              status: "failed",
+              error: (error as Error).message,
+            });
+            throw error;
+          }
+        }
+
+        try {
+          await cancelNow(body.subscriptionId, `Refunded ${prepared.monthsUnused} unused months: ${body.reason}`);
+          await traceOutbound("subscription.cancel_now", {
+            workspaceId: workspace.id,
+            providerSubscriptionId: body.subscriptionId,
+            status: "ok",
+            note: "By staff, immediately, with a refund",
+          });
+        } catch (error) {
+          await traceOutbound("subscription.cancel_now", {
+            workspaceId: workspace.id,
+            providerSubscriptionId: body.subscriptionId,
+            status: "failed",
+            error: (error as Error).message,
+          });
+          return NextResponse.json(
+            {
+              error: `The refund of ${refundText} was issued, but ending the subscription failed (${(error as Error).message}). Run the refund again — it won't refund twice, it will only retry the cancel.`,
+            },
+            { status: 502 },
+          );
+        }
+
+        await emailWorkspaceOwner(
+          workspace.id,
+          "refund_issued",
+          { plan: planFor(prepared.planKey).name, amount: refundText, months: prepared.monthsUnused },
+          `refund:${prepared.paymentId}`,
+        );
+        // Dodo confirms with refund and subscription.cancelled webhooks; the
+        // latter moves the workspace to Free.
+        return NextResponse.json({ ok: true, refund: refundText });
+      }
+
       case "cancel": {
         await assertOwnSubscription(workspace.id, body.subscriptionId);
         await audit({
@@ -188,6 +328,14 @@ export async function POST(request: Request) {
     console.error("[admin] billing action failed", error);
     return NextResponse.json({ error: "The billing action failed." }, { status: 500 });
   }
+}
+
+/** The date a refund request arrived: given, or now. Null if in the future. */
+function requestDate(value: string | undefined): Date | null {
+  const now = new Date();
+  if (!value) return now;
+  const at = new Date(value);
+  return at.getTime() > now.getTime() + 60_000 ? null : at;
 }
 
 class OwnershipError extends Error {}

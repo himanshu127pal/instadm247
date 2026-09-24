@@ -19,8 +19,18 @@ async function post(body: unknown) {
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.error ?? "Request failed");
-  return json as { plan?: string; note?: string };
+  return json as { plan?: string; note?: string; refund?: string; quote?: RefundQuote };
 }
+
+type RefundQuote = {
+  paid: string;
+  refund: string;
+  amount: number;
+  monthsUsed: number;
+  monthsUnused: number;
+  paymentId: string;
+  refundAlreadyIssued: boolean;
+};
 
 const btn =
   "rounded-lg border-2 border-[var(--border-soft)] px-3 py-1.5 text-[12.5px] font-bold hover:border-[var(--border)] disabled:opacity-50";
@@ -147,11 +157,14 @@ export function SubscriptionActions({
   subscriptionId,
   cancellable,
   canCancel,
+  refundable,
 }: {
   workspaceId: string;
   subscriptionId: string;
   cancellable: boolean;
   canCancel: boolean;
+  /** An active annual plan — the only kind the refund policy covers. */
+  refundable: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = React.useState(false);
@@ -198,11 +211,13 @@ export function SubscriptionActions({
           </button>
         )}
       </div>
+      {refundable && <AnnualRefund workspaceId={workspaceId} subscriptionId={subscriptionId} canRefund={canCancel} />}
       {cancelOpen && (
         <div className="space-y-2 rounded-lg border-2 border-[var(--color-zap-400)] bg-[var(--bg-raised)] p-3">
           <p className="text-[12.5px] font-bold">
-            Stops renewal. They keep the plan until the period they paid for ends. Refunds are
-            issued in Dodo&rsquo;s dashboard, not here.
+            Stops renewal. They keep the plan until the period they paid for ends. For an annual
+            refund use &ldquo;Refund unused months&rdquo; instead; anything else is refunded in
+            Dodo&rsquo;s dashboard.
           </p>
           <textarea
             className={input}
@@ -219,6 +234,142 @@ export function SubscriptionActions({
               Keep it
             </button>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The refund policy's one refundable case: an annual plan, refunded for the
+ * months not yet started, counted from the day the request reached support.
+ * Preview first — the numbers come from our payment trace, not from staff —
+ * then refund, which also ends the plan.
+ */
+function AnnualRefund({
+  workspaceId,
+  subscriptionId,
+  canRefund,
+}: {
+  workspaceId: string;
+  subscriptionId: string;
+  canRefund: boolean;
+}) {
+  const router = useRouter();
+  const [open, setOpen] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [day, setDay] = React.useState(() => new Date().toISOString().slice(0, 10));
+  const [quote, setQuote] = React.useState<RefundQuote | null>(null);
+  const [reason, setReason] = React.useState("");
+
+  // The start of that UTC day: a month that began later the same day isn't
+  // counted against the customer, and the same date always gives the same sum.
+  const requestedAt = () => new Date(`${day}T00:00:00Z`).toISOString();
+
+  async function preview() {
+    setBusy(true);
+    setQuote(null);
+    try {
+      const result = await post({ action: "refund_quote", workspaceId, subscriptionId, requestedAt: requestedAt() });
+      setQuote(result.quote ?? null);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function refund() {
+    if (!quote) return;
+    setBusy(true);
+    try {
+      const result = await post({
+        action: "refund_annual",
+        workspaceId,
+        subscriptionId,
+        requestedAt: requestedAt(),
+        expectedAmount: quote.amount,
+        reason,
+      });
+      toast.success(`Refunded ${result.refund} and ended the plan. Dodo will confirm by webhook.`);
+      setOpen(false);
+      setQuote(null);
+      setReason("");
+      router.refresh();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button className={btn} onClick={() => setOpen(true)}>
+        Refund unused months
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-2 rounded-lg border-2 border-[var(--color-zap-400)] bg-[var(--bg-raised)] p-3">
+      <p className="text-[12.5px] font-bold">
+        Refunds the months of this billing year that haven&rsquo;t started, pro rata of what they
+        paid, and ends the plan now. The month in progress isn&rsquo;t refunded.
+      </p>
+      <label className="block text-[11.5px] font-bold uppercase tracking-wider text-[var(--text-faint)]">
+        Request reached support on (UTC)
+        <input
+          type="date"
+          className={input}
+          value={day}
+          max={new Date().toISOString().slice(0, 10)}
+          onChange={(e) => {
+            setDay(e.target.value);
+            setQuote(null);
+          }}
+        />
+      </label>
+      <div className="flex gap-2">
+        <button className={btn} disabled={busy || !day} onClick={() => void preview()}>
+          {busy && !quote ? "Working…" : "Preview refund"}
+        </button>
+        <button className={btn} disabled={busy} onClick={() => setOpen(false)}>
+          Close
+        </button>
+      </div>
+
+      {quote && (
+        <div className="space-y-2 border-t-2 border-[var(--border-soft)] pt-2">
+          <p className="text-[13px] font-semibold">
+            Paid {quote.paid} · {quote.monthsUsed} of 12 months started ·{" "}
+            <strong>refund {quote.refund}</strong> for {quote.monthsUnused} months
+          </p>
+          <p className="break-all font-mono text-[11.5px] text-[var(--text-faint)]">payment {quote.paymentId}</p>
+          {quote.refundAlreadyIssued && (
+            <p className="text-[12.5px] font-bold text-[var(--color-zap-500)]">
+              This refund was already issued; the plan wasn&rsquo;t ended. Refunding again only
+              retries ending it — no money moves twice.
+            </p>
+          )}
+          {canRefund ? (
+            <>
+              <textarea
+                className={input}
+                rows={2}
+                placeholder="The request, e.g. who emailed and when — kept in the audit log and sent to Dodo (at least 10 characters)"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+              <button className={btn} disabled={busy || reason.trim().length < 10} onClick={() => void refund()}>
+                {busy ? "Working…" : `Refund ${quote.refund} and end the plan`}
+              </button>
+            </>
+          ) : (
+            <p className="text-[12px] font-semibold text-[var(--text-faint)]">
+              Issuing the refund requires the admin role.
+            </p>
+          )}
         </div>
       )}
     </div>

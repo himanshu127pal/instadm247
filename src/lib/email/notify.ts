@@ -92,6 +92,20 @@ export async function notifySubscriptionChange(
     // Only for a plan that was actually running; a checkout that never
     // completed ("failed" straight from pending) isn't an ending.
     if (was === null || was === "pending") return;
+    // Ended by a refund we just issued: the refund email already says the plan
+    // has ended, and a second, colder one would cross it in the inbox. The
+    // refund is recorded before the cancel is sent, so this can't race it.
+    const refunded = await prisma.paymentEvent.findFirst({
+      where: {
+        direction: "outbound",
+        type: "refund.create",
+        status: "ok",
+        providerSubscriptionId: subscriptionId,
+        receivedAt: { gte: new Date(eventAt.getTime() - 2 * 24 * 60 * 60 * 1000) },
+      },
+      select: { id: true },
+    });
+    if (refunded) return;
     await emailWorkspaceOwner(workspaceId, "subscription_ended", { plan }, key("ended", "once"));
   }
 }

@@ -147,6 +147,7 @@ export function CustomerBilling({
                     subscriptionId={s.providerSubscriptionId}
                     cancellable={["active", "past_due"].includes(s.status) && !s.cancelAtPeriodEnd}
                     canCancel={isAdmin}
+                    refundable={s.interval === "year" && s.status === "active"}
                   />
                 </div>
               </li>

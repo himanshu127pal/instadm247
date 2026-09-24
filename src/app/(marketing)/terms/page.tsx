@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Terms of service" };
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Terms of service" updated="August 2026">
+    <LegalPage title="Terms of service" updated="September 2026">
       <p>
         These terms govern your use of InstaDM247. Using the service means you agree to
         them.
@@ -64,8 +64,15 @@ export default function TermsPage() {
       <p>
         If you move to a plan that doesn&rsquo;t include a feature you were using, nothing
         you built is deleted: automations that rely on it pause at that step, and resume if
-        you upgrade again. If you believe you&rsquo;ve been charged in error, contact us at
-        the address below.
+        you upgrade again.
+      </p>
+      <p>
+        Monthly plans are not refundable. Annual plans can be refunded, on request, for the
+        months that haven&rsquo;t started — the full rules, and how to ask, are in our{" "}
+        <a href="/refunds" className="text-[var(--accent)] underline">
+          refund policy
+        </a>
+        . If you believe you&rsquo;ve been charged in error, contact us at the address below.
       </p>
 
       <h2>Availability</h2>

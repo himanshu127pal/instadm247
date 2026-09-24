@@ -394,6 +394,9 @@ workspace that existed before the billing migration carries an explicit
 6. When it works end to end, move Dodo to live mode, swap in the live keys and
    products, set `BILLING_ENABLED=true`, and restart.
 
+If Dodo asks for your refund policy during onboarding, it's published at
+`https://<your domain>/refunds`.
+
 Full design, and Dodo's API as verified against their SDK, in `docs/BILLING.md`.
 
 ## Email (Amazon SES)

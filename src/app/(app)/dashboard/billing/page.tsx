@@ -129,7 +129,9 @@ export default async function BillingPage({
               ? `Cancelled — you keep ${plan.name} until ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? "the end of the period"}, then move to Free.`
               : subscription.status === "past_due"
                 ? "Your last payment didn't go through. Update your card to keep your plan — we'll keep retrying for a few days first."
-                : `Renews ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? ""} · billed ${subscription.interval === "year" ? "yearly" : "monthly"}`
+                : subscription.interval === "year"
+                  ? `Renews ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? ""} · billed yearly · unstarted months are refundable on request`
+                  : `Renews ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? ""} · billed monthly`
             : ws.planOverride
               ? ws.planOverrideUntil
                 ? `Complimentary until ${ws.planOverrideUntil.toISOString().slice(0, 10)}.`
