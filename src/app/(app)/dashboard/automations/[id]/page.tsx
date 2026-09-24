@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/auth";
+import { isBranded } from "@/lib/branding";
+import { BrandingNotice } from "@/components/dashboard/branding-notice";
 import { prisma } from "@/lib/db";
 import { getFlowFunnel } from "@/lib/queries";
 import { flowGraphSchema } from "@/lib/engine/schema";
@@ -72,6 +74,8 @@ export default async function AutomationPage({
         <ArrowLeft className="h-3.5 w-3.5" />
         All automations
       </Link>
+
+      {isBranded(workspace) && <BrandingNotice />}
 
       <AutomationEditor
         automation={{

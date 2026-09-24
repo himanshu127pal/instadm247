@@ -16,6 +16,7 @@ import {
 } from "./guards";
 import { recordEvent } from "./analytics";
 import { releaseUsage, reserveUsage } from "@/lib/billing/usage";
+import { DM_BRANDING_INTERVAL_MS, brandOutgoing } from "@/lib/branding";
 import { emitWebhook } from "./outbound-webhooks";
 
 /**
@@ -180,6 +181,29 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
     if (metered) await releaseUsage(account.workspace.id, "dms", reservedAt);
   };
 
+  // 9. Free-plan branding: a short line on at most one automated DM per person
+  //    per day. Decided here, from the plan in force now, so it stops the
+  //    moment someone upgrades. The day's slot is claimed atomically, so two
+  //    DMs leaving together don't both carry it. See src/lib/branding.ts.
+  let outgoing = req;
+  const branded = brandOutgoing({
+    workspace: account.workspace,
+    source: req.source,
+    message: req.message,
+    lastBrandedAt: contact.brandedAt,
+  });
+  if (branded) {
+    const now = new Date();
+    const claimed = await prisma.contact.updateMany({
+      where: {
+        id: contact.id,
+        OR: [{ brandedAt: null }, { brandedAt: { lt: new Date(now.getTime() - DM_BRANDING_INTERVAL_MS) } }],
+      },
+      data: { brandedAt: now },
+    });
+    if (claimed.count === 1) outgoing = { ...req, message: branded };
+  }
+
   // Set the instant Instagram accepts the message. Everything after the send is
   // bookkeeping, and a failure there must not be mistaken for a failed send:
   // releasing the comment claim after a real delivery would let a redelivered
@@ -188,13 +212,15 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
   let delivered = false;
 
   try {
-    const response = await client.sendMessage(req.target, req.message, {
+    const response = await client.sendMessage(outgoing.target, outgoing.message, {
       // Only ever true for text a real person typed.
       humanAgent: req.humanAgent === true && req.source === "human",
     });
     delivered = true;
 
-    const record = await writeMessage(req, "sent", {
+    // Record what actually went out, branding included, so the Inbox matches
+    // the customer's phone.
+    const record = await writeMessage(outgoing, "sent", {
       igMessageId: response.message_id ?? response.id,
     });
     await recordEvent({

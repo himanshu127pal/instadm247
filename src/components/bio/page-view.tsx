@@ -29,6 +29,7 @@ export type BioPageData = {
   avatarUrl: string | null;
   theme: string;
   showBadge: boolean;
+  badgeHref: string;
   handle: string | null;
 };
 
@@ -139,9 +140,9 @@ export function BioPageView({ page, blocks }: { page: BioPageData; blocks: BioBl
 
         {page.showBadge && (
           <a
-            href="https://instadm247.com"
+            href={page.badgeHref}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener"
             className="mt-12 flex items-center justify-center gap-1.5 text-[11.5px] font-bold opacity-50 transition-opacity hover:opacity-90"
           >
             <LogoMark className="h-4 w-4" title="" />

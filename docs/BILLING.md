@@ -112,6 +112,30 @@ Accounts over the cap after a downgrade stay connected. The cap only blocks
 connecting another one. Disconnecting a customer's account is not something the
 billing system should ever do on its own.
 
+## Branding
+
+Free workspaces carry InstaDM247 branding; the `removeBranding` feature, in
+Pro and Business, takes it away. Everything is decided from the plan in force
+when a page renders or a DM leaves — nothing is stored per workspace — so it
+disappears the moment someone upgrades and returns the day a paid plan ends,
+with no job to run and nothing to migrate. With `BILLING_ENABLED` off nobody is
+branded, like every other gate. Code: `src/lib/branding.ts`.
+
+- **Link-in-Bio badge** — "Made with InstaDM247", linked to our site with UTM
+  tags. On Free it shows regardless of the saved toggle, which is locked in the
+  editor; the saved value applies again on a paid plan. The page's title and
+  link preview end in "· InstaDM247".
+- **Automated DMs** — the first automated DM (flow, AI, broadcast, private
+  reply) a person receives in a day gets `⚡ Sent with InstaDM247 ·
+  instadm247.com` as a final paragraph. At most once per person per 24 hours
+  (`Contact.brandedAt`, claimed atomically in `dispatch.ts`), so a multi-step
+  flow doesn't repeat it. Never on a message a person typed in the Inbox, never
+  on media or carousels, and never when it would push the text past
+  Instagram's byte limit — the customer's words are not shortened to fit. The
+  Inbox shows the message as sent, line included. Precedent: LinkDM brands DMs
+  on its lower tiers and sells removal (their feature #11).
+- The automation editor tells a Free customer this up front.
+
 ## Dodo Payments — verified API reference
 
 Dodo's documentation site is not reachable from the build environment, so this

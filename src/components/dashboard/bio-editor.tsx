@@ -63,10 +63,13 @@ export function BioEditor({
   appUrl,
   accounts,
   pages,
+  branded,
 }: {
   appUrl: string;
   accounts: Array<{ id: string; username: string }>;
   pages: Page[];
+  /** On a plan that keeps our branding: the badge is always shown. */
+  branded: boolean;
 }) {
   const [editing, setEditing] = React.useState<Page | "new" | null>(
     pages.length === 0 ? null : null,
@@ -100,6 +103,7 @@ export function BioEditor({
 
       {editing && (
         <PageComposer
+          branded={branded}
           appUrl={appUrl}
           accounts={accounts}
           page={editing === "new" ? null : editing}
@@ -182,11 +186,13 @@ export function BioEditor({
 }
 
 function PageComposer({
+  branded,
   appUrl,
   accounts,
   page,
   onDone,
 }: {
+  branded: boolean;
   appUrl: string;
   accounts: Array<{ id: string; username: string }>;
   page: Page | null;
@@ -207,6 +213,7 @@ function PageComposer({
     ],
   );
   const [saving, setSaving] = React.useState(false);
+  const slugState = useSlugAvailability(slug, page?.id ?? null);
 
   function patchBlock(i: number, changes: Partial<Block>) {
     setBlocks((current) => current.map((b, j) => (j === i ? { ...b, ...changes } : b)));
@@ -223,6 +230,10 @@ function PageComposer({
   async function save() {
     if (!slug.trim() || !title.trim()) {
       toast.error("A link and a title are both needed.");
+      return;
+    }
+    if (slugState.status === "unavailable") {
+      toast.error(slugState.message);
       return;
     }
     setSaving(true);
@@ -283,7 +294,17 @@ function PageComposer({
               placeholder="Demo Studio"
             />
           </Field>
-          <Field label="Link" hint={`${appUrl}/l/${slug || "your-name"}`}>
+          <Field
+            label="Link"
+            hint={
+              slugState.status === "available"
+                ? `✓ Available — ${appUrl}/l/${slug}`
+                : slugState.status === "checking"
+                  ? "Checking…"
+                  : `${appUrl}/l/${slug || "your-name"}`
+            }
+            error={slugState.status === "unavailable" ? slugState.message : undefined}
+          >
             <Input
               value={slug}
               onChange={(e) =>
@@ -457,13 +478,33 @@ function PageComposer({
             </span>
           </label>
           <label className="flex items-center gap-3 rounded-xl border-2 border-[var(--border)] p-3">
-            <Switch checked={showBadge} onCheckedChange={setShowBadge} label="Show badge" />
-            <span className="text-[13px] font-bold">Show &ldquo;Made with InstaDM247&rdquo;</span>
+            <Switch
+              checked={branded || showBadge}
+              onCheckedChange={setShowBadge}
+              disabled={branded}
+              label="Show badge"
+            />
+            <span className="text-[13px] font-bold">
+              Show &ldquo;Made with InstaDM247&rdquo;
+              {branded && (
+                <span className="block text-[12px] font-semibold text-[var(--text-muted)]">
+                  Always on for the Free plan.{" "}
+                  <a href="/dashboard/billing" className="text-[var(--accent)] underline">
+                    Upgrade to remove it
+                  </a>
+                </span>
+              )}
+            </span>
           </label>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="primary" onClick={save} loading={saving}>
+          <Button
+            variant="primary"
+            onClick={save}
+            loading={saving}
+            disabled={slugState.status === "unavailable" || slugState.status === "checking"}
+          >
             Save page
           </Button>
           <Button variant="ghost" onClick={onDone}>
@@ -478,4 +519,49 @@ function PageComposer({
       </div>
     </SectionCard>
   );
+}
+
+type SlugState =
+  | { status: "idle" | "checking" | "available" }
+  | { status: "unavailable"; message: string };
+
+/**
+ * Checks the link as it's typed, a moment after the last keystroke, so a taken
+ * or reserved link is caught before Save rather than after. The server checks
+ * again on save — this is for feedback, not enforcement.
+ */
+function useSlugAvailability(slug: string, pageId: string | null): SlugState {
+  const [state, setState] = React.useState<SlugState>({ status: "idle" });
+
+  React.useEffect(() => {
+    const value = slug.trim().toLowerCase();
+    if (!value) {
+      setState({ status: "idle" });
+      return;
+    }
+    setState({ status: "checking" });
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ slug: value, ...(pageId ? { pageId } : {}) });
+        const res = await fetch(`/api/bio/slug?${params}`, { signal: controller.signal });
+        const data = (await res.json()) as { available?: boolean; reason?: string };
+        if (!res.ok) return setState({ status: "idle" });
+        setState(
+          data.available
+            ? { status: "available" }
+            : { status: "unavailable", message: data.reason ?? "That link isn't available." },
+        );
+      } catch {
+        // Aborted by the next keystroke, or offline: say nothing; save checks anyway.
+        if (!controller.signal.aborted) setState({ status: "idle" });
+      }
+    }, 350);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [slug, pageId]);
+
+  return state;
 }

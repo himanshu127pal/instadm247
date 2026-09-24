@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { BioPageView } from "@/components/bio/page-view";
+import { badgeHref, isBranded } from "@/lib/branding";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ async function loadPage(slug: string) {
     include: {
       blocks: { where: { enabled: true }, orderBy: { order: "asc" } },
       account: { select: { username: true, profilePictureUrl: true } },
+      workspace: { select: { planKey: true } },
     },
   });
 }
@@ -31,11 +33,13 @@ export async function generateMetadata({
   const page = await loadPage(slug);
   if (!page) return { title: "Not found" };
 
+  // Free pages carry the brand into the tab and every link preview too.
+  const title = isBranded(page.workspace) ? `${page.title} · InstaDM247` : page.title;
   return {
-    title: page.title,
+    title: { absolute: title },
     description: page.bio ?? `Links from ${page.title}`,
     openGraph: {
-      title: page.title,
+      title,
       description: page.bio ?? undefined,
       type: "profile",
     },
@@ -66,7 +70,10 @@ export default async function PublicBioPage({
         bio: page.bio,
         avatarUrl: page.avatarUrl ?? page.account?.profilePictureUrl ?? null,
         theme: page.theme,
-        showBadge: page.showBadge,
+        // On Free the badge shows whatever the saved setting says; the
+        // setting only takes effect on a plan that removes branding.
+        showBadge: page.showBadge || isBranded(page.workspace),
+        badgeHref: badgeHref(page.slug),
         handle: page.account?.username ?? null,
       }}
       blocks={page.blocks.map((block) => ({

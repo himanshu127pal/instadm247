@@ -23,7 +23,7 @@ to Phase 2 by an explicit decision recorded below.
 | 8 | **Click Analytics** | Track link click analytics on DMs sent | Done | Tracked links + `/r/[code]` |
 | 9 | **Flow Automation** | Sequence of DMs and reminders after engagement | Done | Visual flow builder |
 | 10 | **Comment Auto-Reply** | Reply to the comment publicly once a DM is sent | Done | `REPLY_TO_COMMENT` node |
-| 11 | **White Label** | Remove LinkDM branding from DMs sent | **N/A** | We never brand outbound DMs. Applies only to the Link-in-Bio badge, which is toggleable. |
+| 11 | **White Label** | Remove LinkDM branding from DMs sent | Done | Free plan: the first automated DM a person gets each day ends with a short "Sent with InstaDM247" line, and the Link-in-Bio badge can't be turned off. Paid plans remove both (`removeBranding`). Never on Inbox replies a person typed. `src/lib/branding.ts` |
 | 12 | **Multiple Accounts** | Connect up to 3 Instagram accounts | Done | Unlimited in Phase 1 |
 | 13 | **Increased DM Send Limit** | 25,000 DMs/account/month | Done | Pro plan: 25,000 automated DMs/month — see `docs/BILLING.md` |
 | 14 | **Universal Triggers** | Global triggers across multiple placements | Done | `scope: UNIVERSAL` |
@@ -71,7 +71,7 @@ Filtered to actual product capabilities; quotas and support tiers are marked.
 | 22 | 20 items **DM Main Menu** | Done | Persistent menu manager |
 | 23 | Unlimited **Link in Bio Page** | Done | Hosted at `/l/[slug]` |
 | 24 | Full history **Link in Bio Analytics** | Done | Per-block click tracking |
-| 25 | **Remove Link in Bio Badge** | Done | Toggle on the page (the only real white-label surface) |
+| 25 | **Remove Link in Bio Badge** | Done | Toggle on the page; locked on for Free, where the page title also carries "· InstaDM247" |
 
 ---
 

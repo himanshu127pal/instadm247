@@ -237,6 +237,8 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
       Payments, inert behind `BILLING_ENABLED`. See `docs/BILLING.md`.
 - [x] Refund policy (`/refunds`) and a staff tool that refunds an annual plan,
       less the months used at the monthly price, through Dodo. See `docs/BILLING.md` §Refunds.
+- [x] Free-plan branding (Link-in-Bio badge, one DM line per person per day),
+      removed by paid plans at render/send time. See `docs/BILLING.md` §Branding.
 - [x] Transactional email via Amazon SES — verification, password reset,
       billing and account alerts, logged at `/admin/emails`. See `docs/EMAIL.md`.
 - [ ] Team seats, roles and permissions

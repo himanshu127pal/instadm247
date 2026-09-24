@@ -37,7 +37,14 @@ export type Feature =
   /** Kit and Flodesk. */
   | "integrations"
   /** Public API keys, outbound webhooks, and the HTTP_REQUEST node. */
-  | "apiAccess";
+  | "apiAccess"
+  /**
+   * No InstaDM247 branding: the Link-in-Bio badge becomes optional and
+   * automated DMs go out without the "Sent with InstaDM247" line. Checked when
+   * a page renders or a DM is sent, never stored — so it switches off on
+   * upgrade and back on when a paid plan ends. See src/lib/branding.ts.
+   */
+  | "removeBranding";
 
 export type Limits = {
   instagramAccounts: number;
@@ -73,6 +80,7 @@ const ALL_FEATURES: Feature[] = [
   "scheduler",
   "integrations",
   "apiAccess",
+  "removeBranding",
 ];
 
 const FLOW_STEPS = 8;
@@ -161,6 +169,7 @@ export const FEATURE_LABELS: Record<Feature, string> = {
   scheduler: "Post scheduler",
   integrations: "Kit & Flodesk integrations",
   apiAccess: "Public API & outbound webhooks",
+  removeBranding: "No InstaDM247 branding",
 };
 
 /**
