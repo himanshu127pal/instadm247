@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Logo, ScrollProgress, ThemeToggle } from "@/components/marketing/bits";
 import { Button } from "@/components/ui";
 import { MarketingNav } from "@/components/marketing/nav";
+import { FEATURES } from "@/content/features";
+import { COMPARISONS } from "@/content/compare";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,10 +19,23 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
 function Footer() {
   const columns = [
     {
-      title: "Product",
+      title: "Features",
       links: [
-        { label: "How it works", href: "/#how-it-works" },
-        { label: "Account safety", href: "/#safety" },
+        ...FEATURES.slice(0, 6).map((f) => ({ label: f.name, href: `/features/${f.slug}` })),
+        { label: "All features", href: "/features" },
+      ],
+    },
+    {
+      title: "Compare",
+      links: [
+        ...COMPARISONS.map((c) => ({ label: `vs ${c.name}`, href: `/compare/${c.slug}` })),
+      ],
+    },
+    {
+      title: "Resources",
+      links: [
+        { label: "Blog", href: "/blog" },
+        { label: "Account safety", href: "/features/account-safety" },
         { label: "Sign in", href: "/login" },
         { label: "Create account", href: "/signup" },
       ],
@@ -38,7 +53,7 @@ function Footer() {
 
   return (
     <footer className="border-t border-[var(--border)] bg-[var(--bg-subtle)]">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-6">
         <div className="lg:col-span-2">
           <Logo />
           <p className="mt-4 max-w-xs text-[13.5px] leading-relaxed text-[var(--text-muted)]">

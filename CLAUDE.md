@@ -72,6 +72,7 @@ src/lib/ai/            AI agent + knowledge base retrieval
 src/lib/email/         SES sending, templates, verification/reset tokens, notifications
 src/lib/billing/       Plans, metering, plan resolution, Dodo, payment trace
 src/components/        UI (marketing/, dashboard/, flow/, ui/)
+src/content/           Public content: feature pages, comparisons, blog posts
 src/worker/            BullMQ worker process entrypoint
 ```
 
@@ -121,6 +122,13 @@ directly, and don't let a working branch become a second trunk.
    and tokens are stored only as hashes. Every other automatic email has a
    dedupe key, and an email failure never fails the action that caused it.
    See `docs/EMAIL.md`.
+
+13. **Public content says only what's true.** Feature pages (`src/content/features.ts`)
+   describe only what's built — change them in the same PR as the feature.
+   Comparison pages (`src/content/compare.ts`) give a competitor ✓ only for what
+   their own published list shows, "Not listed" otherwise (never ✗), carry an
+   "as of" date, and say where they're ahead. Blog posts describe Instagram's
+   rules as `dispatch.ts` enforces them. `pnpm e2e` checks links and the sitemap.
 
 ## Plans and billing
 

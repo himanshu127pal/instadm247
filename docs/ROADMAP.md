@@ -239,6 +239,9 @@ Do not build these without the owner asking. See `docs/FEATURES.md` §D.
       less the months used at the monthly price, through Dodo. See `docs/BILLING.md` §Refunds.
 - [x] Free-plan branding (Link-in-Bio badge, one DM line per person per day),
       removed by paid plans at render/send time. See `docs/BILLING.md` §Branding.
+- [x] SEO: sitemap, robots, structured data; `/features/*` (10 pages),
+      `/compare/*` (LinkDM, SendDM, Reachlee, ManyChat), `/blog` with 5 guides and
+      RSS; footer and nav link them. Content lives in `src/content/`.
 - [x] Transactional email via Amazon SES — verification, password reset,
       billing and account alerts, logged at `/admin/emails`. See `docs/EMAIL.md`.
 - [ ] Team seats, roles and permissions
