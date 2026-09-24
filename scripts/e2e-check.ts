@@ -16,6 +16,8 @@ import { verifyMetaSignature } from "../src/lib/crypto";
 import { parseWebhook } from "../src/lib/meta/webhooks";
 import { accountIdForEntry, handleEvent } from "../src/lib/engine/ingest";
 import { byEitherInstagramId } from "../src/lib/meta/identity";
+import { resumeJobId } from "../src/lib/engine/run";
+import { getQueue } from "../src/lib/engine/queues";
 import { runBillingChecks } from "./e2e-billing";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
@@ -932,6 +934,41 @@ async function main() {
     check("a total failure propagates", threw.includes("callback verification failed"));
   }
 
+  section("Delay steps reach the queue");
+  {
+    // A Delay step's resume used to be refused by BullMQ on every enqueue, and
+    // the run waited for the 10-minute sweep instead. Nothing failed visibly,
+    // because the sweep is a working fallback — so this goes through BullMQ's
+    // own validation, not a copy of its rules.
+    const queue = getQueue("flow");
+    const at = new Date(Date.now() + 60 * 60 * 1000);
+    const id = resumeJobId("cmxe2eresume00001", "delay_ab12", at);
+
+    let queued = false;
+    try {
+      const job = await queue.add("resume", { kind: "resume", flowRunId: "e2e", nodeId: "x" }, { delay: 3_600_000, jobId: id });
+      queued = job.id === id;
+      await job.remove();
+    } catch (error) {
+      console.log(`    (BullMQ said: ${(error as Error).message})`);
+    }
+    check("BullMQ accepts the resume job ID", queued);
+
+    let oldRejected = false;
+    try {
+      const legacy = `resume:cmxe2eresume00001:delay_ab12:${at.getTime()}`;
+      const job = await queue.add("resume", {}, { delay: 3_600_000, jobId: legacy });
+      await job.remove();
+    } catch {
+      oldRejected = true;
+    }
+    check("the old colon-separated ID is still rejected, so this test would have caught it", oldRejected);
+
+    check(
+      "the ID is deterministic, so a double enqueue collapses into one job",
+      resumeJobId("r", "n", at) === resumeJobId("r", "n", at),
+    );
+  }
   await runBillingChecks(prisma, check, section);
 
   section("Tenant boundary in the customer UI");
