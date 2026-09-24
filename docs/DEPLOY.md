@@ -371,6 +371,31 @@ git branch -u origin/main main
 git pull
 ```
 
+## Billing (Dodo Payments)
+
+Shipping the billing code changes nothing for customers: with `BILLING_ENABLED`
+unset, every workspace is treated as unlimited and nobody can check out. Every
+workspace that existed before the billing migration carries an explicit
+`unlimited` override, labelled as such in `/admin`. Switch it on deliberately:
+
+1. In Dodo (test mode first), create four subscription products — Pro and
+   Business, monthly and yearly — at the prices in `src/lib/billing/plans.ts`.
+2. Register a webhook at `https://<your domain>/api/webhooks/dodo` and copy its
+   `whsec_…` secret.
+3. Set the Dodo variables from `.env.example` with `BILLING_ENABLED=false`, then
+   restart. The server refuses to start with billing on but the API key or
+   webhook secret missing — that combination would take money and then reject
+   the webhook that grants the plan.
+4. Signed in as platform staff, go to **Plan & billing** and complete a test
+   checkout. Watch it arrive at **/admin/billing**: `checkout.create`, then
+   `subscription.active` as **processed**, and the workspace's plan changing.
+5. Keep the server clock NTP-synced. Webhook signatures are rejected more than
+   five minutes either side of now.
+6. When it works end to end, move Dodo to live mode, swap in the live keys and
+   products, set `BILLING_ENABLED=true`, and restart.
+
+Full design, and Dodo's API as verified against their SDK, in `docs/BILLING.md`.
+
 ## Before App Review
 
 - `/privacy`, `/terms` and `/data-deletion` name the real entity and

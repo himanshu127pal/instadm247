@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { assertAccount, assertAutomation, ok, parseBody, route } from "@/lib/api";
@@ -16,6 +17,7 @@ const createSchema = z.object({
 });
 
 export const POST = route(async ({ workspace, request }) => {
+  requireFeature(workspace, "dmPlanner");
   const body = await parseBody(request, createSchema);
   await assertAccount(workspace.id, body.accountId);
   await assertAutomation(workspace.id, body.automationId);
@@ -52,7 +54,8 @@ export const POST = route(async ({ workspace, request }) => {
 });
 
 /** Scan now instead of waiting for the five-minute maintenance job. */
-export const PUT = route(async () => {
+export const PUT = route(async ({ workspace }) => {
+  requireFeature(workspace, "dmPlanner");
   const result = await scanPlannedAutomations();
   return ok(result);
 });

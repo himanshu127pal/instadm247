@@ -45,6 +45,29 @@ export const env = {
 
   anthropicApiKey: str("ANTHROPIC_API_KEY"),
 
+  /** See docs/BILLING.md. Nothing is enforced until `enabled` is true. */
+  billing: {
+    enabled: str("BILLING_ENABLED") === "true",
+    dodo: {
+      apiKey: str("DODO_PAYMENTS_API_KEY"),
+      webhookSecret: str("DODO_PAYMENTS_WEBHOOK_SECRET"),
+      baseUrl:
+        str("DODO_PAYMENTS_ENVIRONMENT", "test_mode") === "live_mode"
+          ? "https://live.dodopayments.com"
+          : "https://test.dodopayments.com",
+      products: {
+        pro: {
+          month: str("DODO_PRODUCT_PRO_MONTHLY"),
+          year: str("DODO_PRODUCT_PRO_YEARLY"),
+        },
+        business: {
+          month: str("DODO_PRODUCT_BUSINESS_MONTHLY"),
+          year: str("DODO_PRODUCT_BUSINESS_YEARLY"),
+        },
+      },
+    },
+  },
+
   limits: {
     messagesPerHour: int("RATE_LIMIT_MESSAGES_PER_HOUR", 180),
     privateRepliesPerHour: int("RATE_LIMIT_PRIVATE_REPLIES_PER_HOUR", 600),
@@ -57,6 +80,17 @@ export function isInstagramConfigured(): boolean {
 }
 
 /** True when the AI agent node can actually call a model. */
+/** True when checkout can be offered: the provider is reachable and priced. */
+export function isBillingConfigured(): boolean {
+  const { dodo } = env.billing;
+  return Boolean(
+    dodo.apiKey &&
+      dodo.webhookSecret &&
+      dodo.products.pro.month &&
+      dodo.products.business.month,
+  );
+}
+
 export function isAiConfigured(): boolean {
   return Boolean(env.anthropicApiKey);
 }
@@ -79,6 +113,12 @@ export function assertProductionSecrets(): void {
   if (env.sessionSecret.startsWith("insecure-development")) problems.push("SESSION_SECRET");
   if (env.encryptionKey.startsWith("ZGV2LW9ubHkt")) problems.push("ENCRYPTION_KEY");
   if (!env.databaseUrl) problems.push("DATABASE_URL");
+  // Billing switched on without these would take a customer's money and then
+  // reject the webhook that grants their plan. That must not be able to boot.
+  if (env.billing.enabled) {
+    if (!env.billing.dodo.apiKey) problems.push("DODO_PAYMENTS_API_KEY");
+    if (!env.billing.dodo.webhookSecret) problems.push("DODO_PAYMENTS_WEBHOOK_SECRET");
+  }
   if (problems.length) {
     throw new Error(
       `Refusing to start in production with unset/default secrets: ${problems.join(", ")}`,

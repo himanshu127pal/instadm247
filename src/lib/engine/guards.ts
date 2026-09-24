@@ -222,6 +222,8 @@ export const SkipReason = {
   HUMAN_TAKEOVER: "HUMAN_TAKEOVER",
   WORKSPACE_SUSPENDED: "WORKSPACE_SUSPENDED",
   IMPERSONATED_SESSION: "IMPERSONATED_SESSION",
+  PLAN_LIMIT: "PLAN_LIMIT",
+  PLAN_FEATURE: "PLAN_FEATURE",
 } as const;
 
 export type SkipReasonKey = (typeof SkipReason)[keyof typeof SkipReason];
@@ -237,10 +239,13 @@ export const SKIP_EXPLANATIONS: Record<SkipReasonKey, string> = {
   SUPPRESSED: "This person is on the suppression list.",
   OPTED_OUT: "This person opted out of automated messages.",
   ACCOUNT_PAUSED: "Automations are paused for this Instagram account.",
-  NOT_CONFIGURED: "Instagram isn't connected on this server yet.",
+  NOT_CONFIGURED: "Instagram isn't connected yet, so nothing could be sent.",
   HUMAN_TAKEOVER: "A human took over this conversation, so automation is paused for the thread.",
   WORKSPACE_SUSPENDED:
     "This account is suspended, so nothing is being sent. Check the notice on sign-in.",
   IMPERSONATED_SESSION:
     "Support was viewing this account. Sessions opened by support can't send messages.",
+  PLAN_LIMIT:
+    "This month's automated DM allowance on your plan is used up. Upgrade, or it resets on the 1st. Replies you type yourself are never limited.",
+  PLAN_FEATURE: "This step uses a feature your current plan doesn't include.",
 };

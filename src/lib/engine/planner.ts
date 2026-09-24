@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { hasFeature } from "@/lib/plan";
 import { getClientForAccount } from "@/lib/meta/account";
 
 /**
@@ -36,10 +37,13 @@ export type PlannerScanResult = { checked: number; matched: number };
 export async function scanPlannedAutomations(): Promise<PlannerScanResult> {
   // NEXT_POST plans are attached at publish time by the scheduler, or by the
   // media refresh below when the post was published outside the app.
-  const planned = await prisma.plannedAutomation.findMany({
+  const waiting = await prisma.plannedAutomation.findMany({
     where: { status: "waiting", mode: "DRAFT_CODE" },
-    include: { account: true },
+    include: { account: { include: { workspace: { select: { planKey: true } } } } },
   });
+  // A plan waiting on a workspace that downgraded is left waiting, not failed:
+  // it picks up again on its own if they upgrade, with nothing to redo.
+  const planned = waiting.filter((p) => hasFeature(p.account.workspace, "dmPlanner"));
 
   let matched = 0;
 

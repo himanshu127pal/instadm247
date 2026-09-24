@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { ok, parseBody, route } from "@/lib/api";
@@ -15,6 +16,7 @@ const upsertSchema = z.object({
 });
 
 export const POST = route(async ({ workspace, request }) => {
+  requireFeature(workspace, "leadCapture");
   const body = await parseBody(request, upsertSchema);
 
   if (body.id) {

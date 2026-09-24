@@ -15,6 +15,7 @@ import {
   releaseCommentReply,
 } from "./guards";
 import { recordEvent } from "./analytics";
+import { releaseUsage, reserveUsage } from "@/lib/billing/usage";
 import { emitWebhook } from "./outbound-webhooks";
 
 /**
@@ -61,7 +62,7 @@ export type DispatchResult =
 export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
   const account = await prisma.instagramAccount.findUnique({
     where: { id: req.accountId },
-    include: { workspace: { select: { suspendedAt: true } } },
+    include: { workspace: { select: { id: true, suspendedAt: true, planKey: true } } },
   });
   if (!account) return skip(req, SkipReason.NOT_CONFIGURED);
 
@@ -162,11 +163,36 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
     return skip(req, SkipReason.NOT_CONFIGURED);
   }
 
+  // 8. Plan quota — the last gate before a message leaves.
+  //
+  // Placed after every other guard so a message that was going to be skipped
+  // anyway never spends quota, and after the client check so simulated sends
+  // (demo accounts, unconfigured Instagram) never do either. Human replies are
+  // exempt: a person answering their own customer is not what a plan meters,
+  // and blocking it would strand a conversation mid-reply.
+  const metered = req.source !== "human";
+  const reservedAt = new Date();
+  if (metered && !(await reserveUsage(account.workspace, "dms", reservedAt))) {
+    if (claimedComment) await releaseCommentReply(req.accountId, claimedComment, "private");
+    return skip(req, SkipReason.PLAN_LIMIT);
+  }
+  const releaseQuota = async () => {
+    if (metered) await releaseUsage(account.workspace.id, "dms", reservedAt);
+  };
+
+  // Set the instant Instagram accepts the message. Everything after the send is
+  // bookkeeping, and a failure there must not be mistaken for a failed send:
+  // releasing the comment claim after a real delivery would let a redelivered
+  // webhook send a SECOND private reply to the same comment (hard rule 3), and
+  // releasing quota would undercount.
+  let delivered = false;
+
   try {
     const response = await client.sendMessage(req.target, req.message, {
       // Only ever true for text a real person typed.
       humanAgent: req.humanAgent === true && req.source === "human",
     });
+    delivered = true;
 
     const record = await writeMessage(req, "sent", {
       igMessageId: response.message_id ?? response.id,
@@ -187,7 +213,21 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
 
     return { status: "sent", messageId: record.id, igMessageId: response.message_id ?? response.id };
   } catch (error) {
+    if (delivered) {
+      // Instagram has the message; only our record-keeping failed. Keep the
+      // comment claim and the quota, and report it rather than retry — a retry
+      // would send the message twice.
+      console.error("[dispatch] delivered, but recording it failed", (error as Error).message);
+      return {
+        status: "failed",
+        error: "The message was delivered, but recording it failed.",
+        retryable: false,
+      };
+    }
+
     if (claimedComment) await releaseCommentReply(req.accountId, claimedComment, "private");
+    // Nothing was delivered, so nothing is charged against the plan.
+    await releaseQuota();
 
     const meta = error instanceof MetaApiError ? error : null;
 

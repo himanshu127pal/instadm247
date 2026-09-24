@@ -18,6 +18,7 @@ import { accountIdForEntry, handleEvent } from "../src/lib/engine/ingest";
 import { byEitherInstagramId } from "../src/lib/meta/identity";
 import { resumeJobId } from "../src/lib/engine/run";
 import { getQueue } from "../src/lib/engine/queues";
+import { runBillingChecks } from "./e2e-billing";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -968,6 +969,7 @@ async function main() {
       resumeJobId("r", "n", at) === resumeJobId("r", "n", at),
     );
   }
+  await runBillingChecks(prisma, check, section);
 
   section("Tenant boundary in the customer UI");
   {
@@ -989,6 +991,9 @@ async function main() {
       "META_APP_SECRET",
       "META_WEBHOOK_VERIFY_TOKEN",
       "ANTHROPIC_API_KEY",
+      "DODO_PAYMENTS",
+      "BILLING_ENABLED",
+      "webhookSecret",
     ];
 
     function walk(dir: string): string[] {

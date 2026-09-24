@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { subscribeAccountWebhooks } from "@/lib/meta/webhook-subscribe";
+import { getLimits, isWithinLimit } from "@/lib/plan";
 import { env } from "@/lib/env";
 import { encrypt } from "@/lib/crypto";
 import { exchangeCodeForToken, exchangeForLongLivedToken } from "@/lib/meta/oauth";
@@ -60,6 +61,23 @@ export async function GET(request: Request) {
       where: { OR: [{ igUserId }, { igUserId: scopedId }, { igScopedId: scopedId }] },
       select: { id: true },
     });
+
+    // The account cap. Enforced here and not in /connect, because only here do
+    // we know whether this is a NEW account or a reconnect — and a reconnect
+    // must always succeed, or a customer at their limit could never repair an
+    // expired token on an account they already pay for.
+    if (!existing) {
+      const [workspace, connected] = await Promise.all([
+        prisma.workspace.findUnique({ where: { id: workspaceId }, select: { planKey: true } }),
+        prisma.instagramAccount.count({ where: { workspaceId } }),
+      ]);
+      if (!isWithinLimit(workspace, "instagramAccounts", connected)) {
+        const cap = getLimits(workspace).instagramAccounts;
+        return settings(
+          `Your plan includes ${cap} Instagram account${cap === 1 ? "" : "s"}, and you've connected ${connected}. Upgrade to connect @${profile.username}.`,
+        );
+      }
+    }
 
     const account = await prisma.instagramAccount.upsert({
       where: existing ? { id: existing.id } : { igUserId },

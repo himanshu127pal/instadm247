@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { ok, parseBody, route } from "@/lib/api";
@@ -31,6 +32,8 @@ const bodySchema = z.discriminatedUnion("resource", [
 
 export const POST = route(async ({ workspace, request }) => {
   const body = await parseBody(request, bodySchema);
+  // Kit/Flodesk are a Pro feature; API keys and outbound webhooks are Business.
+  requireFeature(workspace, body.resource === "integration" ? "integrations" : "apiAccess");
 
   if (body.resource === "key") {
     const created = await createApiKey(workspace.id, body.name, body.scopes);

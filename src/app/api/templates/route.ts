@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { assertAccount, ok, parseBody, route } from "@/lib/api";
@@ -30,6 +31,7 @@ const bodySchema = z.discriminatedUnion("resource", [
 ]);
 
 export const POST = route(async ({ workspace, request }) => {
+  requireFeature(workspace, "templates");
   const body = await parseBody(request, bodySchema);
 
   if (body.resource === "template") {

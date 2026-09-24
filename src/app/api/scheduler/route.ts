@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { assertAccount, ok, parseBody, route } from "@/lib/api";
@@ -18,6 +19,7 @@ const createSchema = z.object({
 });
 
 export const POST = route(async ({ workspace, request }) => {
+  requireFeature(workspace, "scheduler");
   const body = await parseBody(request, createSchema);
   await assertAccount(workspace.id, body.accountId);
 
@@ -52,6 +54,8 @@ const actionSchema = z.object({
 
 export const PATCH = route(async ({ workspace, request }) => {
   const { id, action } = await parseBody(request, actionSchema);
+  // Cancelling is always allowed; only actions that publish are gated.
+  if (action !== "cancel") requireFeature(workspace, "scheduler");
 
   const post = await prisma.scheduledPost.findFirst({
     where: { id, account: { workspaceId: workspace.id } },

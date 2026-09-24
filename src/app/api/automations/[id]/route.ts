@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireNodesAllowed } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { assertAutomation, ok, parseBody, route } from "@/lib/api";
 import { flowGraphSchema, validateGraph } from "@/lib/engine/schema";
@@ -32,6 +33,15 @@ export const GET = route<{ id: string }>(async ({ workspace, params }) => {
 export const PATCH = route<{ id: string }>(async ({ workspace, request, params }) => {
   const automation = await assertAutomation(workspace.id, params.id);
   const body = await parseBody(request, updateSchema);
+
+  // Plan gates: saving a graph, and switching an automation on, both check
+  // the steps it uses. Switching it OFF, or renaming it, never does — a
+  // downgraded customer must always be able to stop what they built.
+  if (body.graph) requireNodesAllowed(workspace, body.graph.nodes.map((n) => n.type));
+  if (body.enabled === true && !body.graph) {
+    const stored = (automation.flow?.nodes ?? []) as Array<{ type?: string }>;
+    requireNodesAllowed(workspace, stored.map((n) => n.type ?? ""));
+  }
 
   // Refuse to enable an automation whose flow has structural errors — the
   // failure would otherwise only show up when a real person triggers it.

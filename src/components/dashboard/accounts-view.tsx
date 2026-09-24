@@ -40,12 +40,17 @@ type Account = {
 export function AccountsView({
   accounts,
   configured,
+  accountLimit = null,
   flash,
 }: {
   accounts: Account[];
   configured: boolean;
+  /** From the plan; null means unlimited (billing off, or an unlimited plan). */
+  accountLimit?: number | null;
   flash: { connected?: string; error?: string };
 }) {
+  // Reconnecting an existing account is never blocked — only adding a new one.
+  const atLimit = accountLimit !== null && accounts.length >= accountLimit;
   const router = useRouter();
   const [busy, setBusy] = React.useState<string | null>(null);
 
@@ -286,12 +291,22 @@ export function AccountsView({
             </article>
           ))}
 
-          <a href="/api/instagram/connect" className="inline-block">
-            <Button variant="secondary" disabled={!configured}>
-              <Plus className="h-4 w-4" />
-              Connect another account
-            </Button>
-          </a>
+          {atLimit ? (
+            <p className="text-[13px] text-[var(--text-muted)]">
+              Your plan includes {accountLimit} Instagram account{accountLimit === 1 ? "" : "s"}.{" "}
+              <a href="/dashboard/billing" className="font-semibold text-[var(--text)] underline underline-offset-2">
+                Upgrade to connect more
+              </a>
+              .
+            </p>
+          ) : (
+            <a href="/api/instagram/connect" className="inline-block">
+              <Button variant="secondary" disabled={!configured}>
+                <Plus className="h-4 w-4" />
+                Connect another account
+              </Button>
+            </a>
+          )}
         </div>
       )}
     </div>

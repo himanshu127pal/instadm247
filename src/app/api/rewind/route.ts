@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requireFeature } from "@/lib/plan";
 import { prisma } from "@/lib/db";
 import { assertAutomation, ok, parseBody, route } from "@/lib/api";
 import { findRewindCandidates, runRewind } from "@/lib/engine/rewind";
@@ -21,6 +22,7 @@ export const PUT = route(async ({ workspace, request }) => {
 
 /** Start a rewind. */
 export const POST = route(async ({ workspace, request }) => {
+  requireFeature(workspace, "rewind");
   const { automationId } = await parseBody(
     request,
     z.object({ automationId: z.string().min(1) }),

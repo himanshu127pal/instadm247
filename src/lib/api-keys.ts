@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { prisma } from "./db";
+import { hasFeature } from "./plan";
 import { randomToken } from "./crypto";
 
 /**
@@ -100,6 +101,19 @@ export function publicRoute(
       return Response.json(
         { error: `This key doesn't have the "${scope}" scope.` },
         { status: 403 },
+      );
+    }
+
+    // Checked on every request, not when the key was issued: a key created on
+    // Business keeps existing after a downgrade, and must stop working with it.
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: ctx.workspaceId },
+      select: { planKey: true },
+    });
+    if (!hasFeature(workspace, "apiAccess")) {
+      return Response.json(
+        { error: "The public API is part of the Business plan. Upgrade to use this key." },
+        { status: 402 },
       );
     }
 

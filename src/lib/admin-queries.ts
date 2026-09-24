@@ -366,3 +366,140 @@ export async function getWebhookEvent(id: string) {
     },
   });
 }
+
+// --- Billing ----------------------------------------------------------------
+
+export type PaymentFilter = {
+  workspaceId?: string;
+  status?: string;
+  direction?: string;
+  type?: string;
+  limit?: number;
+};
+
+function paymentWhere(f: PaymentFilter) {
+  const where: Record<string, unknown> = {};
+  if (f.workspaceId) where.workspaceId = f.workspaceId;
+  if (f.status) where.status = f.status;
+  if (f.direction) where.direction = f.direction;
+  if (f.type) where.type = { startsWith: f.type };
+  return where;
+}
+
+export async function listPaymentEvents(f: PaymentFilter = {}) {
+  return prisma.paymentEvent.findMany({
+    where: paymentWhere(f),
+    orderBy: { receivedAt: "desc" },
+    take: Math.min(f.limit ?? 100, 500),
+    select: {
+      id: true,
+      direction: true,
+      type: true,
+      status: true,
+      signatureValid: true,
+      amount: true,
+      currency: true,
+      error: true,
+      note: true,
+      httpStatus: true,
+      receivedAt: true,
+      providerSubscriptionId: true,
+      workspace: { select: { id: true, name: true } },
+    },
+  });
+}
+
+export async function getPaymentEvent(id: string) {
+  return prisma.paymentEvent.findUnique({
+    where: { id },
+    include: { workspace: { select: { id: true, name: true } } },
+  });
+}
+
+/**
+ * The billing overview. MRR is an ESTIMATE from list prices — it knows nothing
+ * of discounts, taxes or currency — and is labelled as one wherever it's shown.
+ */
+export async function billingSummary() {
+  const since = new Date(Date.now() - DAY);
+  const [byStatus24h, attention, subs] = await Promise.all([
+    prisma.paymentEvent.groupBy({
+      by: ["status"],
+      where: { receivedAt: { gte: since } },
+      _count: { status: true },
+    }),
+    prisma.paymentEvent.count({
+      where: { status: { in: ["failed", "unmatched"] }, receivedAt: { gte: new Date(Date.now() - 7 * DAY) } },
+    }),
+    prisma.subscription.findMany({
+      where: { status: { in: ["active", "past_due"] } },
+      select: { planKey: true, interval: true, status: true },
+    }),
+  ]);
+
+  const { PLANS } = await import("./billing/plans");
+  let mrr = 0;
+  const activeByPlan: Record<string, number> = {};
+  let pastDue = 0;
+  for (const s of subs) {
+    activeByPlan[s.planKey] = (activeByPlan[s.planKey] ?? 0) + 1;
+    if (s.status === "past_due") pastDue++;
+    const price = PLANS[s.planKey as keyof typeof PLANS]?.price;
+    if (price) mrr += s.interval === "year" ? price.year / 12 : price.month;
+  }
+
+  return {
+    last24h: Object.fromEntries(byStatus24h.map((r) => [r.status, r._count.status])) as Record<string, number>,
+    needsAttention7d: attention,
+    activeSubscriptions: subs.length,
+    activeByPlan,
+    pastDue,
+    mrrEstimate: Math.round(mrr),
+  };
+}
+
+/** Everything the customer page needs to show and manage one workspace's billing. */
+export async function customerBilling(workspaceId: string) {
+  const { getUsage } = await import("./billing/usage");
+  const { planFor } = await import("./billing/plans");
+
+  const [workspace, subscriptions, usage, accounts, events] = await Promise.all([
+    prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        planKey: true,
+        billingCustomerId: true,
+        planOverride: true,
+        planOverrideReason: true,
+        planOverrideUntil: true,
+        planOverrideById: true,
+      },
+    }),
+    prisma.subscription.findMany({ where: { workspaceId }, orderBy: { createdAt: "desc" } }),
+    getUsage(workspaceId),
+    prisma.instagramAccount.count({ where: { workspaceId } }),
+    prisma.paymentEvent.findMany({
+      where: { workspaceId },
+      orderBy: { receivedAt: "desc" },
+      take: 15,
+      select: { id: true, direction: true, type: true, status: true, note: true, error: true, receivedAt: true },
+    }),
+  ]);
+  if (!workspace) return null;
+
+  const overrideBy = workspace.planOverrideById
+    ? await prisma.user.findUnique({ where: { id: workspace.planOverrideById }, select: { email: true } })
+    : null;
+
+  return {
+    ...workspace,
+    overrideByEmail: overrideBy?.email ?? null,
+    // The stored plan's limits, ignoring BILLING_ENABLED — staff need to see what
+    // WOULD apply, which is the whole point of resolving while inert.
+    limits: planFor(workspace.planKey).limits,
+    subscriptions,
+    usage,
+    accounts,
+    events,
+  };
+}

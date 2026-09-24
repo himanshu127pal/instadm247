@@ -7,8 +7,14 @@ import { Logo } from "@/components/marketing/bits";
 
 export const metadata: Metadata = { title: "Create your account" };
 
-export default async function SignupPage() {
-  if (await getCurrentUser()) redirect("/dashboard");
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
+  const { plan } = await searchParams;
+  const toBilling = plan === "pro" || plan === "business";
+  if (await getCurrentUser()) redirect(toBilling ? "/dashboard/billing" : "/dashboard");
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col justify-center px-5 py-16">
@@ -19,7 +25,7 @@ export default async function SignupPage() {
       </p>
 
       <div className="mt-8">
-        <AuthForm mode="signup" />
+        <AuthForm mode="signup" toBilling={toBilling} />
       </div>
 
       <p className="mt-6 text-[13.5px] text-[var(--text-muted)]">

@@ -12,6 +12,7 @@ import {
   ClipboardList,
   Code2,
   CalendarClock,
+  CreditCard,
   Gauge,
   Inbox,
   Link2,
@@ -73,6 +74,7 @@ const NAV = [
       { href: "/dashboard/safety", label: "Safety Center", icon: ShieldCheck },
       { href: "/dashboard/templates", label: "Templates", icon: MessagesSquare },
       { href: "/dashboard/developers", label: "Developers", icon: Code2 },
+      { href: "/dashboard/billing", label: "Plan & billing", icon: CreditCard, billingOnly: true },
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
     ],
   },
@@ -83,12 +85,15 @@ export function DashboardShell({
   workspace,
   accounts,
   instagramConfigured,
+  showBilling = false,
   children,
 }: {
   user: { id: string; email: string; name: string | null };
   workspace: { id: string; name: string; planKey: string };
   accounts: Account[];
   instagramConfigured: boolean;
+  /** False while billing is off — there is nothing to buy, so no page offering it. */
+  showBilling?: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -156,7 +161,9 @@ export function DashboardShell({
                 {group.section}
               </p>
               <div className="space-y-0.5">
-                {group.items.map((item) => {
+                {group.items
+                  .filter((item) => !("billingOnly" in item && item.billingOnly) || showBilling)
+                  .map((item) => {
                   const Icon = item.icon;
                   const active =
                     item.href === "/dashboard"
