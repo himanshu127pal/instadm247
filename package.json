@@ -16,7 +16,8 @@
     "db:generate": "prisma generate",
     "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
     "db:studio": "prisma studio",
-    "e2e": "tsx --env-file-if-exists=.env scripts/e2e-check.ts"
+    "e2e": "tsx --env-file-if-exists=.env scripts/e2e-check.ts",
+    "billing:check": "tsx --env-file-if-exists=.env scripts/billing-check.ts"
   },
   "prisma": {
     "seed": "tsx --env-file-if-exists=.env prisma/seed.ts"

@@ -383,7 +383,7 @@ workspace that existed before the billing migration carries an explicit
 2. Register a webhook at `https://<your domain>/api/webhooks/dodo` and copy its
    `whsec_…` secret.
 3. Set the Dodo variables from `.env.example` with `BILLING_ENABLED=false`, then
-   restart. The server refuses to start with billing on but the API key or
+   run `pnpm billing:check` and fix anything it marks ✗, then restart. The server refuses to start with billing on but the API key or
    webhook secret missing — that combination would take money and then reject
    the webhook that grants the plan.
 4. Signed in as platform staff, go to **Plan & billing** and complete a test
@@ -392,7 +392,8 @@ workspace that existed before the billing migration carries an explicit
 5. Keep the server clock NTP-synced. Webhook signatures are rejected more than
    five minutes either side of now.
 6. When it works end to end, move Dodo to live mode, swap in the live keys and
-   products, set `BILLING_ENABLED=true`, and restart.
+   products, run `pnpm billing:check` again, set `BILLING_ENABLED=true`, and
+   restart.
 
 If Dodo asks for your refund policy during onboarding, it's published at
 `https://<your domain>/refunds`.

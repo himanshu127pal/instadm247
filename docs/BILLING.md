@@ -302,7 +302,16 @@ guessed at.
 
 1. Create the four products in Dodo (test mode first).
 2. Set the environment above with `BILLING_ENABLED=false`, deploy, register the
-   webhook, and run a test checkout end to end. Watch it arrive in `/admin/billing`.
+   webhook, and run **`pnpm billing:check`** on the server. It reads the
+   products and webhook from Dodo and fails on anything that would cost money:
+   monthly/yearly IDs swapped, a price or currency that doesn't match
+   `plans.ts`, a key for the other mode, a webhook pointing elsewhere or sending
+   no `subscription.*` events, or a webhook secret from a different endpoint.
+   Read-only, and it never prints a key or secret. Then run a test checkout end
+   to end and watch it arrive in `/admin/billing`.
 3. Check `/admin/customers` — every pre-billing workspace should show an
    `unlimited` override labelled as such.
-4. Set `BILLING_ENABLED=true` and restart.
+4. Switch Dodo to live mode: live products (new IDs), live API key, a live
+   webhook (new secret), `DODO_PAYMENTS_ENVIRONMENT=live_mode`. Run
+   `pnpm billing:check` again — it must pass in live mode too.
+5. Set `BILLING_ENABLED=true` and restart.
