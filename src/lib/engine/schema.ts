@@ -59,6 +59,8 @@ export const conditionSchema = z.object({
     "message_text",
     "hour_of_day",
     "is_first_time",
+    /** They've messaged since this flow last sent them something — for follow-ups. */
+    "replied",
   ]),
   operator: z.enum([
     "is_true",

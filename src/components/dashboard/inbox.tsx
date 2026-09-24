@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Badge, Button, EmptyState, Input, Switch } from "@/components/ui";
 import { cn, initials, timeAgo, windowCountdown } from "@/lib/utils";
+import { AlertToggles, playChime, showDesktopAlert, useAlertPrefs, useInboxLive } from "./inbox-live";
 
 type Contact = {
   id: string;
@@ -53,9 +54,39 @@ type Message = {
   createdAt: string;
 };
 
-export function InboxView({ conversations: initial }: { conversations: Conversation[] }) {
+export function InboxView({
+  conversations: initial,
+  loadedAt,
+}: {
+  conversations: Conversation[];
+  /** When the server read the list — the live refresh asks for changes since. */
+  loadedAt: string;
+}) {
   const [conversations, setConversations] = React.useState(initial);
   const [activeId, setActiveId] = React.useState<string | null>(initial[0]?.id ?? null);
+  const [prefs, updatePrefs] = useAlertPrefs();
+
+  const activeRef = React.useRef(activeId);
+  activeRef.current = activeId;
+  useInboxLive({
+    loadedAt,
+    setConversations,
+    onIncoming: (conversation) => {
+      // Already reading this thread with the tab in front: they can see it.
+      const watching = conversation.id === activeRef.current && !document.hidden;
+      if (watching) {
+        updateConversation(conversation.id, { unreadCount: 0 });
+        return;
+      }
+      if (prefs.sound) playChime();
+      if (prefs.desktop && document.hidden) {
+        showDesktopAlert(conversation, () => {
+          setActiveId(conversation.id);
+          updateConversation(conversation.id, { unreadCount: 0 });
+        });
+      }
+    },
+  });
   const [query, setQuery] = React.useState("");
   const [filter, setFilter] = React.useState<"all" | "unread" | "human">("all");
 
@@ -110,7 +141,7 @@ export function InboxView({ conversations: initial }: { conversations: Conversat
               className="pl-8"
             />
           </div>
-          <div className="flex gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             {(
               [
                 { id: "all", label: "All" },
@@ -131,6 +162,9 @@ export function InboxView({ conversations: initial }: { conversations: Conversat
                 {option.label}
               </button>
             ))}
+            <div className="ml-auto">
+              <AlertToggles prefs={prefs} update={updatePrefs} />
+            </div>
           </div>
         </div>
 
@@ -202,6 +236,7 @@ export function InboxView({ conversations: initial }: { conversations: Conversat
       {/* Thread */}
       {active ? (
         <Thread
+          key={active.id}
           conversation={active}
           onBack={() => setActiveId(null)}
           onUpdate={(changes) => updateConversation(active.id, changes)}
@@ -272,6 +307,22 @@ function Thread({
       cancelled = true;
     };
   }, [conversation.id]);
+
+  // New activity in the open thread (the live refresh moved lastMessageAt):
+  // reload quietly, without the loading state.
+  const firstLoad = React.useRef(true);
+  React.useEffect(() => {
+    if (firstLoad.current) {
+      firstLoad.current = false;
+      return;
+    }
+    fetch(`/api/conversations/${conversation.id}`)
+      .then((res) => res.json())
+      .then((data: { messages?: Message[] }) => {
+        if (data.messages) setMessages(data.messages);
+      })
+      .catch(() => undefined);
+  }, [conversation.id, conversation.lastMessageAt]);
 
   React.useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

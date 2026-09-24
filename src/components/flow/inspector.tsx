@@ -870,6 +870,7 @@ function ConditionList({
     { id: "message_text", label: "What they said" },
     { id: "hour_of_day", label: "Hour of day" },
     { id: "is_first_time", label: "First time here" },
+    { id: "replied", label: "Replied since your last message" },
   ];
   const OPERATORS = [
     { id: "is_true", label: "is true" },

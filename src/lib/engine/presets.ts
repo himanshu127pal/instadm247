@@ -11,7 +11,7 @@ export type Preset = {
   name: string;
   description: string;
   triggerType: string;
-  matchMode: "ALL" | "KEYWORD";
+  matchMode: "ALL" | "KEYWORD" | "REACTION" | "REPLY";
   keywords: string[];
   build: () => FlowGraph;
 };
@@ -327,6 +327,81 @@ export const PRESETS: Preset[] = [
         data: { label: "Entered", goal: true },
       });
 
+      return graph;
+    },
+  },
+
+  {
+    id: "story-reaction",
+    name: "Thank people who react to your story",
+    description:
+      "Someone taps an emoji under your story and gets a thank-you DM with your link. Written replies and heart likes don't trigger it.",
+    triggerType: "STORY_REPLY",
+    matchMode: "REACTION",
+    keywords: [],
+    build() {
+      const { graph, lastId } = starter("Thanks for the love on my story, {{first_name}} 💛 Here's something for you 👇", {
+        title: "Open it",
+        url: "https://example.com",
+      });
+      append(graph, lastId, { id: id("end"), type: "END", position: { x: 0, y: 320 }, data: { label: "Sent", goal: true } });
+      return graph;
+    },
+  },
+
+  {
+    id: "follow-up-if-no-reply",
+    name: "Follow up if they don't reply",
+    description:
+      "Someone DMs your keyword and gets your answer. If they go quiet, a friendly nudge 4 hours later, and a last one before Instagram's 24-hour window closes. Anyone who replies is left alone.",
+    triggerType: "DM_KEYWORD",
+    matchMode: "KEYWORD",
+    keywords: ["INFO"],
+    build() {
+      const { graph, lastId } = starter(
+        "Hey {{first_name}}! Here's everything you asked about 👇",
+        { title: "Take a look", url: "https://example.com" },
+      );
+
+      // Each nudge: wait, then carry on only if they haven't replied. Instagram
+      // only allows messages within 24 hours of their last message, so the
+      // waits add up to 23 hours — and if they never messaged at all (a
+      // comment), the dispatcher skips the nudge rather than break the rule.
+      const nudge = (from: string, y: number, minutes: number, text: string, label: string) => {
+        const waitId = append(graph, from, {
+          id: id("delay"),
+          type: "DELAY",
+          position: { x: 0, y },
+          data: { label: `Wait ${minutes / 60}h`, minutes },
+        });
+        const checkId = append(graph, waitId, {
+          id: id("cond"),
+          type: "CONDITION",
+          position: { x: 0, y: y + 160 },
+          data: {
+            label: "Did they reply?",
+            mode: "all",
+            conditions: [{ field: "replied", operator: "is_true" }],
+          },
+        });
+        append(
+          graph,
+          checkId,
+          { id: id("end"), type: "END", position: { x: 260, y: y + 320 }, data: { label: "They replied", goal: true } },
+          "yes",
+        );
+        return append(
+          graph,
+          checkId,
+          { id: id("send"), type: "SEND_MESSAGE", position: { x: 0, y: y + 320 }, data: { label, asPrivateReply: false, message: { kind: "text", text } } },
+          "no",
+        );
+      };
+
+      const first = nudge(lastId, 320, 240, "Did you get a chance to look? Happy to answer anything 🙂", "Nudge 1");
+      const second = nudge(first, 800, 1140, "Last one from me — reply here any time if you'd like help ✨", "Nudge 2");
+
+      append(graph, second, { id: id("end"), type: "END", position: { x: 0, y: 1280 }, data: { label: "Done", goal: false } });
       return graph;
     },
   },
