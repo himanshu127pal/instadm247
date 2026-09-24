@@ -25,7 +25,7 @@ import type { FlowEdge, FlowGraph, FlowNode, FlowNodeType } from "@/lib/engine/s
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "@/lib/engine/schema";
 import { Badge, Button } from "@/components/ui";
 import { ADDABLE_TYPES, NODE_META, nodeTypes } from "./nodes";
-import { NodeInspector } from "./inspector";
+import { NodeInspector, type FormOption } from "./inspector";
 import { cn } from "@/lib/utils";
 
 /**
@@ -40,6 +40,8 @@ export function FlowBuilder(props: {
   automationId: string;
   initialGraph: FlowGraph;
   enabled: boolean;
+  /** Lead forms an "Ask a question" step can save into. */
+  forms?: FormOption[];
   onDirtyChange?: (dirty: boolean) => void;
 }) {
   return (
@@ -86,11 +88,13 @@ function BuilderInner({
   automationId,
   initialGraph,
   enabled,
+  forms,
   onDirtyChange,
 }: {
   automationId: string;
   initialGraph: FlowGraph;
   enabled: boolean;
+  forms?: FormOption[];
   onDirtyChange?: (dirty: boolean) => void;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(toReactFlowNodes(initialGraph));
@@ -427,6 +431,7 @@ function BuilderInner({
         <div className="w-[340px] shrink-0">
           <NodeInspector
             node={selectedNode}
+            forms={forms}
             onChange={updateNode}
             onDelete={() => deleteNode(selectedNode.id)}
             onClose={() => setSelectedId(null)}

@@ -9,6 +9,7 @@ import { Badge, Button, Field, Input, Select, Switch, Textarea } from "@/compone
 import { SectionCard, Tabs } from "@/components/dashboard/bits";
 import { FunnelChart } from "@/components/dashboard/charts";
 import { FlowBuilder } from "@/components/flow/builder";
+import type { FormOption } from "@/components/flow/inspector";
 import { RewindPanel } from "@/components/dashboard/rewind-panel";
 import { cn } from "@/lib/utils";
 
@@ -46,12 +47,14 @@ export function AutomationEditor({
   media,
   funnel,
   graphRecovered,
+  forms = [],
 }: {
   automation: Automation;
   graph: FlowGraph;
   media: Media[];
   funnel: { totalRuns: number; nodes: Array<{ nodeId: string; nodeType: string; entered: number; rate: number }> };
   graphRecovered: boolean;
+  forms?: FormOption[];
 }) {
   const router = useRouter();
   const [tab, setTab] = React.useState("flow");
@@ -190,6 +193,7 @@ export function AutomationEditor({
             automationId={automation.id}
             initialGraph={graph}
             enabled={automation.enabled}
+            forms={forms}
             onDirtyChange={setFlowDirty}
           />
         </>

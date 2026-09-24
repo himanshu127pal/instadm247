@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { getFlowFunnel } from "@/lib/queries";
 import { flowGraphSchema } from "@/lib/engine/schema";
 import { AutomationEditor } from "@/components/dashboard/automation-editor";
+import type { FormOption } from "@/components/flow/inspector";
 
 export default async function AutomationPage({
   params,
@@ -28,7 +29,7 @@ export default async function AutomationPage({
   });
   if (!automation) notFound();
 
-  const [allMedia, funnel] = await Promise.all([
+  const [allMedia, funnel, forms] = await Promise.all([
     prisma.media.findMany({
       where: { accountId: automation.accountId },
       orderBy: { timestamp: "desc" },
@@ -43,6 +44,11 @@ export default async function AutomationPage({
       },
     }),
     getFlowFunnel(automation.id),
+    prisma.leadForm.findMany({
+      where: { workspaceId: workspace.id },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true, fields: true },
+    }),
   ]);
 
   // A malformed stored graph must not crash the page — fall back to a bare
@@ -100,6 +106,11 @@ export default async function AutomationPage({
         media={allMedia.map((m) => ({ ...m, timestamp: m.timestamp?.toISOString() ?? null }))}
         funnel={funnel}
         graphRecovered={!parsed.success}
+        forms={forms.map((f) => ({
+          id: f.id,
+          name: f.name,
+          fields: (Array.isArray(f.fields) ? (f.fields as FormOption["fields"]) : []).filter((q) => q?.id),
+        }))}
       />
     </div>
   );
