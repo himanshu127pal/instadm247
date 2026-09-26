@@ -50,7 +50,7 @@ export default async function PaymentEventDetail({ params }: { params: Promise<{
           </Row>
           {event.direction === "inbound" && (
             <Row label="Signature">
-              {event.signatureValid === true ? "valid" : event.signatureValid === false ? "INVALID" : "—"}
+              {event.signatureValid === true ? "valid" : event.signatureValid === false ? "INVALID" : "-"}
             </Row>
           )}
           {event.webhookId && <Row label="webhook-id">{event.webhookId}</Row>}
@@ -84,7 +84,7 @@ export default async function PaymentEventDetail({ params }: { params: Promise<{
         <h2 className="mb-2 text-[15px] font-extrabold">Payload</h2>
         <p className="mb-2 text-[12.5px] font-semibold text-[var(--text-muted)]">
           {event.signatureValid === false
-            ? "Unauthenticated input — this did not come from Dodo, or the secret is wrong. Stored capped at 8 KB and purged after 30 days."
+            ? "Unauthenticated input. This did not come from Dodo, or the secret is wrong. Stored capped at 8 KB and purged after 30 days."
             : "Exactly what was sent or received. This view is recorded in the audit log."}
         </p>
         <pre className="overflow-x-auto rounded-[var(--radius-card)] border-2 border-[var(--border-soft)] bg-[var(--bg-sunken)] p-4 text-[12px] leading-relaxed">

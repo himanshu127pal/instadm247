@@ -218,7 +218,7 @@ export function HelperChat({
       <EmptyState
         icon={<Sparkles />}
         title="The AI Helper is taking a break"
-        description="It's unavailable on our side right now. Please check back soon — everything else works as normal."
+        description="It's unavailable on our side right now. Please check back soon. Everything else works as normal."
       />
     );
   }
@@ -344,7 +344,7 @@ function TurnView({ turn }: { turn: Turn }) {
           <p className="text-[12px] text-[var(--text-faint)]">
             {turn.budget
               ? "That answer was cut short: this month's AI Helper allowance ran out. It resets on the 1st."
-              : "That answer was cut short — ask it to continue."}
+              : "That answer was cut short. Ask it to continue."}
           </p>
         )}
         {turn.error && <p className="text-[13px] font-medium text-[var(--color-zap-500)]">{turn.error}</p>}
@@ -378,7 +378,7 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
       const data = (await res.json()) as { automation?: { id: string }; error?: string };
       if (!res.ok || !data.automation) throw new Error(data.error ?? "Could not create the automation");
       setCreatedId(data.automation.id);
-      toast.success("Draft created — it's switched off until you turn it on");
+      toast.success("Draft created. It's switched off until you turn it on");
       router.push(`/dashboard/automations/${data.automation.id}`);
     } catch (error) {
       toast.error((error as Error).message);
@@ -419,7 +419,7 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
         {createdId ? (
           <Link href={`/dashboard/automations/${createdId}`}>
             <Button variant="secondary" size="sm">
-              <Check className="h-3.5 w-3.5" /> Created — open it
+              <Check className="h-3.5 w-3.5" /> Created. Open it
             </Button>
           </Link>
         ) : (

@@ -75,7 +75,7 @@ export default async function CustomersPage({
                     </Link>
                     <span className="ml-2 text-[12px] font-semibold text-[var(--text-faint)]">/{r.slug}</span>
                   </td>
-                  <td className="px-4 py-2.5 font-semibold text-[var(--text-muted)]">{r.ownerEmail ?? "—"}</td>
+                  <td className="px-4 py-2.5 font-semibold text-[var(--text-muted)]">{r.ownerEmail ?? "-"}</td>
                   <td className="px-4 py-2.5 font-semibold">{r.planKey}</td>
                   <td className="px-4 py-2.5 text-right font-bold tabular-nums">
                     {r.accountCount}

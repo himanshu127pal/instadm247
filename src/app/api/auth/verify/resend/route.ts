@@ -18,7 +18,7 @@ export async function POST() {
   const result = await sendVerificationEmail(user.id);
   switch (result) {
     case "sent":
-      return NextResponse.json({ ok: true, message: `Sent — check ${user.email}.` });
+      return NextResponse.json({ ok: true, message: `Sent. Check ${user.email}.` });
     case "verified":
       return NextResponse.json({ ok: true, verified: true, message: "Your email is already verified." });
     case "cooldown":

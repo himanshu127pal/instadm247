@@ -29,7 +29,7 @@ export default async function BioPagesPage() {
     <div className="mx-auto max-w-4xl space-y-5">
       <PageHeader
         title="Link in bio"
-        description="A hosted page for your Instagram bio link — with click tracking on every block, so you can see what people actually tap."
+        description="A hosted page for your Instagram bio link, with click tracking on every block, so you can see what people actually tap."
       />
       <BioEditor
         branded={isBranded(workspace)}

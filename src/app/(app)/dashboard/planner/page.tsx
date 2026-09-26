@@ -32,7 +32,7 @@ export default async function PlannerPage() {
     <div className="mx-auto max-w-4xl space-y-5">
       <PageHeader
         title="DM Planner"
-        description="Write the automation before the post exists. Drop the draft code in your caption and it wires itself up the moment you publish — from any scheduler."
+        description="Write the automation before the post exists. Drop the draft code in your caption and it wires itself up the moment you publish, from any scheduler."
       />
       <PlannerView
         accounts={accounts}

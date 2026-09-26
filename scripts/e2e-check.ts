@@ -1050,6 +1050,36 @@ async function main() {
     );
   }
 
+  section("Copy: no em dashes");
+  {
+    // The owner's call: em dashes read as machine-written, so none appear in
+    // anything a person reads: pages, tab titles, emails, DMs, errors. Code
+    // comments are fine. The two AI prompts name the character to forbid it.
+    const TREES = ["src/app", "src/components", "src/content", "src/lib", "prisma/seed.ts"];
+    const ALLOWED = /em dashes \(—\)/;
+    const walkAll = (dir: string): string[] => {
+      if (!statSync(dir).isDirectory()) return [dir];
+      return readdirSync(dir).flatMap((entry) => {
+        const full = join(dir, entry);
+        if (statSync(full).isDirectory()) return walkAll(full);
+        return /\.(ts|tsx)$/.test(entry) ? [full] : [];
+      });
+    };
+    const found: string[] = [];
+    for (const tree of TREES) {
+      for (const file of walkAll(tree)) {
+        const code = readFileSync(file, "utf8")
+          .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+          .split("\n")
+          .map((line) => line.replace(/(^|[^:"'`])\/\/.*$/, "$1"));
+        code.forEach((line, i) => {
+          if (/—|&mdash;|\\u2014/.test(line) && !ALLOWED.test(line)) found.push(`${file}:${i + 1}`);
+        });
+      }
+    }
+    check("no em dash in any text people read", found.length === 0, found.slice(0, 10).join(", "));
+  }
+
   // --- Result ---------------------------------------------------------------
 
   console.log(`\n${passed} passed, ${failed} failed\n`);

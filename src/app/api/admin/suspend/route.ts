@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
     if (suspended && (reason ?? "").trim().length < 10) {
       return NextResponse.json(
-        { error: "Give a reason of at least 10 characters — the customer reads it." },
+        { error: "Give a reason of at least 10 characters. The customer reads it." },
         { status: 400 },
       );
     }

@@ -5,7 +5,7 @@
  * use them without pulling the engine — and BullMQ — into the browser bundle.
  */
 export const REWIND_REASON_LABELS: Record<string, string> = {
-  older_than_7_days: "Comment is more than 7 days old — Instagram won't allow a private reply",
+  older_than_7_days: "Comment is more than 7 days old. Instagram won't allow a private reply",
   no_messageable_sender: "Instagram didn't give us a messageable ID for this commenter",
   your_own_comment: "Your own comment",
   keyword_did_not_match: "Comment didn't match this automation's keywords",

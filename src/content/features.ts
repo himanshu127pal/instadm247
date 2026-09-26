@@ -27,14 +27,14 @@ export const FEATURES: FeaturePage[] = [
     name: "Comment to DM",
     title: "Instagram comment-to-DM automation",
     description:
-      "Send a DM to everyone who comments a keyword on your posts, Reels, ads or Lives — automatically, within Instagram's rules.",
+      "Send a DM to everyone who comments a keyword on your posts, Reels, ads or Lives, automatically and within Instagram's rules.",
     eyebrow: "Comment to DM",
     headline: "Someone comments your keyword. The link is in their DMs seconds later.",
     intro:
-      "Comment-to-DM turns \"comment LINK and I'll send it\" into something you set up once. Pick the posts, pick the keyword, write the message — every matching comment gets a private reply in their inbox, and a public reply under their comment so the thread keeps moving.",
+      "Comment-to-DM turns \"comment LINK and I'll send it\" into something you set up once. Pick the posts, pick the keyword, write the message. Every matching comment gets a private reply in their inbox, and a public reply under their comment so the thread keeps moving.",
     steps: [
       { title: "Choose where it listens", body: "A specific post or Reel, all your posts, everything including future posts, or only ads and boosted posts." },
-      { title: "Set the keyword", body: "Match words anywhere in the comment, exactly, or at the start — with typo tolerance, negative keywords and optional regular expressions." },
+      { title: "Set the keyword", body: "Match words anywhere in the comment, exactly, or at the start, with typo tolerance, negative keywords and optional regular expressions." },
       { title: "Write the DM", body: "Text, a button link, an image or a carousel of up to 10 cards. Add a public comment reply that rotates between a few phrasings." },
     ],
     highlights: [
@@ -47,7 +47,7 @@ export const FEATURES: FeaturePage[] = [
       { question: "How fast does the DM arrive?", answer: "Usually within a couple of seconds of the comment. Instagram notifies us the moment it happens and the reply is sent immediately." },
       { question: "Can I reply to comments on Reels?", answer: "Yes. Reels are posts as far as Instagram's API is concerned, so every comment-to-DM option works on them." },
       { question: "What if the same person comments twice?", answer: "You decide: send once per person, once per post, every time, or after a cooldown." },
-      { question: "Will it reply to old comments?", answer: "Only if you use Rewind, and only to comments Instagram still allows a private reply to — up to 7 days old." },
+      { question: "Will it reply to old comments?", answer: "Only if you use Rewind, and only to comments Instagram still allows a private reply to (up to 7 days old)." },
     ],
     related: ["follow-to-unlock", "lead-capture", "account-safety"],
   },
@@ -56,25 +56,25 @@ export const FEATURES: FeaturePage[] = [
     name: "Story replies & reactions",
     title: "Instagram story reply, reaction and mention automation",
     description:
-      "Auto-DM people who reply to your stories, react with an emoji or @mention you — with separate automations for reactions and written replies.",
+      "Auto-DM people who reply to your stories, react with an emoji or @mention you, with separate automations for reactions and written replies.",
     eyebrow: "Stories",
     headline: "Every story reply, reaction and mention gets an answer.",
     intro:
-      "Stories are where your most engaged followers talk back. Story automation answers them in the DM thread they started — a thank-you for a reaction, the link for a reply that says \"LINK\", a reshare prompt for a mention.",
+      "Stories are where your most engaged followers talk back. Story automation answers them in the DM thread they started: a thank-you for a reaction, the link for a reply that says \"LINK\", a reshare prompt for a mention.",
     steps: [
       { title: "Pick the trigger", body: "Story replies (including emoji reactions) or story @mentions." },
       { title: "Choose what counts", body: "Only emoji reactions, only written replies, specific keywords, or everything." },
-      { title: "Send the flow", body: "A single DM or a full flow — follow gate, lead form, AI answer, coupon." },
+      { title: "Send the flow", body: "A single DM or a full flow with a follow gate, lead form, AI answer or coupon." },
     ],
     highlights: [
       { title: "Reactions and replies, separately", body: "A tap on the reaction bar under your story arrives as a reply containing just the emoji. We tell the two apart, so a 🔥 can get a thank-you and a question can get an answer." },
       { title: "Mentions", body: "When someone @mentions you in their story, you can thank them, send a discount, or ask them to tag a friend." },
       { title: "The window is already open", body: "A story reply or reaction starts a conversation, so your DM goes out inside Instagram's 24-hour messaging window." },
-      { title: "Heart likes", body: "Instagram doesn't share story likes (the heart) with apps, so they can't trigger anything — no tool can, whatever it claims." },
+      { title: "Heart likes", body: "Instagram doesn't share story likes (the heart) with apps, so they can't trigger anything. No tool can, whatever it claims." },
     ],
     faqs: [
       { question: "Can I automate replies to story reactions?", answer: "Yes. Choose \"Emoji reactions only\" on a story automation. Quick reactions arrive as story replies made of just the emoji, and that's what it matches." },
-      { question: "Do GIF or sticker replies trigger it?", answer: "No — Instagram doesn't send those to apps, so there's nothing to react to." },
+      { question: "Do GIF or sticker replies trigger it?", answer: "No. Instagram doesn't send those to apps, so there's nothing to react to." },
       { question: "Can I answer story replies with AI?", answer: "Yes. Add an AI reply step to the flow and it answers from your knowledge base." },
     ],
     related: ["dm-keyword-replies", "ai-replies", "comment-to-dm"],
@@ -90,19 +90,19 @@ export const FEATURES: FeaturePage[] = [
     intro:
       "DM keyword replies answer the questions you get fifty times a week. Conversation starters put tappable questions in front of people before they type, and the DM menu keeps your key links one tap away.",
     steps: [
-      { title: "Add keywords", body: "PRICE, SHIPPING, COLLAB — with typo tolerance, negative keywords, exact or regex matching." },
-      { title: "Write the answer", body: "Text, buttons, images, carousels, quick replies — or a whole flow." },
+      { title: "Add keywords", body: "PRICE, SHIPPING, COLLAB, with typo tolerance, negative keywords, exact or regex matching." },
+      { title: "Write the answer", body: "Text, buttons, images, carousels, quick replies, or a whole flow." },
       { title: "Set conversation starters", body: "Up to four tappable questions shown when someone opens a chat with you, each starting its own automation." },
     ],
     highlights: [
-      { title: "Follow up if they go quiet", body: "Add a nudge a few hours later that only goes out if they haven't replied — and never after Instagram's 24-hour window closes." },
+      { title: "Follow up if they go quiet", body: "Add a nudge a few hours later that only goes out if they haven't replied, and never after Instagram's 24-hour window closes." },
       { title: "Human takeover", body: "Reply yourself from the Inbox and automation pauses for that one person until you're done." },
       { title: "Opt-outs honoured", body: "Anyone who replies STOP is suppressed from automations immediately." },
       { title: "DM menu", body: "A persistent menu in your DM thread with up to 20 items." },
     ],
     faqs: [
       { question: "Will it reply to every message I get?", answer: "Only if you want it to. Keyword automations fire on the words you choose; an \"everyone\" automation can greet every new conversation." },
-      { question: "Can I stop automation for one conversation?", answer: "Yes — take over from the Inbox and it pauses for that person only." },
+      { question: "Can I stop automation for one conversation?", answer: "Yes. Take over from the Inbox and it pauses for that person only." },
       { question: "How do follow-ups respect Instagram's rules?", answer: "Every follow-up is sent through the same checks as everything else: if the 24-hour window has closed, it isn't sent." },
     ],
     related: ["live-inbox", "ai-replies", "story-automation"],
@@ -112,7 +112,7 @@ export const FEATURES: FeaturePage[] = [
     name: "Follow to unlock",
     title: "Instagram follow-to-unlock: grow followers from every DM",
     description:
-      "Ask people to follow you before they get the link — and skip the ask for people who already follow. A follower growth gate built on Instagram's API.",
+      "Ask people to follow you before they get the link, and skip the ask for people who already follow. A follower growth gate built on Instagram's API.",
     eyebrow: "Follower growth",
     headline: "Turn \"comment LINK\" into a new follower, not just a click.",
     intro:
@@ -126,7 +126,7 @@ export const FEATURES: FeaturePage[] = [
       { title: "No nagging existing fans", body: "People who already follow you never see the ask." },
       { title: "Uses Instagram's own data", body: "Follow status comes from Instagram's User Profile API, not a guess." },
       { title: "Measured", body: "Funnel analytics show how many people were asked, followed, and clicked." },
-      { title: "Works everywhere", body: "Comments, story replies, DMs — any trigger can go through the gate." },
+      { title: "Works everywhere", body: "Comments, story replies, DMs: any trigger can go through the gate." },
     ],
     faqs: [
       { question: "Is follow-gating allowed by Instagram?", answer: "Asking someone to follow is fine; forcing it or spamming isn't. We ask once, check with Instagram's API, and never automate follows." },
@@ -139,14 +139,14 @@ export const FEATURES: FeaturePage[] = [
     name: "Lead capture",
     title: "Capture emails and leads in Instagram DMs",
     description:
-      "Collect emails, phone numbers and answers inside Instagram DMs with forms, surveys and quizzes — then send them to Google Sheets, Kit or Flodesk.",
+      "Collect emails, phone numbers and answers inside Instagram DMs with forms, surveys and quizzes, then send them to Google Sheets, Kit or Flodesk.",
     eyebrow: "Lead capture",
     headline: "Get the email in the DM. No landing page, no drop-off.",
     intro:
       "Lead forms ask questions one at a time inside the conversation, validate the answers, and save them to your contacts. Every completed form can go straight to a spreadsheet or your email tool.",
     steps: [
-      { title: "Build the form", body: "Email, phone, text, choices — as a form, a survey, a quiz with scores, or an order form." },
-      { title: "Drop it in a flow", body: "Ask right after the link, or before it — your call." },
+      { title: "Build the form", body: "Email, phone, text, choices. Use it as a form, a survey, a quiz with scores, or an order form." },
+      { title: "Drop it in a flow", body: "Ask right after the link, or before it. Your call." },
       { title: "Send it on", body: "Google Sheets gets every response as a row; Kit and Flodesk get every email; webhooks get it all." },
     ],
     highlights: [
@@ -166,13 +166,13 @@ export const FEATURES: FeaturePage[] = [
     name: "AI replies",
     title: "AI replies for Instagram DMs, grounded in your own answers",
     description:
-      "An AI agent that answers Instagram DMs from your knowledge base — and hands the conversation to you when it isn't sure, instead of making things up.",
+      "An AI agent that answers Instagram DMs from your knowledge base, and hands the conversation to you when it isn't sure, instead of making things up.",
     eyebrow: "AI agent",
     headline: "Answers from your FAQ. Hands off when it doesn't know.",
     intro:
       "Give the AI your FAQ, policies and product details. It answers from that, in your tone, and when a question falls outside what you've told it, it says so and flags the conversation for you.",
     steps: [
-      { title: "Teach it", body: "Add knowledge base entries — shipping, sizing, pricing, collaborations." },
+      { title: "Teach it", body: "Add knowledge base entries: shipping, sizing, pricing, collaborations." },
       { title: "Set the guardrails", body: "Topics it must not answer, when to hand off, how it should sound." },
       { title: "Use it anywhere", body: "As a step in any flow, or as the reply to every DM." },
     ],
@@ -199,19 +199,19 @@ export const FEATURES: FeaturePage[] = [
     intro:
       "A hosted page at your own short link, built for a phone and an Instagram profile tap. Add links, headings, products, email and WhatsApp buttons, and see exactly which ones people use.",
     steps: [
-      { title: "Pick your link", body: "Choose your address — we check it's free as you type." },
+      { title: "Pick your link", body: "Choose your address. We check it's free as you type." },
       { title: "Add blocks", body: "Links, headings, text, products, social, email and WhatsApp." },
       { title: "Put it in your bio", body: "Copy the link into your Instagram profile." },
     ],
     highlights: [
       { title: "Click tracking", body: "Views and taps per block, with full history." },
       { title: "Five themes", body: "Comic cream, midnight, punch, mint and sky." },
-      { title: "Fast", body: "No dashboard code, no tracking scripts — it loads quickly on a phone." },
+      { title: "Fast", body: "No dashboard code, no tracking scripts. It loads quickly on a phone." },
       { title: "Your brand", body: "Paid plans can remove the \"Made with InstaDM247\" badge." },
     ],
     faqs: [
       { question: "Is link in bio free?", answer: "Yes, on every plan. The Free plan shows a small \"Made with InstaDM247\" badge." },
-      { question: "Can I have more than one page?", answer: "Yes — one per account, campaign or brand." },
+      { question: "Can I have more than one page?", answer: "Yes, one per account, campaign or brand." },
     ],
     related: ["lead-capture", "comment-to-dm", "broadcasts"],
   },
@@ -220,9 +220,9 @@ export const FEATURES: FeaturePage[] = [
     name: "Broadcasts",
     title: "Instagram DM broadcasts and re-engagement, inside the rules",
     description:
-      "Message everyone whose 24-hour window is still open, schedule broadcasts, and nudge contacts who've gone quiet — with the eligible count shown up front.",
+      "Message everyone whose 24-hour window is still open, schedule broadcasts, and nudge contacts who've gone quiet, with the eligible count shown up front.",
     eyebrow: "Broadcasts",
-    headline: "Message your audience — the ones Instagram lets you reach.",
+    headline: "Message the audience Instagram lets you reach.",
     intro:
       "Instagram only lets you message someone within 24 hours of them interacting with you. Broadcasts work with that rule: you see how many people are reachable before you send, and nobody outside the window is messaged.",
     steps: [
@@ -247,7 +247,7 @@ export const FEATURES: FeaturePage[] = [
     name: "Live inbox",
     title: "A live Instagram DM inbox with human takeover and alerts",
     description:
-      "Every conversation across your Instagram accounts in one live inbox — with sound and desktop alerts, and automation that steps aside when you reply.",
+      "Every conversation across your Instagram accounts in one live inbox, with sound and desktop alerts, and automation that steps aside when you reply.",
     eyebrow: "Inbox",
     headline: "One inbox for every account. Automation steps aside when you step in.",
     intro:
@@ -264,7 +264,7 @@ export const FEATURES: FeaturePage[] = [
       { title: "Context", body: "Tags and follower status alongside the thread." },
     ],
     faqs: [
-      { question: "Do I get notified of new messages?", answer: "Yes — turn on sound and desktop alerts in the Inbox. They only fire for messages people send you, never for your own automations." },
+      { question: "Do I get notified of new messages?", answer: "Yes. Turn on sound and desktop alerts in the Inbox. They only fire for messages people send you, never for your own automations." },
     ],
     related: ["dm-keyword-replies", "ai-replies", "account-safety"],
   },
@@ -273,9 +273,9 @@ export const FEATURES: FeaturePage[] = [
     name: "Account safety",
     title: "Instagram DM automation that won't get your account restricted",
     description:
-      "Built only on Meta's official API, with the 24-hour window, private-reply limits, rate limits and viral-post protection enforced on every message — free on every plan.",
+      "Built only on Meta's official API, with the 24-hour window, private-reply limits, rate limits and viral-post protection enforced on every message, free on every plan.",
     eyebrow: "Account safety",
-    headline: "Automation that plays by Instagram's rules — every message, every plan.",
+    headline: "Automation that plays by Instagram's rules, on every message and every plan.",
     intro:
       "Accounts get restricted when tools scrape, fake human activity or blast messages. InstaDM247 does none of that: every message goes through one dispatcher that checks Instagram's rules before it leaves, and every safety feature is included on the Free plan.",
     steps: [

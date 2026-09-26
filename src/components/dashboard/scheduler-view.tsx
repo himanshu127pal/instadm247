@@ -77,7 +77,7 @@ export function SchedulerView({
           description={
             configured
               ? "Schedule a post and pick which automation should switch on the moment it publishes."
-              : "Connect Instagram first — scheduling publishes through the official content API."
+              : "Connect Instagram first. Scheduling publishes through the official content API."
           }
         />
       ) : (
@@ -306,7 +306,7 @@ function Composer({
 
         <Field
           label="Media URLs"
-          hint="Public HTTPS URLs Instagram can fetch. One per line — a carousel takes up to 10."
+          hint="Public HTTPS URLs Instagram can fetch. One per line; a carousel takes up to 10."
         >
           <Textarea
             value={urls}

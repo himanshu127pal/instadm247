@@ -36,7 +36,7 @@ export function ImpersonationBanner({
       <EyeOff className="h-4 w-4 shrink-0" />
       <span>
         Viewing as <strong>{email}</strong>
-        {byEmail && <span className="font-semibold"> — signed in by {byEmail}</span>}
+        {byEmail && <span className="font-semibold">, signed in by {byEmail}</span>}
       </span>
       <span className="font-semibold opacity-80">Read-only · {left}</span>
       <button

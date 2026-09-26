@@ -29,7 +29,7 @@ const TRIGGERS = [
     name: "Comment on a post or Reel",
     tagline: "The one everyone starts with",
     detail:
-      "Someone comments your keyword — or anything at all — and they get a DM seconds later. Reply publicly in the thread too, so the comment section still looks alive.",
+      "Someone comments your keyword (or anything at all) and they get a DM seconds later. Reply publicly in the thread too, so the comment section still looks alive.",
     example: { from: "alex.rivera", text: "LINK 🙌", reply: "Sent it to your DMs! 💌" },
     stat: "Fires in ~1.2s",
   },
@@ -40,7 +40,7 @@ const TRIGGERS = [
     tagline: "Catch the warmest audience you have",
     detail:
       "Anyone replying to your story gets an instant answer. Match on keywords, or respond to every single reply so nobody sits unanswered overnight.",
-    example: { from: "sam.j", text: "where's this from?", reply: "It's the Arc lounge — here 👇" },
+    example: { from: "sam.j", text: "where's this from?", reply: "It's the Arc lounge, here 👇" },
     stat: "Keyword or catch-all",
   },
   {
@@ -49,7 +49,7 @@ const TRIGGERS = [
     name: "Story @mention",
     tagline: "Giveaways run themselves",
     detail:
-      '"Share this and tag me to enter" — every person who mentions you gets their entry confirmation and your link, automatically, without you refreshing anything.',
+      '"Share this and tag me to enter." Every person who mentions you gets their entry confirmation and your link, automatically, without you refreshing anything.',
     example: { from: "nina.co", text: "mentioned you", reply: "You're entered! 🎉 Here's your bonus:" },
     stat: "Perfect for giveaways",
   },
@@ -69,7 +69,7 @@ const TRIGGERS = [
     name: "DM keyword",
     tagline: "Your inbox answers itself",
     detail:
-      "Someone messages you 'price', 'shipping' or 'book' and gets the right answer instantly — or an AI reply grounded in your own knowledge base.",
+      "Someone messages you 'price', 'shipping' or 'book' and gets the right answer instantly, or an AI reply grounded in your own knowledge base.",
     example: { from: "jordan", text: "do you ship to the UK?", reply: "We do! 3–5 days, free over £60." },
     stat: "AI-assisted",
   },
@@ -79,7 +79,7 @@ const TRIGGERS = [
     name: "Ads & boosted posts",
     tagline: "Turn paid reach into conversations",
     detail:
-      "Comments on boosted posts and ads fire the same automations, with the ad's name attached — so you can see exactly which creative earned the conversation.",
+      "Comments on boosted posts and ads fire the same automations, with the ad's name attached, so you can see exactly which creative earned the conversation.",
     example: { from: "casey.m", text: "INFO", reply: "Here's everything about the launch →" },
     stat: "Attributed by ad",
   },
@@ -274,7 +274,7 @@ export function FlowPreview() {
 
       <div className="relative mt-5 flex items-center gap-2 text-[11.5px] font-bold text-[var(--text-muted)]">
         <GitBranch className="h-3.5 w-3.5" />
-        Drag, drop, done — no code, no flowchart degree.
+        Drag, drop, done. No code, no flowchart degree.
       </div>
     </div>
   );
@@ -287,11 +287,11 @@ export function FlowPreview() {
 const GUARDS = [
   {
     title: "24-hour window, respected",
-    body: "Instagram only lets you message someone within 24 hours of them contacting you. We track that window per person and simply don't send when it's closed — instead of getting your account flagged trying.",
+    body: "Instagram only lets you message someone within 24 hours of them contacting you. We track that window per person and simply don't send when it's closed, instead of getting your account flagged trying.",
   },
   {
     title: "One private reply per comment",
-    body: "Meta allows exactly one. We claim each comment atomically, so even when Instagram sends us a duplicate webhook — which it does on boosted posts — nobody ever gets DMed twice.",
+    body: "Meta allows exactly one. We claim each comment atomically, so even when Instagram sends us a duplicate webhook (which it does on boosted posts), nobody ever gets DMed twice.",
   },
   {
     title: "Rate limits with headroom",
@@ -299,7 +299,7 @@ const GUARDS = [
   },
   {
     title: "The HUMAN_AGENT tag, used honestly",
-    body: "That tag extends your reply window to 7 days — for messages a human actually typed. Meta detects abuse of it. We attach it only when you reply yourself from the inbox. Never on automation.",
+    body: "That tag extends your reply window to 7 days, for messages a human actually typed. Meta detects abuse of it. We attach it only when you reply yourself from the inbox. Never on automation.",
   },
   {
     title: "Opt-outs that actually work",
@@ -427,7 +427,7 @@ export function ComparisonTable() {
       </div>
       <p className="border-t-[2.5px] border-[var(--border)] bg-[var(--bg-sunken)] px-5 py-3 text-[11.5px] font-medium text-[var(--text-muted)]">
         Competitor capabilities compiled from their public product and help pages, August 2026.
-        Plans and features change — check their sites for the current picture.
+        Plans and features change, so check their sites for the current picture.
       </p>
     </div>
   );

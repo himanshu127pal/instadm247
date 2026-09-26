@@ -21,7 +21,7 @@ export const POST = route(async ({ workspace }) => {
     select: { billingCustomerId: true },
   });
   if (!ws.billingCustomerId) {
-    throw new AuthError("There's no billing account yet — choose a plan first.", 400);
+    throw new AuthError("There's no billing account yet. Choose a plan first.", 400);
   }
   const url = await createPortalSession({
     workspaceId: workspace.id,

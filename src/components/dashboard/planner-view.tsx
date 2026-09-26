@@ -65,8 +65,8 @@ export function PlannerView({
 
       toast.success(
         mode === "NEXT_POST"
-          ? "Ready — it'll attach to your next post automatically"
-          : `Draft code ${data.planned?.draftCode} is ready — put it in your caption`,
+          ? "Ready. It'll attach to your next post automatically"
+          : `Draft code ${data.planned?.draftCode} is ready. Put it in your caption`,
       );
       setCreating(false);
       setName("");
@@ -111,10 +111,10 @@ export function PlannerView({
       <SectionCard title="How this works">
         <ol className="space-y-2.5">
           {[
-            "Build the automation as normal — keywords, flow, everything.",
+            "Build the automation as normal: keywords, flow, everything.",
             "Create a plan here and you get a short draft code like DM-K7QP2X.",
             "Paste that code anywhere in the caption of the post you're about to publish.",
-            "Publish however you like — manually, Later, Buffer, Meta Suite. We spot the code within five minutes, attach the automation to that exact post, and switch it on.",
+            "Publish however you like: manually, Later, Buffer, Meta Suite. We spot the code within five minutes, attach the automation to that exact post, and switch it on.",
             "No code to hand? Pick \"Next post\" instead and it latches onto whatever you publish next.",
           ].map((step, i) => (
             <li key={i} className="flex items-start gap-2.5 text-[13.5px] leading-relaxed">
@@ -189,8 +189,8 @@ export function PlannerView({
 
             <Field label="How should it attach?">
               <Select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)}>
-                <option value="DRAFT_CODE">Draft code — I&apos;ll put a code in the caption</option>
-                <option value="NEXT_POST">Next post — attach to whatever I publish next</option>
+                <option value="DRAFT_CODE">Draft code: I&apos;ll put a code in the caption</option>
+                <option value="NEXT_POST">Next post: attach to whatever I publish next</option>
               </Select>
             </Field>
 
@@ -255,7 +255,7 @@ export function PlannerView({
                   {plan.status === "waiting" &&
                     (plan.mode === "NEXT_POST" ? (
                       <p className="mt-3 rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] font-medium text-[var(--text-muted)]">
-                        Waiting for your next post — nothing to paste. It attaches
+                        Waiting for your next post, nothing to paste. It attaches
                         automatically the moment you publish.
                       </p>
                     ) : (

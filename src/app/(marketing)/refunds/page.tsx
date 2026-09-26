@@ -38,7 +38,7 @@ export default function RefundsPage() {
 
       <h2>Annual plans</h2>
       <p>
-        Annual plans are paid for the whole year up front, at a discount — two months free — and
+        Annual plans are paid for the whole year up front, at a discount (two months free), and
         renew automatically once a year. If you no longer want your plan, you can ask for a refund
         at any point during the year:
       </p>
@@ -93,7 +93,7 @@ export default function RefundsPage() {
 
       <h2>No other refunds</h2>
       <p>
-        Apart from the annual-plan refund above, payments are not refundable — including monthly
+        Apart from the annual-plan refund above, payments are not refundable. That includes monthly
         payments, partial months, and allowances you didn&rsquo;t use.
       </p>
 

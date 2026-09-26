@@ -69,7 +69,7 @@ export function DevelopersView({
 
   React.useEffect(() => {
     if (!googleResult) return;
-    if (googleResult.status === "connected") toast.success("Google Sheets connected — new leads will appear in your sheet.");
+    if (googleResult.status === "connected") toast.success("Google Sheets connected. New leads will appear in your sheet.");
     else if (googleResult.status === "cancelled") toast("Google Sheets wasn't connected.");
     else toast.error(googleResult.reason ?? "Google Sheets couldn't be connected.");
     // Drop the result from the address bar so a refresh doesn't repeat it.
@@ -148,7 +148,7 @@ function KeysTab({ appUrl, keys }: { appUrl: string; keys: ApiKeyRow[] }) {
             <div className="flex items-start gap-2.5 rounded-xl border-2 border-[var(--border)] bg-[var(--color-pow-400)]/40 p-3">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <p className="text-[13px] font-bold leading-relaxed">
-                This is the only time you&rsquo;ll see it. We store a hash, not the key —
+                This is the only time you&rsquo;ll see it. We store a hash, not the key, so
                 if you lose it, create a new one.
               </p>
             </div>
@@ -269,8 +269,8 @@ curl -X POST ${appUrl}/api/v1/send \\
           </pre>
           <p className="text-[12px] font-medium text-[var(--text-muted)]">
             A send that would break Instagram&rsquo;s rules returns{" "}
-            <strong>409</strong> with the reason — the window being closed, an opt-out, or
-            a rate limit — rather than failing silently.
+            <strong>409</strong> with the reason (the window being closed, an opt-out, or
+            a rate limit) rather than failing silently.
           </p>
         </div>
       </SectionCard>
@@ -452,7 +452,7 @@ function IntegrationsTab({
     <div className="space-y-4">
       <SectionCard
         title="Google Sheets"
-        description="Every completed lead form lands in a spreadsheet in your Google Drive — one tab per form, one row per person."
+        description="Every completed lead form lands in a spreadsheet in your Google Drive: one tab per form, one row per person."
       >
         {sheets ? (
           <div className="flex flex-wrap items-center gap-2">
@@ -467,7 +467,7 @@ function IntegrationsTab({
               <Button variant="ghost">Reconnect</Button>
             </a>
             <p className="w-full text-[12px] font-medium text-[var(--text-muted)]">
-              We can only see and edit the spreadsheet we created for you — nothing else in your Drive.
+              We can only see and edit the spreadsheet we created for you, nothing else in your Drive.
             </p>
           </div>
         ) : googleAvailable ? (

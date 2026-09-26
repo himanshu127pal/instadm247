@@ -14,25 +14,25 @@ export default function PrivacyPage() {
       <h2>What we collect</h2>
       <ul>
         <li>
-          <strong>Your account details</strong> — the email address and name you sign up
+          <strong>Your account details:</strong> the email address and name you sign up
           with, and a hashed password. We never store your password in readable form.
         </li>
         <li>
-          <strong>Instagram account data</strong> — when you connect through Meta&rsquo;s
+          <strong>Instagram account data:</strong> when you connect through Meta&rsquo;s
           login screen, we receive an access token plus your username, profile picture,
           follower count and recent media. Tokens are encrypted at rest.
         </li>
         <li>
-          <strong>Conversation data</strong> — the comments, story replies, mentions and
+          <strong>Conversation data:</strong> the comments, story replies, mentions and
           direct messages that trigger your automations, along with the messages we send
           on your behalf and the Instagram-scoped IDs of the people involved.
         </li>
         <li>
-          <strong>Contact records</strong> — tags, custom fields and any answers people
+          <strong>Contact records:</strong> tags, custom fields and any answers people
           give to forms you build. You control what is asked for.
         </li>
         <li>
-          <strong>Usage data</strong> — timestamps, delivery outcomes and error details,
+          <strong>Usage data:</strong> timestamps, delivery outcomes and error details,
           used to show your analytics and diagnose failures.
         </li>
       </ul>
@@ -48,8 +48,8 @@ export default function PrivacyPage() {
         </li>
         <li>
           When you ask the in-dashboard AI Helper a question, your question and the parts of
-          your account setup it needs to answer — such as your automations&rsquo; names and
-          settings, your plan and usage — are sent to the same AI model provider to write the
+          your account setup it needs to answer (such as your automations&rsquo; names and
+          settings, your plan and usage) are sent to the same AI model provider to write the
           answer. It never sees your followers&rsquo; messages or usernames, and it can&rsquo;t
           change anything in your account.
         </li>
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
       <h2>Deleting your data</h2>
       <p>
         Disconnect an account in Settings to delete everything associated with it, or
-        remove the app from Instagram directly — Meta notifies us and we revoke the token
+        remove the app from Instagram directly. Meta notifies us and we revoke the token
         automatically. To delete everything, see our{" "}
         <a href="/data-deletion" className="text-[var(--accent)] underline">
           data deletion page
@@ -87,14 +87,14 @@ export default function PrivacyPage() {
       <h2>People who message you</h2>
       <p>
         If someone messages a creator using InstaDM247 and wants their data removed, they
-        can reply STOP — which suppresses them immediately — or contact us at the address
+        can reply STOP, which suppresses them immediately, or contact us at the address
         below and we will remove their records.
       </p>
 
       <h2>Sub-processors</h2>
       <p>
         We use Meta Platforms (the Instagram API), our hosting and database provider, and
-        — only if the account owner enables the AI agent or asks the AI Helper a question — an
+        (only if the account owner enables the AI agent or asks the AI Helper a question) an
         AI model provider.
       </p>
       <p>
@@ -106,8 +106,8 @@ export default function PrivacyPage() {
         is ever shared with Dodo.
       </p>
       <p>
-        We send account emails — verifying your address, resetting your password, billing
-        notices and alerts about your connected accounts — through Amazon Web Services&rsquo;
+        We send account emails (verifying your address, resetting your password, billing
+        notices and alerts about your connected accounts) through Amazon Web Services&rsquo;
         email service, which receives your email address, your name and the content of those
         emails. We keep a record of each email we send (who it went to, its subject and whether
         it was delivered) for troubleshooting. Links that sign you in or reset your password are
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
       <p>
         If you connect Google Sheets, we ask Google only for your email address and for access
         to files our app creates (the <code>drive.file</code> permission). We create one
-        spreadsheet in your Google Drive and write the lead-form answers you collect into it —
+        spreadsheet in your Google Drive and write the lead-form answers you collect into it:
         the respondent&rsquo;s Instagram username and name, and their answers. We cannot see or
         change anything else in your Drive. We keep an encrypted Google access token so rows can
         be added while you&rsquo;re away; disconnecting in Developers → Integrations deletes it

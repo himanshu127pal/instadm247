@@ -18,7 +18,7 @@ export default async function AuditPage() {
         <p className="mt-1 max-w-2xl text-[13.5px] font-semibold text-[var(--text-muted)]">
           Every privileged action, most recent first. Impersonation reaches messages
           written by people who never signed up here, so this record is what makes
-          support access accountable — treat it as append-only.
+          support access accountable. Treat it as append-only.
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export default async function AuditPage() {
                       `${r.targetType}:${r.targetId.slice(0, 8)}`
                     )}
                   </td>
-                  <td className="px-4 py-2 font-semibold text-[var(--text-muted)]">{r.reason ?? "—"}</td>
+                  <td className="px-4 py-2 font-semibold text-[var(--text-muted)]">{r.reason ?? "-"}</td>
                 </tr>
               ))}
             </tbody>

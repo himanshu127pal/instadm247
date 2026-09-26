@@ -41,7 +41,7 @@ export async function requireClientForAccount(
     );
   }
   if (account.status === "demo") {
-    throw new MetaApiError("This is a demo account — connect a real Instagram account first.", 400);
+    throw new MetaApiError("This is a demo account. Connect a real Instagram account first.", 400);
   }
   throw new MetaApiError("This account needs to be reconnected to Instagram.", 401);
 }

@@ -173,7 +173,7 @@ export function PlanCards({
 
       <p className="mx-auto flex max-w-2xl items-start justify-center gap-2 text-center text-[13px] font-semibold text-[var(--text-muted)]">
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-boom-500)]" />
-        Every safety feature is included on every plan, free included — Slow Down mode, Viral
+        Every safety feature is included on every plan, free included: Slow Down mode, Viral
         Post Protection, the 24-hour messaging window and rate limits under Instagram&rsquo;s own.
         Keeping your account safe is not an upgrade.
       </p>
@@ -182,7 +182,7 @@ export function PlanCards({
       {mode === "dashboard" && (
         <p className="text-center text-[12.5px] font-semibold text-[var(--text-faint)]">
           Monthly plans aren&rsquo;t refundable. Annual plans can be refunded, less the months used
-          at the monthly price —{" "}
+          at the monthly price. See the{" "}
           <Link href="/refunds" className="underline hover:text-[var(--text-muted)]">
             refund policy
           </Link>

@@ -6,7 +6,7 @@ import { CtaBand, PageHero } from "@/components/marketing/content";
 export const metadata: Metadata = {
   title: "Compare",
   description:
-    "How InstaDM247 compares with LinkDM, SendDM, Reachlee and ManyChat for Instagram DM automation — feature by feature, including where they're ahead.",
+    "How InstaDM247 compares with LinkDM, SendDM, Reachlee and ManyChat for Instagram DM automation, feature by feature, including where they're ahead.",
   alternates: { canonical: "/compare" },
 };
 

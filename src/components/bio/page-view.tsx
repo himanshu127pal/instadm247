@@ -134,7 +134,7 @@ export function BioPageView({ page, blocks }: { page: BioPageData; blocks: BioBl
 
         {blocks.length === 0 && (
           <p className="text-center text-[14px] font-semibold opacity-60">
-            Nothing here yet — check back soon.
+            Nothing here yet. Check back soon.
           </p>
         )}
 

@@ -488,7 +488,7 @@ function createNode(type: FlowNodeType): FlowNode {
           recheckAfterMinutes: 5,
           message: {
             kind: "text",
-            text: "One quick thing — give me a follow so you don't miss the next one 🙏",
+            text: "One quick thing: give me a follow so you don't miss the next one 🙏",
           },
         },
       };
@@ -521,7 +521,7 @@ function createNode(type: FlowNodeType): FlowNode {
             kind: "text",
             text: "Here's your code, {{first_name}}: {{coupon}} 🎟️",
           },
-          emptyMessage: "Ah — we've just run out of codes. Give me a moment and I'll sort you out.",
+          emptyMessage: "Ah, we've just run out of codes. Give me a moment and I'll sort you out.",
         },
       };
     case "TAG":

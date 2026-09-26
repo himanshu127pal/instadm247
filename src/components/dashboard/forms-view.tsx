@@ -296,7 +296,7 @@ function FormEditor({ form, onDone }: { form: LeadForm | null; onDone: () => voi
           <Input
             value={successMessage}
             onChange={(e) => setSuccessMessage(e.target.value)}
-            placeholder="All done — check your inbox in a minute 🎉"
+            placeholder="All done! Check your inbox in a minute 🎉"
           />
         </Field>
 

@@ -26,7 +26,7 @@ export async function generateAiReply(params: {
     ? await prisma.aiAgent.findUnique({ where: { id: params.agentId } })
     : await prisma.aiAgent.findFirst({ where: { workspaceId: params.workspaceId, enabled: true } });
 
-  const fallback = agent?.fallbackMessage ?? "Let me get a human to help with that — one moment!";
+  const fallback = agent?.fallbackMessage ?? "Let me get a human to help with that. One moment!";
 
   // Recent turns give the model the thread; also the max-turns guardrail.
   const history = await prisma.message.findMany({
@@ -112,7 +112,7 @@ function buildSystemPrompt(
     agent?.language && agent.language !== "auto"
       ? `Always reply in ${agent.language}.`
       : "Reply in the same language the person wrote in.",
-    "You are replying inside an Instagram DM. Keep it under 900 characters, warm and direct. No markdown, no bullet lists.",
+    "You are replying inside an Instagram DM. Keep it under 900 characters, warm and direct. No markdown, no bullet lists, and no em dashes (—): use commas or full stops instead.",
     "Only state facts that appear in the knowledge base below. If the answer isn't there, reply with exactly [[HANDOFF]] and nothing else.",
     "Never invent prices, availability, shipping times, or policies.",
     instructions ? `Extra instructions: ${instructions}` : "",

@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     // no-op. But it is also what a broken identifier match looks like, and
     // answering "deleted" while deleting nothing is the worst way to fail.
     console.error(
-      `[data-deletion] request for ${igUserId} matched nothing — either we never held this user, or the stored identifier disagrees with Meta's`,
+      `[data-deletion] request for ${igUserId} matched nothing: either we never held this user, or the stored identifier disagrees with Meta's`,
     );
   }
 

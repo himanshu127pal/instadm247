@@ -107,7 +107,7 @@ export function PlanOverrideControl({
     <div className="space-y-2 rounded-lg border-2 border-[var(--color-zap-400)] bg-[var(--bg-raised)] p-3">
       <p className="text-[12.5px] font-bold">
         {mode === "clear"
-          ? "The customer drops to whatever their subscription gives them — Free if none."
+          ? "The customer drops to whatever their subscription gives them (Free if none)."
           : "An override can only raise a customer's plan, never lower what they pay for."}
       </p>
       {mode === "set" && (
@@ -136,7 +136,7 @@ export function PlanOverrideControl({
       <textarea
         className={input}
         rows={2}
-        placeholder="Why — kept in the audit log (at least 10 characters)"
+        placeholder="Why? Kept in the audit log (at least 10 characters)"
         value={reason}
         onChange={(e) => setReason(e.target.value)}
       />
@@ -221,7 +221,7 @@ export function SubscriptionActions({
           <textarea
             className={input}
             rows={2}
-            placeholder="Why — kept in the audit log and sent to Dodo (at least 10 characters)"
+            placeholder="Why? Kept in the audit log and sent to Dodo (at least 10 characters)"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />
@@ -348,7 +348,7 @@ function AnnualRefund({
           {quote.refundAlreadyIssued && (
             <p className="text-[12.5px] font-bold text-[var(--color-zap-500)]">
               This refund was already issued; the plan wasn&rsquo;t ended. Refunding again only
-              retries ending it — no money moves twice.
+              retries ending it. No money moves twice.
             </p>
           )}
           {canRefund ? (
@@ -356,7 +356,7 @@ function AnnualRefund({
               <textarea
                 className={input}
                 rows={2}
-                placeholder="The request, e.g. who emailed and when — kept in the audit log and sent to Dodo (at least 10 characters)"
+                placeholder="The request, e.g. who emailed and when. Kept in the audit log and sent to Dodo (at least 10 characters)"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />

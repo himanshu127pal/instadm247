@@ -48,11 +48,11 @@ export const metadata: Metadata = {
    */
   metadataBase: new URL(env.appUrl),
   title: {
-    default: "InstaDM247 — Instagram DM automation that never risks your account",
+    default: "InstaDM247 · Instagram DM automation that never risks your account",
     template: "%s · InstaDM247",
   },
   description:
-    "Turn every comment, story reply, mention and DM into a conversation. Build automation flows on Instagram's official API — so your account stays safe while you sleep.",
+    "Turn every comment, story reply, mention and DM into a conversation. Build automation flows on Instagram's official API, so your account stays safe while you sleep.",
   keywords: [
     "Instagram DM automation",
     "comment to DM",
@@ -61,17 +61,17 @@ export const metadata: Metadata = {
     "story reply automation",
   ],
   openGraph: {
-    title: "InstaDM247 — Instagram DM automation that never risks your account",
+    title: "InstaDM247 · Instagram DM automation that never risks your account",
     description:
-      "Comment-to-DM, story replies, mentions, Lives and keyword DMs — automated on Meta's official API.",
+      "Comment-to-DM, story replies, mentions, Lives and keyword DMs, automated on Meta's official API.",
     type: "website",
     siteName: "InstaDM247",
   },
   twitter: {
     card: "summary_large_image",
-    title: "InstaDM247 — Instagram DM automation that never risks your account",
+    title: "InstaDM247 · Instagram DM automation that never risks your account",
     description:
-      "Comment-to-DM, story replies, mentions, Lives and keyword DMs — automated on Meta's official API.",
+      "Comment-to-DM, story replies, mentions, Lives and keyword DMs, automated on Meta's official API.",
   },
 };
 

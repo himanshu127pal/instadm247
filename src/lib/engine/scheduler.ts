@@ -215,7 +215,7 @@ async function waitForContainer(
 
   return {
     ok: false,
-    error: "Instagram was still processing the media after a minute. It may publish late — check your profile.",
+    error: "Instagram was still processing the media after a minute. It may publish late, so check your profile.",
   };
 }
 

@@ -179,7 +179,7 @@ export async function prepareAnnualRefund(
   if (sub.interval !== "year") return { ok: false, reason: "Monthly plans aren't refundable under the policy." };
   if (sub.status !== "active") return { ok: false, reason: `The subscription is ${sub.status}, not active.` };
   if (!sub.currentPeriodStart || !sub.currentPeriodEnd) {
-    return { ok: false, reason: "The billing year's dates aren't known yet — resync the subscription first." };
+    return { ok: false, reason: "The billing year's dates aren't known yet. Resync the subscription first." };
   }
 
   const payment = await findRefundablePayment(sub);

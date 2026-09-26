@@ -66,7 +66,7 @@ export default async function SafetyPage() {
     <div className="mx-auto max-w-5xl space-y-5">
       <PageHeader
         title="Safety Center"
-        description="Everything the dispatcher checks before a message goes out — and every message it decided not to send, with the reason."
+        description="Everything the dispatcher checks before a message goes out, and every message it decided not to send, with the reason."
       />
 
       <div className="flex items-start gap-3 rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--color-boom-400)]/30 shadow-[4px_4px_0_0_var(--shadow-ink)] p-5">

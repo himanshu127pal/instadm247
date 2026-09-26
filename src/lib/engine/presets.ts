@@ -113,7 +113,7 @@ export const PRESETS: Preset[] = [
     id: "follower-growth",
     name: "Follower growth gate",
     description:
-      "Deliver the goods to everyone, but nudge the people who don't follow you yet — and skip the ask entirely for those who already do.",
+      "Deliver the goods to everyone, but nudge the people who don't follow you yet, and skip the ask entirely for those who already do.",
     triggerType: "COMMENT",
     matchMode: "KEYWORD",
     keywords: ["GUIDE"],
@@ -142,7 +142,7 @@ export const PRESETS: Preset[] = [
             asPrivateReply: false,
             message: {
               kind: "buttons",
-              text: "Here it is — enjoy! 📘",
+              text: "Here it is, enjoy! 📘",
               buttons: [{ type: "web_url", title: "Get the guide", url: "https://example.com" }],
             },
           },
@@ -164,7 +164,7 @@ export const PRESETS: Preset[] = [
             recheckAfterMinutes: 5,
             message: {
               kind: "text",
-              text: "One tiny thing — give me a follow so you don't miss the next one 🙏 Then it's all yours!",
+              text: "One tiny thing: give me a follow so you don't miss the next one 🙏 Then it's all yours!",
             },
           },
         },
@@ -196,7 +196,7 @@ export const PRESETS: Preset[] = [
     keywords: ["FREEBIE"],
     build() {
       const { graph, lastId } = starter(
-        "Hey {{first_name}}! Happy to send that over — what's the best email for it?",
+        "Hey {{first_name}}! Happy to send that over. What's the best email for it?",
       );
 
       const collectId = id("collect");
@@ -236,7 +236,7 @@ export const PRESETS: Preset[] = [
           asPrivateReply: false,
           message: {
             kind: "buttons",
-            text: "Perfect — sent to {{email}}. Here's the instant link too 👇",
+            text: "Perfect, sent to {{email}}. Here's the instant link too 👇",
             buttons: [{ type: "web_url", title: "Download now", url: "https://example.com" }],
           },
         },
@@ -255,7 +255,7 @@ export const PRESETS: Preset[] = [
             asPrivateReply: false,
             message: {
               kind: "text",
-              text: "No rush — reply with your email whenever and I'll fire it over 😊",
+              text: "No rush, reply with your email whenever and I'll fire it over 😊",
             },
           },
         },
@@ -284,7 +284,7 @@ export const PRESETS: Preset[] = [
     keywords: [],
     build() {
       const { graph, lastId } = starter(
-        "You're in, {{first_name}}! 🎉 Thanks for sharing — winners announced Friday.",
+        "You're in, {{first_name}}! 🎉 Thanks for sharing. Winners announced Friday.",
       );
 
       const tagId = id("tag");
@@ -399,7 +399,7 @@ export const PRESETS: Preset[] = [
       };
 
       const first = nudge(lastId, 320, 240, "Did you get a chance to look? Happy to answer anything 🙂", "Nudge 1");
-      const second = nudge(first, 800, 1140, "Last one from me — reply here any time if you'd like help ✨", "Nudge 2");
+      const second = nudge(first, 800, 1140, "Last one from me. Reply here any time if you'd like help ✨", "Nudge 2");
 
       append(graph, second, { id: id("end"), type: "END", position: { x: 0, y: 1280 }, data: { label: "Done", goal: false } });
       return graph;
@@ -410,7 +410,7 @@ export const PRESETS: Preset[] = [
     id: "ai-faq",
     name: "AI answers your FAQ",
     description:
-      "Someone DMs a question. The AI answers from your knowledge base — and hands it to you the moment it isn't sure.",
+      "Someone DMs a question. The AI answers from your knowledge base, and hands it to you the moment it isn't sure.",
     triggerType: "DM_KEYWORD",
     matchMode: "ALL",
     keywords: [],

@@ -116,7 +116,7 @@ export function DashboardShell({
       if (account.status === "token_expired" || account.status === "revoked") {
         list.push({
           tone: "danger",
-          message: `@${account.username} needs reconnecting — automations are paused for it.`,
+          message: `@${account.username} needs reconnecting. Automations are paused for it.`,
           href: "/dashboard/accounts",
         });
       } else if (account.automationPaused) {

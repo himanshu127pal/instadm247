@@ -23,7 +23,7 @@ export default async function PricingPage() {
       <div className="mx-auto max-w-2xl text-center">
         <h1 className="font-display text-[44px] leading-none sm:text-[56px]">Simple pricing</h1>
         <p className="mt-4 text-[16px] font-semibold text-[var(--text-muted)]">
-          Start free. Upgrade when your DMs outgrow it. Cancel whenever — you keep your plan
+          Start free. Upgrade when your DMs outgrow it. Cancel whenever. You keep your plan
           until the end of what you paid for.
         </p>
       </div>
@@ -33,7 +33,7 @@ export default async function PricingPage() {
       <p className="mt-10 text-center text-[12.5px] font-semibold text-[var(--text-faint)]">
         Prices in USD. Taxes are calculated at checkout for your country. Payments are processed
         by Dodo Payments, our merchant of record. Monthly plans aren&rsquo;t refundable; annual
-        plans can be refunded, less the months used at the monthly price —{" "}
+        plans can be refunded, less the months used at the monthly price. See the{" "}
         <a href="/refunds" className="underline hover:text-[var(--text-muted)]">
           refund policy
         </a>

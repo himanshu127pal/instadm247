@@ -313,10 +313,10 @@ export function verifyDodoSignature(
   const timestamp = Number.parseInt(timestampHeader, 10);
   if (Number.isNaN(timestamp)) return { ok: false, reason: "Unreadable webhook-timestamp." };
   if (nowSeconds - timestamp > WEBHOOK_TOLERANCE_SECONDS) {
-    return { ok: false, reason: "Timestamp too old — a replay, or the server clock is wrong." };
+    return { ok: false, reason: "Timestamp too old: a replay, or the server clock is wrong." };
   }
   if (timestamp > nowSeconds + WEBHOOK_TOLERANCE_SECONDS) {
-    return { ok: false, reason: "Timestamp too far in the future — check the server clock." };
+    return { ok: false, reason: "Timestamp too far in the future. Check the server clock." };
   }
 
   const key = Buffer.from(secret.startsWith("whsec_") ? secret.slice(6) : secret, "base64");

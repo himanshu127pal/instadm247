@@ -126,7 +126,7 @@ function PoolCard({ pool, onDelete }: { pool: Pool; onDelete: () => void }) {
           )}
 
           <div className="mt-3 max-w-xs">
-            <CopyField label="Pool ID — paste into a coupon step" value={pool.id} />
+            <CopyField label="Pool ID (paste into a coupon step)" value={pool.id} />
           </div>
         </div>
 
@@ -140,7 +140,7 @@ function PoolCard({ pool, onDelete }: { pool: Pool; onDelete: () => void }) {
           <Textarea
             value={topUp}
             onChange={(e) => setTopUp(e.target.value)}
-            placeholder="Paste more codes — one per line, or comma separated"
+            placeholder="Paste more codes, one per line or comma separated"
             className="min-h-[64px] font-mono text-[12px]"
           />
           <Button variant="secondary" size="sm" onClick={addMore} loading={adding}>
@@ -212,7 +212,7 @@ function PoolComposer({ onDone }: { onDone: () => void }) {
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Spring launch — 20% off"
+              placeholder="Spring launch, 20% off"
             />
           </Field>
           <Field label="Type">
@@ -292,7 +292,7 @@ function PoolComposer({ onDone }: { onDone: () => void }) {
         )}
 
         <p className="rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] font-medium leading-relaxed text-[var(--text-muted)]">
-          A person can only ever be issued one code from a pool — if a flow runs
+          A person can only ever be issued one code from a pool. If a flow runs
           again for them, they get the same code back rather than burning another.
         </p>
 

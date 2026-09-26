@@ -105,7 +105,7 @@ function NodeFields({
     case "TRIGGER":
       return (
         <p className="rounded-xl border border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] leading-relaxed text-[var(--text-muted)]">
-          The trigger is configured in the automation settings — which keyword,
+          The trigger is configured in the automation settings: which keyword,
           which posts, and how often the same person can re-enter.
         </p>
       );
@@ -126,8 +126,8 @@ function NodeFields({
             <span className="min-w-0">
               <span className="block text-[13px] font-medium">Reply privately to the comment</span>
               <span className="mt-0.5 block text-[11.5px] leading-relaxed text-[var(--text-muted)]">
-                The right choice for the first message of a comment-triggered flow —
-                it&rsquo;s how Instagram lets you open the conversation. Only one
+                The right choice for the first message of a comment-triggered flow.
+                It&rsquo;s how Instagram lets you open the conversation. Only one
                 private reply is allowed per comment, so use it once.
               </span>
             </span>
@@ -251,7 +251,7 @@ function NodeFields({
             label="Save to a lead form"
             hint={
               forms.length
-                ? "Answers are saved as a form response — that's what exports, and what goes to Google Sheets, Kit and Flodesk."
+                ? "Answers are saved as a form response. That's what exports, and what goes to Google Sheets, Kit and Flodesk."
                 : "Create one under Lead forms to collect responses you can export or sync."
             }
           >
@@ -420,8 +420,8 @@ function NodeFields({
             onChange={(message) => patch({ message })}
           />
           <p className="rounded-xl border-2 border-[var(--border)] bg-[var(--bg-sunken)] p-3 text-[12.5px] font-medium leading-relaxed text-[var(--text-muted)]">
-            Use <code className="font-mono font-bold">{"{{coupon}}"}</code> in the message —
-            it&rsquo;s replaced with the code this person was issued. Everyone gets at most
+            Use <code className="font-mono font-bold">{"{{coupon}}"}</code> in the message.
+            It&rsquo;s replaced with the code this person was issued. Everyone gets at most
             one code from a pool, even if the flow runs again.
           </p>
           <Field
@@ -431,7 +431,7 @@ function NodeFields({
             <Input
               value={node.data.emptyMessage ?? ""}
               onChange={(e) => patch({ emptyMessage: e.target.value })}
-              placeholder="We've just run out — give me a moment!"
+              placeholder="We've just run out, give me a moment!"
             />
           </Field>
         </>
@@ -470,7 +470,7 @@ function NodeFields({
 
     case "RANDOMIZER":
       return (
-        <Field label="Paths" hint="Weights are relative — 50/50 and 1/1 behave the same.">
+        <Field label="Paths" hint="Weights are relative: 50/50 and 1/1 behave the same.">
           <div className="space-y-2">
             {node.data.branches.map((branch, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -756,7 +756,7 @@ function MessageEditor({
       )}
 
       {value.kind === "carousel" && (
-        <Field label="Slides" hint="Up to 10 — Instagram's limit for a carousel DM.">
+        <Field label="Slides" hint="Up to 10, Instagram's limit for a carousel DM.">
           <div className="space-y-2">
             {value.slides.map((slide, i) => (
               <div key={i} className="space-y-1.5 rounded-xl border border-[var(--border)] p-2.5">
@@ -884,7 +884,7 @@ function MessagePreview({ text }: { text: string }) {
           bytes > 1000 ? "text-red-400" : "text-[var(--text-faint)]",
         )}
       >
-        {bytes} / 1000 bytes{bytes > 1000 ? " — Instagram will cut this off" : ""}
+        {bytes} / 1000 bytes{bytes > 1000 ? ". Instagram will cut this off" : ""}
       </p>
     </div>
   );

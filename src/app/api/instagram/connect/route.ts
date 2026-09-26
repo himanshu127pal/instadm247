@@ -16,11 +16,11 @@ export async function GET() {
     // Log which credential is missing for us; tell the customer only that it is
     // ours to fix. Our env var names are not their business.
     console.error(
-      `[instagram:connect] refused — missing ${missingInstagramConfig().join(", ")}`,
+      `[instagram:connect] refused: missing ${missingInstagramConfig().join(", ")}`,
     );
     return NextResponse.redirect(
       new URL(
-        `/dashboard/accounts?error=${encodeURIComponent("Connecting Instagram is temporarily unavailable. This is on our side — please try again shortly.")}`,
+        `/dashboard/accounts?error=${encodeURIComponent("Connecting Instagram is temporarily unavailable. This is on our side. Please try again shortly.")}`,
         process.env.APP_URL ?? "http://localhost:3000",
       ),
     );

@@ -108,7 +108,7 @@ export async function checkDodoSetup(): Promise<Finding[]> {
   }
 
   if (env.billing.enabled) {
-    warn("BILLING_ENABLED is already true — customers can check out right now.");
+    warn("BILLING_ENABLED is already true, so customers can check out right now.");
   } else {
     ok("BILLING_ENABLED is off, so customers can't check out yet. Staff can test on Plan & billing.");
   }
@@ -124,7 +124,7 @@ export async function checkDodoSetup(): Promise<Finding[]> {
       const status = e instanceof HttpError ? e.status : 0;
       if (status === 401 || status === 403) {
         error(
-          `Dodo rejected the API key (${status}). Check it's a ${mode} key — test and live keys don't work on each other's products.`,
+          `Dodo rejected the API key (${status}). Check it's a ${mode} key. Test and live keys don't work on each other's products.`,
         );
         return out;
       }
@@ -210,7 +210,7 @@ export async function checkDodoSetup(): Promise<Finding[]> {
       if (secret === dodo.webhookSecret) ok("DODO_PAYMENTS_WEBHOOK_SECRET matches that webhook.");
       else {
         error(
-          "DODO_PAYMENTS_WEBHOOK_SECRET is not this webhook's secret. Every payment would be taken and its webhook rejected — copy the secret from this endpoint.",
+          "DODO_PAYMENTS_WEBHOOK_SECRET is not this webhook's secret. Every payment would be taken and its webhook rejected. Copy the secret from this endpoint.",
         );
       }
     } catch (e) {

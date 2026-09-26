@@ -214,7 +214,7 @@ export function SafetyView({
                                   : "DMs this hour"}
                               </span>
                               <span className="tabular-nums text-[var(--text-faint)]">
-                                {rate.unknown ? "—" : `${rate.used} / ${rate.cap}`}
+                                {rate.unknown ? "Unknown" : `${rate.used} / ${rate.cap}`}
                               </span>
                             </div>
                             <div className="h-1.5 overflow-hidden rounded-full bg-[var(--bg-sunken)]">
@@ -296,7 +296,7 @@ export function SafetyView({
             ],
             [
               "One private reply per comment",
-              "Instagram allows exactly one. Each comment is claimed atomically, so duplicate webhooks — which Meta warns about on boosted posts — can't produce a second DM.",
+              "Instagram allows exactly one. Each comment is claimed atomically, so duplicate webhooks (which Meta warns about on boosted posts) can't produce a second DM.",
             ],
             [
               "7-day private reply deadline",
@@ -308,11 +308,11 @@ export function SafetyView({
             ],
             [
               "The HUMAN_AGENT tag, used honestly",
-              "It extends replies to 7 days and is only ever attached to messages you type yourself in the inbox. Never to automation — Meta detects that.",
+              "It extends replies to 7 days and is only ever attached to messages you type yourself in the inbox. Never to automation, because Meta detects that.",
             ],
             [
               "Viral post protection",
-              "When a post takes off, we slow down before Instagram has a reason to throttle you — not after.",
+              "When a post takes off, we slow down before Instagram has a reason to throttle you, not after.",
             ],
             [
               "Opt-outs honoured everywhere",

@@ -12,7 +12,7 @@ export const POST = route<{ id: string }>(async ({ workspace, params }) => {
     return Response.json(
       {
         error:
-          "Couldn't sync — Instagram isn't configured on this server, or this account needs reconnecting.",
+          "Couldn't sync. Instagram isn't configured on this server, or this account needs reconnecting.",
       },
       { status: 400 },
     );

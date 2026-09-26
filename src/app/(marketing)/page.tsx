@@ -108,7 +108,7 @@ function Hero() {
           <Reveal delay={0.12}>
             <p className="mt-7 max-w-lg text-[17px] font-semibold leading-relaxed text-[var(--text-muted)]">
               Every comment, story reply, @mention, Live comment and DM becomes a
-              conversation — and a sale. Build the flow once, and it runs forever
+              conversation, and a sale. Build the flow once, and it runs forever
               on the endpoints Meta actually sanctions.{" "}
               <span className="rounded-md bg-[var(--color-pow-400)] px-1.5 py-0.5 font-extrabold text-[#12110e]">No bots. No bans.</span>
             </p>
@@ -208,7 +208,7 @@ function Triggers() {
         </h2>
         <p className="mt-4 text-[16px] font-semibold leading-relaxed text-[var(--text-muted)]">
           Pick what starts the conversation. Everything after that is the same
-          engine — so a Reel comment and a Live comment behave identically,
+          engine, so a Reel comment and a Live comment behave identically,
           because they should.
         </p>
       </Reveal>
@@ -238,13 +238,13 @@ function Builder() {
           <p className="mt-4 text-[16px] font-semibold leading-relaxed text-[var(--text-muted)]">
             Send a message, wait twenty minutes, check whether they followed you,
             branch, ask a question, let AI take the rest. Every step is a card you
-            drop on a canvas — and the builder tells you the moment a flow would
+            drop on a canvas, and the builder tells you the moment a flow would
             outlive Instagram&rsquo;s 24-hour window, before you publish it.
           </p>
 
           <ul className="mt-7 space-y-3">
             {[
-              "16 step types — messages, delays, branches, forms, AI, webhooks",
+              "16 step types: messages, delays, branches, forms, AI, webhooks",
               "Live validation against Meta's real messaging rules",
               "Funnel view showing exactly where people drop off",
             ].map((item) => (
@@ -289,7 +289,7 @@ const FEATURES = [
   {
     icon: Inbox,
     title: "Unified live inbox",
-    body: "Every conversation across every connected account, in one thread list. Jump in whenever automation should step aside — the handover pauses the flow for that person only.",
+    body: "Every conversation across every connected account, in one thread list. Jump in whenever automation should step aside. The handover pauses the flow for that person only.",
     span: "lg:col-span-2",
   },
   {
@@ -300,7 +300,7 @@ const FEATURES = [
   {
     icon: ClipboardList,
     title: "Forms inside the DM",
-    body: "Collect emails, run quizzes, take orders — then export everything to CSV or Excel.",
+    body: "Collect emails, run quizzes, take orders, then export everything to CSV or Excel.",
   },
   {
     icon: Megaphone,
@@ -310,7 +310,7 @@ const FEATURES = [
   {
     icon: Layers,
     title: "DM Planner",
-    body: "Write the automation before the post exists. Drop the draft code in your caption and it wires itself up the moment you publish — from any scheduler.",
+    body: "Write the automation before the post exists. Drop the draft code in your caption and it wires itself up the moment you publish, from any scheduler.",
     span: "lg:col-span-2",
   },
   {
@@ -321,7 +321,7 @@ const FEATURES = [
   {
     icon: BarChart3,
     title: "Analytics you'd actually act on",
-    body: "Sent, opened, clicked, CTR, new followers — per automation, per step, over time.",
+    body: "Sent, opened, clicked, CTR, new followers. Per automation, per step, over time.",
   },
   {
     icon: Puzzle,
@@ -387,7 +387,7 @@ function Safety() {
           </h2>
           <p className="mt-4 text-[16px] font-semibold leading-relaxed text-[var(--text-muted)]">
             Most tools bolt safety on. Here, a single dispatcher is the only code
-            path that can send anything — and it checks all of this first. If a
+            path that can send anything, and it checks all of this first. If a
             message can&rsquo;t be sent legally, it isn&rsquo;t sent, and you see
             exactly why in the Safety Center.
           </p>
@@ -437,17 +437,17 @@ const FAQ_ITEMS = [
   {
     question: "Will this get my Instagram account banned?",
     answer:
-      "Not from anything we do. Every action goes through Meta's official Instagram Graph API using permissions you explicitly grant, and our dispatcher refuses to send anything that would break Meta's rules — the 24-hour messaging window, one private reply per comment, published rate limits. We never scrape, never automate follows or likes, and never touch your password.",
+      "Not from anything we do. Every action goes through Meta's official Instagram Graph API using permissions you explicitly grant, and our dispatcher refuses to send anything that would break Meta's rules: the 24-hour messaging window, one private reply per comment, published rate limits. We never scrape, never automate follows or likes, and never touch your password.",
   },
   {
     question: "What kind of Instagram account do I need?",
     answer:
-      "A professional account — Business or Creator. Both are free to switch to in the Instagram app, and the messaging API only works with them. You don't need a linked Facebook Page: we use Business Login for Instagram, so you connect Instagram directly.",
+      "A professional account (Business or Creator). Both are free to switch to in the Instagram app, and the messaging API only works with them. You don't need a linked Facebook Page: we use Business Login for Instagram, so you connect Instagram directly.",
   },
   {
     question: "Why can't I message anyone I want?",
     answer:
-      "Because Instagram doesn't allow it, and that restriction is the reason automation is safe at all. You can message someone within 24 hours of them interacting with you — a comment, a story reply, a DM. Comments give you a separate 7-day private-reply window. Broadcasts show you the eligible count up front, so the limit is never a surprise.",
+      "Because Instagram doesn't allow it, and that restriction is the reason automation is safe at all. You can message someone within 24 hours of them interacting with you through a comment, a story reply or a DM. Comments give you a separate 7-day private-reply window. Broadcasts show you the eligible count up front, so the limit is never a surprise.",
   },
   {
     question: "What happens when someone replies to an automated DM?",
@@ -457,7 +457,7 @@ const FAQ_ITEMS = [
   {
     question: "Do I need my own Meta app to use this?",
     answer:
-      "No. This runs as a Meta tech provider app — you just click connect and approve the permissions on Instagram's own screen. Self-hosting is also supported if you'd rather run it under your own Meta app credentials.",
+      "No. This runs as a Meta tech provider app. You just click connect and approve the permissions on Instagram's own screen. Self-hosting is also supported if you'd rather run it under your own Meta app credentials.",
   },
   {
     question: "How fast does a DM actually go out?",

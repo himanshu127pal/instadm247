@@ -159,7 +159,7 @@ export default async function AdminEmails({
                         {e.workspaceName ?? e.workspaceId.slice(0, 8)}
                       </Link>
                     ) : (
-                      <span className="text-[var(--text-faint)]">—</span>
+                      <span className="text-[var(--text-faint)]">-</span>
                     )}
                   </td>
                   <td className="px-3 py-2">
