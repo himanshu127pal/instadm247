@@ -31,7 +31,7 @@ export default async function VerifyEmailPage({
         <>
           <h1 className="font-display text-[30px]">That link didn&apos;t work</h1>
           <p className="mt-1.5 text-[14px] text-[var(--text-muted)]">
-            It may have expired — they last 24 hours — or a newer one was sent after it. Sign in and use{" "}
+            It may have expired (they last 24 hours), or a newer one was sent after it. Sign in and use{" "}
             <span className="text-[var(--text)]">Resend email</span> on the banner at the top of your dashboard.
           </p>
         </>

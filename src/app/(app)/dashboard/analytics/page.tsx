@@ -31,7 +31,7 @@ export default async function AnalyticsPage() {
         <EmptyState
           icon={<BarChart3 />}
           title="Nothing to measure yet"
-          description="Connect an Instagram account and switch on an automation — numbers start landing here immediately."
+          description="Connect an Instagram account and switch on an automation. Numbers start landing here immediately."
         />
       </div>
     );

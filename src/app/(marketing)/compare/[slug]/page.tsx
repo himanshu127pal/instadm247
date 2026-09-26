@@ -75,7 +75,7 @@ export default async function ComparePage({ params }: { params: Promise<{ slug: 
           </div>
           <p className="border-t-[2.5px] border-[var(--border)] bg-[var(--bg-sunken)] px-5 py-3 text-[12px] font-medium leading-relaxed text-[var(--text-muted)]">
             {c.name}&rsquo;s side is compiled from {c.source}, {c.asOf}. &ldquo;Not listed&rdquo; means
-            it isn&rsquo;t on their published feature list — not that they can&rsquo;t do it. Products
+            it isn&rsquo;t on their published feature list, not that they can&rsquo;t do it. Products
             change: check{" "}
             <a href={c.site} rel="noopener nofollow" className="underline">
               their site

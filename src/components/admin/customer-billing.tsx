@@ -28,7 +28,7 @@ function Meter({ label, used, cap }: { label: string; used: number; cap: number 
 }
 
 function d(v: Date | null | undefined) {
-  return v ? v.toISOString().slice(0, 10) : "—";
+  return v ? v.toISOString().slice(0, 10) : "-";
 }
 
 export function CustomerBilling({
@@ -79,7 +79,7 @@ export function CustomerBilling({
                     {data.planOverrideUntil ? ` until ${d(data.planOverrideUntil)}` : " with no end date"}
                     <span className="block text-[12px] text-[var(--text-muted)]">
                       “{data.planOverrideReason ?? "no reason"}”
-                      {data.overrideByEmail ? ` — ${data.overrideByEmail}` : ""}
+                      {data.overrideByEmail ? ` by ${data.overrideByEmail}` : ""}
                     </span>
                   </>
                 ) : (
@@ -176,7 +176,7 @@ export function CustomerBilling({
                 <span className="w-20 shrink-0 text-[var(--text-faint)]">{timeAgo(e.receivedAt)}</span>
                 <span className="w-8 shrink-0 text-[var(--text-faint)]">{e.direction === "inbound" ? "in" : "out"}</span>
                 <Link href={`/admin/billing/${e.id}`} className="font-mono font-semibold underline underline-offset-2">
-                  {e.type ?? "—"}
+                  {e.type ?? "-"}
                 </Link>
                 <span className="font-bold">{e.status}</span>
                 {(e.error || e.note) && (

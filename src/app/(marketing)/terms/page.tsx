@@ -57,7 +57,7 @@ export default function TermsPage() {
       <p>
         Paid plans renew automatically each month or year until you cancel. You can cancel
         at any time from the billing page, and you keep your plan until the end of the
-        period you have paid for. Usage allowances — automated DMs and AI replies — reset
+        period you have paid for. Usage allowances (automated DMs and AI replies) reset
         on the first day of each calendar month (UTC) and do not roll over. Messages you
         type yourself in the inbox are never counted against them.
       </p>

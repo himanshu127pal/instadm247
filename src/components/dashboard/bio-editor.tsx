@@ -298,7 +298,7 @@ function PageComposer({
             label="Link"
             hint={
               slugState.status === "available"
-                ? `✓ Available — ${appUrl}/l/${slug}`
+                ? `✓ Available: ${appUrl}/l/${slug}`
                 : slugState.status === "checking"
                   ? "Checking…"
                   : `${appUrl}/l/${slug || "your-name"}`
@@ -334,7 +334,7 @@ function PageComposer({
               ))}
             </Select>
           </Field>
-          <Field label="Avatar URL" hint="Optional — falls back to your Instagram photo.">
+          <Field label="Avatar URL" hint="Optional. Falls back to your Instagram photo.">
             <Input
               value={avatarUrl}
               onChange={(e) => setAvatarUrl(e.target.value)}
@@ -474,7 +474,7 @@ function PageComposer({
           <label className="flex items-center gap-3 rounded-xl border-2 border-[var(--border)] p-3">
             <Switch checked={published} onCheckedChange={setPublished} label="Published" />
             <span className="text-[13px] font-bold">
-              {published ? "Live" : "Draft — the link 404s"}
+              {published ? "Live" : "Draft (the link 404s)"}
             </span>
           </label>
           <label className="flex items-center gap-3 rounded-xl border-2 border-[var(--border)] p-3">

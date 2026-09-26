@@ -81,7 +81,7 @@ export function SuspendControls({
         value={reason}
         onChange={(e) => setReason(e.target.value)}
         rows={3}
-        placeholder="Reason shown to the customer, e.g. “Unusual sending volume — email support@instadm247.com to resolve.”"
+        placeholder="Reason shown to the customer, e.g. “Unusual sending volume. Email support@instadm247.com to resolve.”"
         className="w-full rounded-lg border-2 border-[var(--border-soft)] bg-[var(--bg)] p-2 text-[13px] font-semibold outline-none focus:border-[var(--border)]"
       />
       <div className="flex gap-2">
@@ -150,7 +150,7 @@ export function ImpersonateControl({
       <input
         value={reason}
         onChange={(e) => setReason(e.target.value)}
-        placeholder="Reason, e.g. “Ticket #412 — flow not triggering”"
+        placeholder="Reason, e.g. “Ticket #412: flow not triggering”"
         className="w-full rounded-lg border-2 border-[var(--border-soft)] bg-[var(--bg)] px-2 py-1.5 text-[13px] font-semibold outline-none focus:border-[var(--border)]"
       />
       <div className="flex gap-2">
@@ -205,7 +205,7 @@ export function AddNote({ workspaceId }: { workspaceId: string }) {
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={2}
-        placeholder="Internal note — never shown to the customer"
+        placeholder="Internal note, never shown to the customer"
         className="w-full rounded-lg border-2 border-[var(--border-soft)] bg-[var(--bg)] p-2 text-[13px] font-semibold outline-none focus:border-[var(--border)]"
       />
       <button

@@ -20,7 +20,7 @@ export function EmailRetryButton({ id }: { id: string }) {
             body: JSON.stringify({ action: "retry", id }),
           });
           const data = (await res.json().catch(() => ({}))) as { status?: string; error?: string };
-          if (res.ok) toast.success(`Retried — ${data.status}`);
+          if (res.ok) toast.success(`Retried: ${data.status}`);
           else toast.error(data.error ?? "Couldn't retry.");
           router.refresh();
         } finally {

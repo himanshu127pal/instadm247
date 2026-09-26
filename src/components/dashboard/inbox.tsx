@@ -433,7 +433,7 @@ function Thread({
           />
           <span className="min-w-0 flex-1 text-[12px] text-[var(--text-muted)]">
             {conversation.humanTakeover
-              ? "You're handling this — automations won't message this person."
+              ? "You're handling this. Automations won't message this person."
               : "Automations are still running for this conversation."}
           </span>
         </label>
@@ -516,12 +516,12 @@ function MessageBubble({ message }: { message: Message }) {
 
         {skipped && message.skipReason && (
           <p className={cn("px-1 text-[10.5px] text-[var(--color-zonk-500)]", outbound && "text-right")}>
-            Not sent — {humanizeSkip(message.skipReason)}
+            Not sent: {humanizeSkip(message.skipReason)}
           </p>
         )}
         {failed && message.failReason && (
           <p className={cn("px-1 text-[10.5px] text-[var(--color-zap-500)]", outbound && "text-right")}>
-            Failed — {message.failReason}
+            Failed: {message.failReason}
           </p>
         )}
       </div>

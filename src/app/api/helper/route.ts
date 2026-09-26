@@ -49,7 +49,7 @@ export const POST = route(async ({ workspace, request }) => {
   if (!(await reserveUsage(workspace, "helper", reservedAt))) {
     const plan = effectivePlan(workspace);
     const upgradeTo = plan.key === "free" ? "pro" : "business";
-    const more = plan.key === "business" ? "" : ` — or move to ${upgradeTo === "pro" ? "Pro" : "Business"} for more`;
+    const more = plan.key === "business" ? "" : `, or move to ${upgradeTo === "pro" ? "Pro" : "Business"} for more`;
     throw new PlanLimitError(
       `You've used this week's ${plan.limits.helperQuestionsPerWeek} AI Helper questions. They reset on Monday${more}.`,
       upgradeTo,

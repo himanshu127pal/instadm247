@@ -40,9 +40,9 @@ export const COMPARISONS: Comparison[] = [
     description:
       "InstaDM247 vs LinkDM for Instagram DM automation: comment-to-DM, flows, lead capture, safety features and what each does better.",
     summary:
-      "LinkDM is an established comment-to-DM tool with a clear set of Instagram features. InstaDM247 covers that list and adds a visual flow builder, AI replies grounded in your own answers, lead forms with Google Sheets, a live inbox and link-in-bio — with every safety feature on the free plan.",
+      "LinkDM is an established comment-to-DM tool with a clear set of Instagram features. InstaDM247 covers that list and adds a visual flow builder, AI replies grounded in your own answers, lead forms with Google Sheets, a live inbox and link-in-bio, with every safety feature on the free plan.",
     theyLead: [
-      "Automates Facebook comments as well as Instagram — we're Instagram-only for now.",
+      "Automates Facebook comments as well as Instagram. We're Instagram-only for now.",
       "Has been running comment-to-DM since 2021, per their site.",
     ],
     weLead: [
@@ -89,7 +89,7 @@ export const COMPARISONS: Comparison[] = [
     description:
       "InstaDM247 vs SendDM for Instagram DM automation: stories, AI, link in bio, scheduling, safety features and where each one is ahead.",
     summary:
-      "SendDM bundles DM automation with scheduling and link-in-bio. InstaDM247 covers that list too, and adds a visual flow builder, lead forms with Google Sheets, a live inbox with human takeover and a Safety Center — with safety features free on every plan.",
+      "SendDM bundles DM automation with scheduling and link-in-bio. InstaDM247 covers that list too, and adds a visual flow builder, lead forms with Google Sheets, a live inbox with human takeover and a Safety Center, with safety features free on every plan.",
     theyLead: [
       "Their plans go up to 20 Instagram accounts; our Business plan connects 10.",
       "They advertise an unlimited DM send limit; ours are metered per plan.",
@@ -140,7 +140,7 @@ export const COMPARISONS: Comparison[] = [
       "Lower list prices: Free for the first 1,000 DMs, Pro at $9/month and Business at $29/month, per their site.",
     ],
     weLead: [
-      "A visual flow builder with branching — not just fixed rules.",
+      "A visual flow builder with branching, not just fixed rules.",
       "Lead forms, surveys and quizzes, not only email capture.",
       "A Safety Center that shows every skipped message and why, and safety features on every plan.",
       "Link-in-bio with click tracking, and a content scheduler.",
@@ -163,7 +163,7 @@ export const COMPARISONS: Comparison[] = [
       { feature: "Link-in-bio page", us: true, them: null },
       { feature: "Content scheduler", us: true, them: null },
     ],
-    theirPricing: "Free (first 1,000 DMs), Pro $9/month, Business $29/month — from their site, September 2026.",
+    theirPricing: "Free (first 1,000 DMs), Pro $9/month, Business $29/month (from their site, September 2026).",
   },
   {
     slug: "manychat",
@@ -175,14 +175,14 @@ export const COMPARISONS: Comparison[] = [
     description:
       "InstaDM247 vs ManyChat for Instagram DM automation: channels, flow builders, AI, safety features and when each is the better choice.",
     summary:
-      "ManyChat is a multi-channel chat marketing platform. If you need Messenger, WhatsApp, Telegram, SMS and email in one tool, it's built for that. If Instagram is where your audience is, InstaDM247 is built only for it — with Instagram's rules enforced on every message and every safety feature on the free plan.",
+      "ManyChat is a multi-channel chat marketing platform. If you need Messenger, WhatsApp, Telegram, SMS and email in one tool, it's built for that. If Instagram is where your audience is, InstaDM247 is built only for it, with Instagram's rules enforced on every message and every safety feature on the free plan.",
     theyLead: [
       "Many channels: Instagram, Facebook Messenger, WhatsApp, Telegram, TikTok, SMS and email.",
       "A mature visual Flow Builder, with an AI assistant for building flows.",
       "A large integrations ecosystem.",
     ],
     weLead: [
-      "Built only for Instagram, with its rules — the 24-hour window, one private reply per comment, rate limits — checked on every message.",
+      "Built only for Instagram, with its rules (the 24-hour window, one private reply per comment, rate limits) checked on every message.",
       "Rewind: back-send to comments that arrived before the automation was switched on.",
       "Slow Down mode and viral-post protection, plus a Safety Center that explains every skipped message.",
       "Link-in-bio, DM Planner and a content scheduler in the same tool.",

@@ -42,7 +42,7 @@ export const POST = route(async ({ workspace, request }) => {
       })
       .catch(() => null);
   }
-  if (!planned) throw new AuthError("Could not generate a unique draft code — try again.", 500);
+  if (!planned) throw new AuthError("Could not generate a unique draft code. Please try again.", 500);
 
   // The automation stays off until its post goes live.
   await prisma.automation.update({

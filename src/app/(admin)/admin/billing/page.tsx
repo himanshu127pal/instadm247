@@ -65,7 +65,7 @@ export default async function AdminBilling({
       <div>
         <h1 className="text-[24px] font-extrabold">Billing</h1>
         <p className="mt-1 max-w-3xl text-[13.5px] font-semibold text-[var(--text-muted)]">
-          Every webhook Dodo sent us — signed or not — and every call we made to Dodo, newest
+          Every webhook Dodo sent us (signed or not) and every call we made to Dodo, newest
           first. Nothing that reaches the endpoint goes unrecorded.
         </p>
       </div>
@@ -149,14 +149,14 @@ export default async function AdminBilling({
                 <tr key={e.id} className="border-t border-[var(--border-soft)] align-top">
                   <td className="whitespace-nowrap px-3 py-2 text-[var(--text-muted)]">{timeAgo(e.receivedAt)}</td>
                   <td className="px-3 py-2 text-[var(--text-faint)]">{e.direction === "inbound" ? "in" : "out"}</td>
-                  <td className="px-3 py-2 font-mono text-[12px]">{e.type ?? "—"}</td>
+                  <td className="px-3 py-2 font-mono text-[12px]">{e.type ?? "-"}</td>
                   <td className="px-3 py-2">
                     {e.workspace ? (
                       <Link href={`/admin/customers/${e.workspace.id}`} className="font-semibold underline underline-offset-2">
                         {e.workspace.name}
                       </Link>
                     ) : (
-                      <span className="text-[var(--text-faint)]">—</span>
+                      <span className="text-[var(--text-faint)]">-</span>
                     )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 tabular-nums">{money(e.amount, e.currency)}</td>

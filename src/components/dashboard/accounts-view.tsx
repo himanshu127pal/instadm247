@@ -126,7 +126,7 @@ export function AccountsView({
               </p>
               <p className="text-[13px] leading-relaxed text-[var(--text-muted)]">
                 This is on our side, not yours, and we&rsquo;re on it. Everything else in
-                the app keeps working — you can build flows now and connect an account
+                the app keeps working. You can build flows now and connect an account
                 once this clears.
               </p>
             </div>

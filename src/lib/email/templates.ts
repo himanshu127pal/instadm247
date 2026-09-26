@@ -113,7 +113,7 @@ export const TEMPLATES: { [K in TemplateName]: Def<TemplateParams[K]> } = {
       preheader: "This link works for one hour.",
       heading: "Reset your password",
       blocks: [
-        { p: `${hi(p)} someone — hopefully you — asked to reset the password for your InstaDM247 account.` },
+        { p: `${hi(p)} someone (hopefully you) asked to reset the password for your InstaDM247 account.` },
         { cta: { label: "Choose a new password", url: p.url } },
         { note: "This link works once, for one hour. If you didn't ask for this, ignore it: your password stays the same and nobody can use this link without access to your inbox." },
       ],
@@ -144,7 +144,7 @@ export const TEMPLATES: { [K in TemplateName]: Def<TemplateParams[K]> } = {
       preheader: "Your new limits are live now.",
       heading: `Welcome to ${p.plan}`,
       blocks: [
-        { p: `${hi(p)} thank you — your ${p.plan} plan is active, and the new limits and features are already live on your account.` },
+        { p: `${hi(p)} thank you! Your ${p.plan} plan is active, and the new limits and features are already live on your account.` },
         {
           facts: [
             ["Plan", p.plan],
@@ -208,7 +208,7 @@ export const TEMPLATES: { [K in TemplateName]: Def<TemplateParams[K]> } = {
   subscription_payment_recovered: {
     category: "billing",
     build: (p) => ({
-      subject: "Payment received — you're all set",
+      subject: "Payment received, you're all set",
       preheader: `Your ${p.plan} plan is fully active again.`,
       heading: "All sorted",
       blocks: [
@@ -255,7 +255,7 @@ export const TEMPLATES: { [K in TemplateName]: Def<TemplateParams[K]> } = {
         {
           p: `${hi(p)} we've refunded ${p.amount} from your annual ${p.plan} plan to the payment method you paid with: what you paid for the year, less the ${p.monthsUsed} ${p.monthsUsed === 1 ? "month" : "months"} you used at the monthly price. How long it takes to appear depends on your bank or card issuer.`,
         },
-        { p: "Your plan has ended and your workspace is on the Free plan. Everything you built is still there — automations using features Free doesn't include are paused at that step, and resume if you upgrade again." },
+        { p: "Your plan has ended and your workspace is on the Free plan. Everything you built is still there. Automations using features Free doesn't include are paused at that step, and resume if you upgrade again." },
         { cta: { label: "See plans", url: app("/dashboard/billing") } },
       ],
     }),
@@ -270,7 +270,7 @@ export const TEMPLATES: { [K in TemplateName]: Def<TemplateParams[K]> } = {
       blocks: [
         { p: `${hi(p)} a heads-up: your yearly ${p.plan} plan renews automatically on ${p.renewsOn}, and the card on file will be charged then.` },
         { p: "Nothing to do if you'd like to continue. To change plan or cancel, visit the billing page before that date." },
-        { note: "Changed your mind after it renews? You can ask for a refund of what's left once the months you've used are charged at the monthly price — just reply to this email." },
+        { note: "Changed your mind after it renews? You can ask for a refund of what's left once the months you've used are charged at the monthly price. Just reply to this email." },
         { cta: { label: "Manage billing", url: app("/dashboard/billing") } },
       ],
     }),
@@ -315,7 +315,7 @@ export const TEMPLATES: { [K in TemplateName]: Def<TemplateParams[K]> } = {
           ? `You've used all your ${what} for this month`
           : `You've used ${p.percent}% of your ${what}`,
         preheader: full
-          ? `They pause until ${p.resetsOn} — or upgrade to keep going.`
+          ? `They pause until ${p.resetsOn}, or upgrade to keep going.`
           : `${n(p.used)} of ${n(p.limit)} on your ${p.plan} plan.`,
         heading: full ? "You've reached this month's limit" : `${p.percent}% of your ${what} used`,
         blocks: [
@@ -444,7 +444,7 @@ function blockText(b: Block): string {
 }
 
 const FOOTER_TEXT = [
-  "Questions? Just reply — it reaches a real person at support@instadm247.com.",
+  "Questions? Just reply. It reaches a real person at support@instadm247.com.",
   "InstaDM247 is the registered trade name of Rajat Pal, Meerut, Uttar Pradesh 250110, India.",
 ];
 

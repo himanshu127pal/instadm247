@@ -157,7 +157,7 @@ function TemplatesTab({ templates }: { templates: Template[] }) {
               <Textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="Hey {{first_name}}! We ship worldwide — UK in 2–3 days, EU in 5–7 🌍"
+                placeholder="Hey {{first_name}}! We ship worldwide: UK in 2–3 days, EU in 5–7 🌍"
               />
             </Field>
             {text && (
@@ -294,7 +294,7 @@ function LinksTab({ links, appUrl }: { links: TrackedLink[]; appUrl: string }) {
         <EmptyState
           icon={<Link2 />}
           title="No tracked links yet"
-          description="A tracked link works like any other URL — it just records the click on its way through."
+          description="A tracked link works like any other URL. It just records the click on its way through."
         />
       ) : (
         <div className="space-y-3">

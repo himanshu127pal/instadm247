@@ -33,7 +33,7 @@ export const POST = route(async ({ workspace, user, request }) => {
   // so it has to be one they can read. Only asked for when we can send the
   // verification email; otherwise it would be a wall with no door.
   if (isEmailConfigured() && !user.emailVerified) {
-    throw new AuthError("Confirm your email first — use the link we sent you, or resend it from the banner above.", 403);
+    throw new AuthError("Confirm your email first. Use the link we sent you, or resend it from the banner above.", 403);
   }
 
   const { plan, interval } = await parseBody(request, schema);

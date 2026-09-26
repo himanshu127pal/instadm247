@@ -60,7 +60,7 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
       {w.suspendedAt && (
         <div className="rounded-[var(--radius-card)] border-2 border-[var(--color-zap-400)] bg-[var(--color-zap-400)]/10 p-4">
           <p className="text-[13.5px] font-extrabold">
-            Suspended {w.suspendedAt.toISOString().slice(0, 10)} — automations are not sending.
+            Suspended {w.suspendedAt.toISOString().slice(0, 10)}. Automations are not sending.
           </p>
           <p className="mt-1 text-[13px] font-semibold text-[var(--text-muted)]">
             Shown at sign-in: “{w.suspendedReason ?? "no reason recorded"}”
@@ -123,7 +123,7 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
 
         <Panel title="Webhook deliveries">
           <p className="text-[13px] font-semibold text-[var(--text-muted)]">
-            Everything Instagram has sent for this customer in the last 30 days — the
+            Everything Instagram has sent for this customer in the last 30 days. The
             first place to look when their automations are not firing.
           </p>
           <Link

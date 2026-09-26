@@ -179,7 +179,7 @@ export function MenuTab({
                 <Input
                   value={item.payload ?? ""}
                   onChange={(e) => patch(i, { payload: e.target.value })}
-                  placeholder="Payload — match this in a 'Button tapped' automation"
+                  placeholder="Payload to match in a 'Button tapped' automation"
                 />
               )}
             </div>

@@ -141,7 +141,7 @@ export function NewAutomationWizard({
       if (!res.ok || !data.automation) {
         throw new Error(data.error ?? "Could not create the automation");
       }
-      toast.success("Automation created — now build the flow");
+      toast.success("Automation created. Now build the flow");
       router.push(`/dashboard/automations/${data.automation.id}`);
     } catch (error) {
       toast.error((error as Error).message);
@@ -392,7 +392,7 @@ export function NewAutomationWizard({
 
         {step === 2 && (
           <>
-            <Field label="Name this automation" hint="Just for you — people never see it.">
+            <Field label="Name this automation" hint="Just for you. People never see it.">
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -482,5 +482,5 @@ function suggestName(triggerType: string, keywords: string[]): string {
     ICE_BREAKER: "Conversation starter",
   };
   const name = base[triggerType] ?? "Automation";
-  return keywords.length ? `${name} — ${keywords[0]}` : name;
+  return keywords.length ? `${name}: ${keywords[0]}` : name;
 }

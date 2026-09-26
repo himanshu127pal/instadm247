@@ -23,7 +23,7 @@ export default async function FormsPage() {
     <div className="mx-auto max-w-4xl space-y-5">
       <PageHeader
         title="Lead forms"
-        description="Collect emails, run surveys and quizzes, or take orders — all inside the DM. Answers land on the contact record and export to CSV or Excel."
+        description="Collect emails, run surveys and quizzes, or take orders, all inside the DM. Answers land on the contact record and export to CSV or Excel."
       />
       <FormsView
         forms={forms.map((form) => ({

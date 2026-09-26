@@ -263,7 +263,7 @@ export async function POST(request: Request) {
           });
           return NextResponse.json(
             {
-              error: `The refund of ${refundText} was issued, but ending the subscription failed (${(error as Error).message}). Run the refund again — it won't refund twice, it will only retry the cancel.`,
+              error: `The refund of ${refundText} was issued, but ending the subscription failed (${(error as Error).message}). Run the refund again. It won't refund twice, it will only retry the cancel.`,
             },
             { status: 502 },
           );

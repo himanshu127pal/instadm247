@@ -82,7 +82,7 @@ export default async function AdminMetaPage() {
         <h2 className="text-[16px] font-extrabold">What we send to Instagram</h2>
         <p className="max-w-2xl text-[12.5px] font-semibold leading-relaxed text-[var(--text-muted)]">
           The app ID below is the <strong className="text-[var(--text)]">Instagram</strong>{" "}
-          app ID from <em>API setup with Instagram login → Business login settings</em> —
+          app ID from <em>API setup with Instagram login → Business login settings</em>,
           not the Facebook App ID from <em>App settings → Basic</em>, which is a different
           number. If a connect attempt dies at Instagram with{" "}
           <span className="font-mono">Invalid platform app</span>, it is almost always
@@ -111,7 +111,7 @@ export default async function AdminMetaPage() {
           <p className="mt-2 text-[12.5px] font-semibold text-[var(--text-muted)]">
             Whatever is below must also be registered verbatim under{" "}
             <em>Instagram → API setup with Instagram login → Business login settings → OAuth
-            redirect URIs</em> — not under Facebook Login, which this flow ignores.
+            redirect URIs</em>, not under Facebook Login, which this flow ignores.
           </p>
         </section>
       )}
@@ -133,7 +133,7 @@ export default async function AdminMetaPage() {
         ) : (
           <div className="flex items-center gap-2 rounded-xl border-2 border-dashed border-[var(--border-soft)] px-3 py-2 text-[12px] font-semibold text-[var(--text-faint)]">
             <ShieldAlert className="h-4 w-4 shrink-0" />
-            Webhook verify token — admins only
+            Webhook verify token (admins only)
           </div>
         )}
       </section>
@@ -186,7 +186,7 @@ export default async function AdminMetaPage() {
 
       <p className="max-w-2xl rounded-[var(--radius-card)] border-2 border-[var(--border-soft)] bg-[var(--bg-sunken)] p-3 text-[12.5px] font-semibold leading-relaxed text-[var(--text-muted)]">
         Use <strong className="text-[var(--text)]">API setup with Instagram login</strong> in
-        the Instagram use case — no Facebook Page needed. Advanced Access for the messaging
+        the Instagram use case. No Facebook Page needed. Advanced Access for the messaging
         and comments permissions is required before the app works for accounts that
         don&rsquo;t have a role on it.
       </p>

@@ -13,13 +13,13 @@ export function formatNumber(value: number): string {
 }
 
 export function formatPercent(value: number, digits = 1): string {
-  if (!Number.isFinite(value)) return "—";
+  if (!Number.isFinite(value)) return "-";
   return `${(value * 100).toFixed(digits)}%`;
 }
 
 /** "3m ago", "2h ago", "Mar 4" — compact enough for list rows. */
 export function timeAgo(date: Date | string | null | undefined): string {
-  if (!date) return "—";
+  if (!date) return "never";
   const then = typeof date === "string" ? new Date(date) : date;
   const seconds = Math.floor((Date.now() - then.getTime()) / 1000);
 

@@ -146,7 +146,7 @@ export function ContactsTable({
                     <td className="px-4 py-2.5">
                       <div className="flex flex-wrap gap-1">
                         {contact.tags.length === 0 ? (
-                          <span className="text-[var(--text-faint)]">—</span>
+                          <span className="text-[var(--text-faint)]">No tags</span>
                         ) : (
                           contact.tags.slice(0, 3).map((t) => (
                             <Badge key={t} tone="brand">

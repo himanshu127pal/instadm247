@@ -24,7 +24,7 @@ export default async function SettingsPage() {
       <SectionCard title="Your account">
         <dl className="space-y-3">
           {[
-            ["Name", user.name ?? "—"],
+            ["Name", user.name ?? "Not set"],
             ["Email", user.email],
             ["Workspace", workspace.name],
             ["Instagram accounts", String(accountCount)],

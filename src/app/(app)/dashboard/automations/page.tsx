@@ -68,7 +68,7 @@ export default async function AutomationsPage() {
         <EmptyState
           icon={<Zap />}
           title="No automations yet"
-          description="Start from a template — comment-to-DM takes about a minute to set up."
+          description="Start from a template. Comment-to-DM takes about a minute to set up."
           action={
             <Link href="/dashboard/automations/new">
               <Button variant="gradient">
@@ -128,7 +128,7 @@ export default async function AutomationsPage() {
                   )}
                   {automation.matchMode === "ALL" && (
                     <p className="mt-2.5 text-[12px] text-[var(--text-faint)]">
-                      Responds to everything — no keyword needed.
+                      Responds to everything, no keyword needed.
                     </p>
                   )}
                   {automation.matchMode === "REACTION" && (

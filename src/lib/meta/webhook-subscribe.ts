@@ -33,7 +33,7 @@ function describeRefusals(refused: string[], reasons: Record<string, string>): s
   const parts: string[] = [];
   if (notEnabled.length) {
     parts.push(
-      `Instagram refused ${notEnabled.join(", ")} — most often these are simply not ticked on the app under Instagram → Configure webhooks. Enable them there, then use Retry subscription.`,
+      `Instagram refused ${notEnabled.join(", ")}. Most often these are simply not ticked on the app under Instagram → Configure webhooks. Enable them there, then use Retry subscription.`,
     );
   }
   if (unknown.length) {

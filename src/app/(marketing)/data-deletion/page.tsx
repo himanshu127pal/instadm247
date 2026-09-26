@@ -21,8 +21,8 @@ export default async function DataDeletionPage({
             Confirmation code: <code className="font-mono text-[var(--text)]">{code}</code>
           </p>
           <p className="mt-2 text-[14px]">
-            Everything associated with that Instagram account — contacts, conversations,
-            messages, automations and statistics — has been removed from our systems.
+            Everything associated with that Instagram account (contacts, conversations,
+            messages, automations and statistics) has been removed from our systems.
           </p>
         </div>
       )}
@@ -52,7 +52,7 @@ export default async function DataDeletionPage({
       <h2>If someone messaged a creator using this app</h2>
       <p>
         Reply <strong>STOP</strong> in that conversation and you are suppressed
-        immediately — no automation from that account will reach you again. To have your
+        immediately, and no automation from that account will reach you again. To have your
         stored records deleted as well, email us with the Instagram handle you used and
         the creator&rsquo;s handle.
       </p>
@@ -60,7 +60,7 @@ export default async function DataDeletionPage({
       <h2>What we keep, briefly</h2>
       <p>
         Backups roll off within 30 days. We may retain minimal records where the law
-        requires it — for example, financial records of payments.
+        requires it, for example financial records of payments.
       </p>
     </LegalPage>
   );

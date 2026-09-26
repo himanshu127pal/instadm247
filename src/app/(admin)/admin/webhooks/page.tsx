@@ -89,8 +89,8 @@ export default async function AdminWebhooks({
             {formatNumber(summary.unmatched)} delivery
             {summary.unmatched === 1 ? "" : "ies"} matched no connected account. Instagram
             got a 200 and considers these delivered, but nothing ran. Usually the stored
-            account ID differs from the one in <span className="font-mono">entry.id</span>{" "}
-            — reconnecting the account rewrites it.
+            account ID differs from the one in <span className="font-mono">entry.id</span>.
+            Reconnecting the account rewrites it.
           </span>
         </p>
       )}
@@ -173,7 +173,7 @@ export default async function AdminWebhooks({
                         {e.workspaceName}
                       </Link>
                     ) : (
-                      <span className="text-[var(--text-faint)]">—</span>
+                      <span className="text-[var(--text-faint)]">-</span>
                     )}
                   </td>
                   <td className="px-3 py-2">

@@ -234,7 +234,7 @@ export const SKIP_EXPLANATIONS: Record<SkipReasonKey, string> = {
     "Instagram's 24-hour messaging window closed before this step ran, so the message wasn't sent.",
   ALREADY_REPLIED: "Instagram allows one private reply per comment, and this comment already got one.",
   COMMENT_TOO_OLD:
-    "Private replies expire 7 days after a comment — and as soon as a Live broadcast ends.",
+    "Private replies expire 7 days after a comment, and as soon as a Live broadcast ends.",
   RATE_LIMITED: "The hourly sending limit for this account was reached. The message is queued to retry.",
   SUPPRESSED: "This person is on the suppression list.",
   OPTED_OUT: "This person opted out of automated messages.",

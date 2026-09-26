@@ -53,7 +53,7 @@ function Meter({
       {/* These warnings are about automated sends; a percent meter carries its own hint. */}
       {!percent && finite && pct >= 80 && pct < 100 && (
         <p className="mt-1 text-[12px] font-semibold text-[var(--color-zap-500)]">
-          {pct}% used — upgrade before you run out, so nothing stops mid-campaign.
+          {pct}% used. Upgrade before you run out, so nothing stops mid-campaign.
         </p>
       )}
       {!percent && finite && pct >= 100 && (
@@ -125,7 +125,7 @@ export default async function BillingPage({
           )}
           {subscription
             ? `You're on ${PLANS[subscription.planKey as keyof typeof PLANS]?.name ?? subscription.planKey}. Thank you!`
-            : "Payment received. Your plan updates as soon as the payment provider confirms it — usually within a few seconds. Refresh in a moment."}
+            : "Payment received. Your plan updates as soon as the payment provider confirms it, usually within a few seconds. Refresh in a moment."}
         </p>
       )}
 
@@ -140,9 +140,9 @@ export default async function BillingPage({
         description={
           subscription
             ? subscription.cancelAtPeriodEnd
-              ? `Cancelled — you keep ${plan.name} until ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? "the end of the period"}, then move to Free.`
+              ? `Cancelled. You keep ${plan.name} until ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? "the end of the period"}, then move to Free.`
               : subscription.status === "past_due"
-                ? "Your last payment didn't go through. Update your card to keep your plan — we'll keep retrying for a few days first."
+                ? "Your last payment didn't go through. Update your card to keep your plan. We'll keep retrying for a few days first."
                 : subscription.interval === "year"
                   ? `Renews ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? ""} · billed yearly · refundable on request, less the months used at the monthly price`
                   : `Renews ${subscription.currentPeriodEnd?.toISOString().slice(0, 10) ?? ""} · billed monthly`

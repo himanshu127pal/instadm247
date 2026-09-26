@@ -72,7 +72,7 @@ export function AiAgentView({
             </p>
             <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-muted)]">
               This is on our side. Until it clears, the AI step falls back to your
-              knowledge base article directly, or to your fallback message — it never
+              knowledge base article directly, or to your fallback message. It never
               blocks a flow.
             </p>
           </div>
@@ -215,7 +215,7 @@ export function AiAgentView({
           <EmptyState
             icon={<BookOpen />}
             title="Nothing to answer from yet"
-            description="Add your shipping policy, sizing guide, FAQ — anything you'd otherwise retype in DMs."
+            description="Add your shipping policy, sizing guide, FAQ: anything you'd otherwise retype in DMs."
           />
         ) : (
           <ul className="divide-y-2 divide-[var(--border-soft)]">
@@ -246,7 +246,7 @@ export function AiAgentView({
         <ul className="space-y-2.5 text-[13px] leading-relaxed text-[var(--text-muted)]">
           {[
             "It answers only from the articles above. If the answer isn't there, it says so and hands the conversation to you.",
-            "It won't invent prices, stock levels, shipping times or policies — the one thing that turns a helpful bot into a liability.",
+            "It won't invent prices, stock levels, shipping times or policies. That's the one thing that turns a helpful bot into a liability.",
             "Its replies go through the same dispatcher as everything else, so the messaging window and rate limits still apply.",
             "Every AI message is labelled in your inbox, so you always know what was said on your behalf.",
           ].map((line, i) => (

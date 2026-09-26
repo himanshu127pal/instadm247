@@ -119,7 +119,7 @@ export function RewindPanel({ automationId }: { automationId: string }) {
           Instagram lets you privately reply to a comment for{" "}
           <strong className="text-[var(--text)]">7 days</strong>, exactly{" "}
           <strong className="text-[var(--text)]">once</strong>. Rewind only contacts people who
-          still qualify — everyone else is counted below with the reason.
+          still qualify. Everyone else is counted below with the reason.
         </p>
 
         {preview && (
@@ -143,7 +143,7 @@ export function RewindPanel({ automationId }: { automationId: string }) {
               <ul className="space-y-1.5">
                 {preview.sample.map((s, i) => (
                   <li key={i} className="text-[12.5px] font-medium text-[var(--text-muted)]">
-                    <span className="font-extrabold text-[var(--text)]">@{s.username}</span> —
+                    <span className="font-extrabold text-[var(--text)]">@{s.username}</span>:
                     &ldquo;{s.text}&rdquo; · {timeAgo(s.when)}
                   </li>
                 ))}

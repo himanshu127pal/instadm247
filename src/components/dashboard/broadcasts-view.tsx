@@ -51,7 +51,7 @@ export function BroadcastsView({
             </p>
             <p className="mt-0.5 max-w-lg text-[12.5px] leading-relaxed text-[var(--text-muted)]">
               Instagram only lets you message someone within 24 hours of them
-              contacting you. That&rsquo;s who this counts — and it changes minute
+              contacting you. That&rsquo;s who this counts, and it changes minute
               to minute.
             </p>
           </div>
@@ -275,7 +275,7 @@ function Composer({
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Hey {{first_name}} — the new drop is live and the code from earlier still works 👀"
+            placeholder="Hey {{first_name}}, the new drop is live and the code from earlier still works 👀"
             maxLength={1000}
           />
         </Field>

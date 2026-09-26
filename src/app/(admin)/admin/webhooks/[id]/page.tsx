@@ -68,13 +68,13 @@ export default async function WebhookDetail({ params }: { params: Promise<{ id: 
                 {event.account.workspace.name}
               </Link>
             ) : (
-              "—"
+              "-"
             )}
           </Row>
           <Row label="Processed">
             {event.processed
               ? (event.processedAt?.toISOString() ?? "yes")
-              : "not yet — still queued, or the worker is not running"}
+              : "not yet: still queued, or the worker is not running"}
           </Row>
           {event.error && (
             <Row label="Error">
@@ -88,8 +88,8 @@ export default async function WebhookDetail({ params }: { params: Promise<{ id: 
         <h2 className="mb-2 text-[15px] font-extrabold">Raw payload</h2>
         <p className="mb-2 text-[12.5px] font-semibold text-[var(--text-muted)]">
           Exactly what Instagram sent. This includes the sender&rsquo;s message text and
-          their scoped ID, which is the customer&rsquo;s data about one of their followers
-          — this view is recorded in the audit log.
+          their scoped ID, which is the customer&rsquo;s data about one of their followers.
+          This view is recorded in the audit log.
         </p>
         <pre className="overflow-x-auto rounded-[var(--radius-card)] border-2 border-[var(--border-soft)] bg-[var(--bg-sunken)] p-4 text-[12px] leading-relaxed">
           {JSON.stringify(event.payload, null, 2)}

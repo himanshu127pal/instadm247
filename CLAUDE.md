@@ -130,6 +130,10 @@ directly, and don't let a working branch become a second trunk.
    their own published list shows, "Not listed" otherwise (never ✗), carry an
    "as of" date, and say where they're ahead. Blog posts describe Instagram's
    rules as `dispatch.ts` enforces them. `pnpm e2e` checks links and the sitemap.
+   **No em dashes (—) in anything people read**: pages, tab titles, emails, DMs,
+   error messages, the AI Helper's guide. Owner's call: they read as machine-written.
+   Use a comma, colon, brackets or a new sentence. Code comments are fine;
+   `pnpm e2e` fails on one in text.
 
 14. **The AI Helper's guide is part of the UI.** `src/lib/helper/guide.ts` is
    everything the helper knows about the product. A PR that renames a page,

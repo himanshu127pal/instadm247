@@ -18,7 +18,7 @@ export default async function HelperPage({ searchParams }: { searchParams: Promi
   const header = (
     <PageHeader
       title="AI Helper"
-      description="Ask how to do anything in InstaDM247, get a plan for a goal, or find out why an automation didn't send — with step-by-step answers and automations it can draft for you."
+      description="Ask how to do anything in InstaDM247, get a plan for a goal, or find out why an automation didn't send. It answers step by step, and can draft automations for you."
     />
   );
 
@@ -30,7 +30,7 @@ export default async function HelperPage({ searchParams }: { searchParams: Promi
         <EmptyState
           icon={<Sparkles />}
           title={`The AI Helper is part of ${plan.name}`}
-          description={`Get step-by-step answers about any feature, automation plans for your goals, and one-click draft automations — ${plan.limits.helperQuestionsPerWeek} questions a week on ${plan.name}.`}
+          description={`Get step-by-step answers about any feature, automation plans for your goals, and one-click draft automations. Up to ${plan.limits.helperQuestionsPerWeek} questions a week on ${plan.name}.`}
           action={
             <Link href="/dashboard/billing">
               <Button variant="gradient">See plans</Button>

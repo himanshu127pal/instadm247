@@ -156,7 +156,7 @@ export async function sendEmail<K extends TemplateName>(input: {
       data: { status: "skipped", error: "Email is not configured." },
     });
     if (!env.isProd) {
-      console.log(`\n[email:dev] to ${input.to} — ${rendered.subject}\n${rendered.text}\n`);
+      console.log(`\n[email:dev] to ${input.to}: ${rendered.subject}\n${rendered.text}\n`);
     }
     return { status: "skipped", id: row.id };
   }

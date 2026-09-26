@@ -87,7 +87,7 @@ async function main() {
   const captions = [
     "The 60-second miso ramen everyone asks about 🍜",
     "5 things I wish I knew before starting 📓",
-    "New drop — the walnut lounge chair 🪑",
+    "New drop: the walnut lounge chair 🪑",
     "Behind the scenes of the spring shoot 🌸",
     "Answering your most-asked question",
     "The 12-week strength plan is here 💪",
@@ -113,9 +113,9 @@ async function main() {
   // --- Automations from the real presets -----------------------------------
 
   const automationSpecs = [
-    { presetId: "comment-to-dm", name: "Comment to DM — LINK", keywords: ["LINK"], mediaIndex: 2 },
-    { presetId: "follower-growth", name: "Follower growth — GUIDE", keywords: ["GUIDE"], mediaIndex: 5 },
-    { presetId: "lead-capture", name: "Email capture — FREEBIE", keywords: ["FREEBIE"], mediaIndex: 1 },
+    { presetId: "comment-to-dm", name: "Comment to DM: LINK", keywords: ["LINK"], mediaIndex: 2 },
+    { presetId: "follower-growth", name: "Follower growth: GUIDE", keywords: ["GUIDE"], mediaIndex: 5 },
+    { presetId: "lead-capture", name: "Email capture: FREEBIE", keywords: ["FREEBIE"], mediaIndex: 1 },
     { presetId: "story-mention-giveaway", name: "Story mention giveaway", keywords: [] },
     { presetId: "ai-faq", name: "AI answers DMs", keywords: [] },
   ];
@@ -293,7 +293,7 @@ async function main() {
         category: "support",
         payload: {
           kind: "text",
-          text: "Hey {{first_name}}! We ship worldwide — UK 2–3 days, EU 5–7, rest of world 7–12. Free over £60 🌍",
+          text: "Hey {{first_name}}! We ship worldwide: UK 2–3 days, EU 5–7, rest of world 7–12. Free over £60 🌍",
         },
       },
       {
@@ -318,7 +318,7 @@ async function main() {
         { id: "email", label: "Email address", type: "email", required: true },
         { id: "size", label: "Which size?", type: "choice", required: false, options: ["S", "M", "L"] },
       ],
-      successMessage: "You're on the list — we'll email the moment it drops 🎉",
+      successMessage: "You're on the list! We'll email the moment it drops 🎉",
     },
   });
 
@@ -400,7 +400,7 @@ async function main() {
       kind: "REENGAGE",
       payload: {
         kind: "text",
-        text: "Hey {{first_name}} — still thinking it over? The code from earlier works until Sunday 👀",
+        text: "Hey {{first_name}}, still thinking it over? The code from earlier works until Sunday 👀",
       },
       status: "sent",
       recurring: true,

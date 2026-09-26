@@ -125,7 +125,7 @@ export function ActivityChart({ data }: { data: ActivityPoint[] }) {
       {!hasData ? (
         <div className="grid h-[260px] place-items-center rounded-xl border-[2.5px] border-dashed border-[var(--border)]">
           <p className="text-[13px] text-[var(--text-muted)]">
-            No activity yet — this fills in as your automations run.
+            No activity yet. This fills in as your automations run.
           </p>
         </div>
       ) : view === "table" ? (

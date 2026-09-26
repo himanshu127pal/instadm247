@@ -23,7 +23,7 @@ export default async function AiPage() {
     <div className="mx-auto max-w-3xl space-y-5">
       <PageHeader
         title="AI agent"
-        description="Answers DMs from your own knowledge base — and hands the conversation to you the moment it isn't sure."
+        description="Answers DMs from your own knowledge base, and hands the conversation to you the moment it isn't sure."
       />
       <AiAgentView
         agent={{

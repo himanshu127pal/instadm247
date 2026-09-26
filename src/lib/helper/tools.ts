@@ -194,7 +194,7 @@ async function workspaceOverview(workspace: HelperWorkspace) {
           a.status === "connected"
             ? "connected"
             : a.status === "token_expired" || a.status === "revoked"
-              ? "needs reconnecting — automations paused"
+              ? "needs reconnecting (automations paused)"
               : a.status,
         automationsPausedByHand: a.automationPaused,
         slowDownActive: Boolean(a.slowDownUntil && a.slowDownUntil.getTime() > now),
@@ -282,7 +282,7 @@ async function getAutomation(workspaceId: string, automationId: string): Promise
   const parsed = flowGraphSchema.safeParse({ nodes: automation.flow?.nodes ?? [], edges: automation.flow?.edges ?? [] });
   const steps = parsed.success
     ? parsed.data.nodes.filter((n) => n.type !== "TRIGGER").map((n) => `${n.type}: ${n.data.label}`)
-    : ["(the saved flow couldn't be read — it needs rebuilding in the builder)"];
+    : ["(the saved flow couldn't be read; it needs rebuilding in the builder)"];
   const problems = parsed.success ? validateGraph(parsed.data).map((i) => `${i.level}: ${i.message}`) : [];
 
   return json({
@@ -388,7 +388,7 @@ async function draftAutomation(workspace: HelperWorkspace, input: unknown): Prom
   });
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
-    return error(`That draft isn't valid: ${issue?.path.join(".")} — ${issue?.message}.`);
+    return error(`That draft isn't valid: ${issue?.path.join(".")}: ${issue?.message}.`);
   }
 
   const problems = checkDraft(workspace, parsed.data);

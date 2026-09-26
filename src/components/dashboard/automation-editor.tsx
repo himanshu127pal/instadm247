@@ -186,7 +186,7 @@ export function AutomationEditor({
         <>
           {flowDirty && (
             <p className="text-[12px] text-[var(--color-zonk-500)]">
-              You have unsaved changes — press ⌘S or the Save button.
+              You have unsaved changes. Press ⌘S or the Save button.
             </p>
           )}
           <FlowBuilder
@@ -368,7 +368,7 @@ export function AutomationEditor({
               >
                 {media.length === 0 ? (
                   <p className="text-[13px] text-[var(--text-muted)]">
-                    No posts synced yet — sync the account from the Instagram accounts page.
+                    No posts synced yet. Sync the account from the Instagram accounts page.
                   </p>
                 ) : (
                   <div className="grid max-h-72 grid-cols-4 gap-2 overflow-y-auto sm:grid-cols-6">
@@ -450,7 +450,7 @@ export function AutomationEditor({
               </p>
               <p className="flex items-start gap-2">
                 <BarChart3 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
-                Steps that never fired won&rsquo;t appear at all — check they&rsquo;re
+                Steps that never fired won&rsquo;t appear at all. Check they&rsquo;re
                 actually connected in the flow.
               </p>
             </div>
