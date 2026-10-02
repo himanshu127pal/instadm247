@@ -318,28 +318,20 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
       return { kind: "continue" };
 
     case "SEND_MESSAGE": {
-      const payload = (ctx.run.triggerPayload ?? {}) as Record<string, unknown>;
-      const commentId = payload.commentId as string | undefined;
-      const isLive = payload.isLive === true;
-      const commentAt = payload.timestamp ? new Date(String(payload.timestamp)) : undefined;
-
-      // A private reply is how we legitimately open a thread from a comment.
-      const usePrivateReply = node.data.asPrivateReply && Boolean(commentId);
-
+      const where = replyTarget(ctx, node.data.asPrivateReply);
       const result = await dispatch({
         accountId: ctx.account.id,
         contactId: ctx.contact.id,
         conversationId: ctx.conversationId,
-        target: usePrivateReply
-          ? { to: "comment", commentId: commentId! }
-          : { to: "user", igsid: ctx.contact.igsid },
+        target: where.target,
         message: toOutbound(node.data.message, ctx, node.id),
         source: "automation",
         flowRunId: ctx.run.id,
         nodeId: node.id,
-        commentAt,
-        isLiveComment: isLive,
+        commentAt: where.commentAt,
+        isLiveComment: where.isLive,
       });
+      notePrivateReply(ctx, where.target, result.status);
 
       if (result.status === "skipped") return { kind: "halt", reason: result.explanation };
       if (result.status === "failed" && !result.retryable) {
@@ -437,7 +429,7 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
 
       // First ask. From a comment, this is the private reply: the only
       // message Instagram allows before the person writes back.
-      const where = await firstMessageTarget(ctx);
+      const where = replyTarget(ctx, true);
       const result = await dispatch({
         accountId: ctx.account.id,
         contactId: ctx.contact.id,
@@ -454,6 +446,7 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
         commentAt: where.commentAt,
         isLiveComment: where.isLive,
       });
+      notePrivateReply(ctx, where.target, result.status);
       if (result.status === "skipped") return { kind: "halt", reason: result.explanation };
       if (result.status === "failed" && !result.retryable) return { kind: "halt", reason: result.error };
 
@@ -855,33 +848,48 @@ function withFollowedButton(message: OutboundMessage, title: string, payload: st
   return message;
 }
 
+type Target = { to: "comment"; commentId: string } | { to: "user"; igsid: string };
+
+/** Whether this run has already sent its comment's one private reply. */
+function privateReplyUsed(ctx: RunContext): boolean {
+  if (ctx.variables.__private_reply_sent === true) return true;
+  // Runs from before the flag existed: an Ask for follow that asked privately.
+  return Object.entries(ctx.variables).some(([key, value]) => key.startsWith("__asked_follow_private_") && value === true);
+}
+
 /**
- * Where a step that can't wait for the person to message first should send:
- * as the comment's private reply when the run came from a comment that hasn't
- * had one yet (Instagram's only way to start a DM from a comment), otherwise
- * as a normal DM.
+ * Where a step's message goes.
+ *
+ * Instagram allows one private reply per comment: the only message that can
+ * reach someone who has only commented. Once this run has used it, a later
+ * step marked "reply privately" goes as a normal DM instead, which works
+ * because by then the person has tapped a button or written back (and if they
+ * haven't, Instagram refuses it and that's recorded as the window).
+ *
+ * Only this run's own private reply counts. If another run claimed the
+ * comment (Meta can deliver the same comment twice), this one still asks for
+ * the private reply, and the dispatcher's one-per-comment guard skips it,
+ * rather than sending the person a second DM.
  */
-async function firstMessageTarget(ctx: RunContext): Promise<{
-  target: { to: "comment"; commentId: string } | { to: "user"; igsid: string };
-  commentAt?: Date;
-  isLive?: boolean;
-}> {
+function replyTarget(
+  ctx: RunContext,
+  wantPrivateReply: boolean,
+): { target: Target; commentAt?: Date; isLive?: boolean } {
   const payload = (ctx.run.triggerPayload ?? {}) as Record<string, unknown>;
   const commentId = typeof payload.commentId === "string" ? payload.commentId : undefined;
-  if (commentId) {
-    const used = await prisma.commentReplyLog.findUnique({
-      where: { accountId_igCommentId_kind: { accountId: ctx.account.id, igCommentId: commentId, kind: "private" } },
-      select: { id: true },
-    });
-    if (!used) {
-      return {
-        target: { to: "comment", commentId },
-        commentAt: payload.timestamp ? new Date(String(payload.timestamp)) : undefined,
-        isLive: payload.isLive === true,
-      };
-    }
+  if (wantPrivateReply && commentId && !privateReplyUsed(ctx)) {
+    return {
+      target: { to: "comment", commentId },
+      commentAt: payload.timestamp ? new Date(String(payload.timestamp)) : undefined,
+      isLive: payload.isLive === true,
+    };
   }
   return { target: { to: "user", igsid: ctx.contact.igsid } };
+}
+
+/** Remember that this run's private reply has gone out. */
+function notePrivateReply(ctx: RunContext, target: Target, status: string): void {
+  if (target.to === "comment" && status === "sent") ctx.variables.__private_reply_sent = true;
 }
 
 // --- helpers ----------------------------------------------------------------

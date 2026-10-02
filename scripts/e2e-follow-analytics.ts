@@ -224,6 +224,53 @@ export async function runFollowAnalyticsChecks(prisma: PrismaClient, check: Chec
     check("a day at the edge of the rollup keeps all its events", old?.triggered === 3, String(old?.triggered));
     card = (await getAutomationPerformance(workspace.id)).find((a) => a.id === automation.id)!;
     check("and the 30-day total includes it", card.metrics.triggered === 6, String(card.metrics.triggered));
+
+    // --- A deliver step that also asks for the private reply ------------------------
+    // How customers build it: an Ask for follow, then their usual "Send DM"
+    // with "Send as a private reply" still on. The ask used the comment's one
+    // private reply, so the deliver step was refused as a second one and the
+    // person who tapped never got anything.
+    section("Follower gate: a deliver step set to reply privately");
+    const custom = PRESETS.find((p) => p.id === "follower-growth")!.build();
+    for (const node of custom.nodes) if (node.type === "SEND_MESSAGE") node.data.asPrivateReply = true;
+    await prisma.automation.update({ where: { id: automation.id }, data: { enabled: false } });
+    const second = await prisma.automation.create({
+      data: {
+        accountId: account.id, name: `e2e follow custom ${tag}`, triggerType: "COMMENT", scope: "ALL_MEDIA",
+        matchMode: "KEYWORD", keywords: ["GUIDE"], enabled: true, reentryPolicy: "ALWAYS",
+        flow: { create: { name: "e2e follow custom", nodes: custom.nodes as object[], edges: custom.edges as object[] } },
+      },
+    });
+    const late = `e2e_late_${tag}`;
+    people.set(late, { consent: false, follows: false });
+    const lateComment = comment(late);
+    await handleEvent(lateComment);
+    const lateAsk = sent.at(-1)!;
+    check("the ask is the private reply", lateAsk.to.startsWith("comment:"));
+    people.set(late, { consent: true, follows: false });
+    await handleEvent(tap(late, payloadIn(lateAsk.body)));
+    const lateReminder = sent.at(-1)!;
+    await handleEvent(tap(late, payloadIn(lateReminder.body)));
+    const lateDeliver = sent.at(-1)!;
+    const lateRun = await prisma.flowRun.findFirstOrThrow({ where: { automationId: second.id, contact: { igsid: late } } });
+    check(
+      "after they tap, the guide goes as a normal DM instead of a refused second private reply",
+      lateDeliver.to === `user:${late}` && lateDeliver.body.includes("Here it is") && lateRun.haltReason === "Goal reached",
+      `${lateDeliver.to} ${lateRun.status}: ${lateRun.haltReason}`,
+    );
+    const skippedPrivate = await prisma.message.count({ where: { flowRunId: lateRun.id, skipReason: "ALREADY_REPLIED" } });
+    check("and nothing is skipped as 'already got its private reply'", skippedPrivate === 0, String(skippedPrivate));
+
+    // Meta can deliver the same comment twice. The second run must not turn
+    // its refused private reply into a DM.
+    const before2 = sent.length;
+    await handleEvent({ ...lateComment, dedupeKey: `${lateComment.dedupeKey}_again` });
+    const dupRun = await prisma.flowRun.findFirstOrThrow({ where: { automationId: second.id, contact: { igsid: late } }, orderBy: { startedAt: "desc" } });
+    check(
+      "a duplicate delivery of the comment sends nothing",
+      sent.length === before2 && dupRun.id !== lateRun.id && dupRun.status === "halted",
+      `${sent.length - before2} sent; ${dupRun.status}: ${dupRun.haltReason}`,
+    );
   } finally {
     globalThis.fetch = realFetch;
     mutableEnv.meta.appId = saved.appId;
