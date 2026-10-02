@@ -140,7 +140,8 @@ Up to 8 DMs after the starter DM is the safe ceiling.`,
     path: "/dashboard/broadcasts",
     body: `**Broadcasts** → **New broadcast**. It only reaches people whose 24-hour window is still open. The page shows how many are reachable right now.
 - Type: **One-off broadcast** or **Smart re-engagement** (a recurring nudge for contacts who went quiet; set **Nudge after (hours)** and **Repeat**).
-- Pick the account, a name, the message (tokens work), and optionally **Only contacts tagged** or a saved segment.
+- Pick the account, a name and the message. Type **{{** in the message (or click a field under it) to add a field: {{first_name}}, {{full_name}}, {{username}}, {{account_username}}, and any custom fields your contacts have. Each person gets their own value; a field someone doesn't have is left blank. Keyword, trigger text and coupon only work inside automations.
+- Optionally **Only contacts tagged**: search and pick from the tags your contacts already have (it shows how many carry each). Anyone with at least one of the picked tags is included. Or pick a saved segment.
 - **Send now** (or **Start campaign** for re-engagement), or **Save as draft**. Each broadcast shows Sent / Skipped / Failed.`,
   },
   {
