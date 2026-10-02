@@ -182,6 +182,15 @@ Up to 8 DMs after the starter DM is the safe ceiling.`,
 - **Stories**: only stories that are live right now (the last 24 hours), with how long each has left. Story reply and reaction automations answer on every story, so they're listed once at the top.`,
   },
   {
+    id: "support",
+    title: "Support and feature requests",
+    path: "/dashboard/support",
+    body: `**Help** in the sidebar has **Support** and **Request a feature**.
+- **Support** → **New ticket**: a subject, what it's **About**, and what's happening. Our team is notified and replies on the ticket; you're emailed when we do. Reply on the ticket page to keep the conversation in one place, **Close ticket** when you're done, or reply to reopen it. Status shows **Waiting on us**, **Waiting on you** or **Closed**. Only your team and our support staff see your tickets.
+- **Request a feature**: a short title, the **Area**, the problem you're running into and, optionally, what a good outcome looks like. Your requests are listed below the form with our status (Received, Planned, In progress, Shipped, Not planned) and any note from us; you're emailed when one changes.
+- You can send up to 10 of each a day. For a quick how-to, ask the AI Helper first: it usually answers faster than a ticket.`,
+  },
+  {
     id: "contacts",
     title: "Contacts",
     path: "/dashboard/contacts",

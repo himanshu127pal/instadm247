@@ -7,6 +7,8 @@ import { motion } from "motion/react";
 import {
   AlertTriangle,
   BarChart3,
+  LifeBuoy,
+  Lightbulb,
   Images,
   Bot,
   ChevronDown,
@@ -80,6 +82,13 @@ const NAV = [
       { href: "/dashboard/developers", label: "Developers", icon: Code2 },
       { href: "/dashboard/billing", label: "Plan & billing", icon: CreditCard, billingOnly: true },
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
+    ],
+  },
+  {
+    section: "Help",
+    items: [
+      { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
+      { href: "/dashboard/requests", label: "Request a feature", icon: Lightbulb },
     ],
   },
 ];

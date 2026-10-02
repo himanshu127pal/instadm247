@@ -57,6 +57,16 @@ const SAMPLE: { [K in TemplateName]: TemplateParams[K] } = {
   instagram_access_removed: { name: "Alex", username: "alex.makes" },
   account_suspended: { name: "Alex", reason: "Repeated spam reports." },
   account_reinstated: { name: "Alex" },
+  support_ticket_staff: {
+    workspace: "Alex Studio", from: "alex@example.com", subject: "Replies not sending", category: "Inbox",
+    body: "My replies say <b>failed</b>.", url: "https://app.example/admin/support/t1", isReply: false,
+  },
+  feature_request_staff: {
+    workspace: "Alex Studio", from: "alex@example.com", title: "Business hours", area: "Automations",
+    problem: "I want quiet hours.", outcome: null, url: "https://app.example/admin/requests",
+  },
+  support_reply: { name: "Alex", subject: "Replies not sending", body: "Reconnect the account, then try again.", url: "https://app.example/dashboard/support/t1" },
+  feature_request_update: { name: "Alex", title: "Business hours", status: "Planned", note: "It's on the list for next month.", url: "https://app.example/dashboard/requests" },
 };
 
 export async function runEmailChecks(prisma: PrismaClient, check: Check, section: Section) {

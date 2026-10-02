@@ -5,6 +5,7 @@ import { prisma } from "./db";
 import { MetaApiError } from "./meta/types";
 import { PlanLimitError } from "./plan";
 import { DodoError } from "./billing/dodo";
+import { SupportError } from "./support";
 
 /**
  * Shared plumbing for dashboard API routes: consistent auth, consistent error
@@ -37,6 +38,9 @@ export function route<T = Record<string, never>>(handler: Handler<T>) {
 
 export function errorResponse(error: unknown): NextResponse {
   if (error instanceof AuthError) {
+    return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+  if (error instanceof SupportError) {
     return NextResponse.json({ error: error.message }, { status: error.status });
   }
   if (error instanceof MetaApiError) {

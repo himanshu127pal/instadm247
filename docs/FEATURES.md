@@ -104,9 +104,9 @@ https://heytrigger.com. The owner reviewed their product and asked for these fiv
 | # | HeyTrigger capability | Status | Where it lives |
 |---|---|---|---|
 | 1 | **My content**: posts, Reels and live stories, with the automations on each | Done | `/dashboard/content`, `src/lib/content.ts`. Stories read live (`GET /me/stories`), only the last 24h. Shows which automation answers first on each post (same ranking as the matcher, `scopeRank`) |
-| 2 | Feature requests page (admin emailed) | Pending | |
+| 2 | Feature requests page (admin emailed) | Done | `/dashboard/requests`, `/admin/requests`; admins emailed, customer emailed on status changes. `docs/SUPPORT.md` |
 | 3 | Resources menu and docs | Pending | |
-| 4 | Support center with tickets (admin emailed) | Pending | |
+| 4 | Support center with tickets (admin emailed) | Done | `/dashboard/support`, `/admin/support`; staff emailed on new tickets and replies, customer emailed on our replies. `docs/SUPPORT.md` |
 | 5 | Onboarding tour and getting-started checklist | Pending | |
 
 ---

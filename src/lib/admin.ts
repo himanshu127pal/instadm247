@@ -34,6 +34,11 @@ function configuredSupport(): string[] {
     .filter(Boolean);
 }
 
+/** Who to email about support: admins always, support staff too when asked. */
+export function platformStaffEmails(opts: { includeSupport: boolean }): string[] {
+  return [...new Set([...configuredAdmins(), ...(opts.includeSupport ? configuredSupport() : [])])];
+}
+
 /**
  * The env vars are the source of truth; the column is a cache so listings and
  * the audit log can show a role without re-reading config. Recomputed on every
