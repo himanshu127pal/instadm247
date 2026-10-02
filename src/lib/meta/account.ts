@@ -162,7 +162,10 @@ export async function syncAccount(accountId: string): Promise<{ media: number } 
         caption: item.caption ?? null,
         commentsCount: item.comments_count ?? 0,
         likeCount: item.like_count ?? 0,
+        // Instagram's media links expire; keep the latest ones.
+        mediaUrl: item.media_url ?? null,
         thumbnailUrl: item.thumbnail_url ?? null,
+        permalink: item.permalink ?? null,
       },
     });
   }

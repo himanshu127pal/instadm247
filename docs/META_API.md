@@ -215,6 +215,7 @@ trigger automatically on repeated 429/613 errors and expose as a manual toggle.
 | Purpose | Endpoint |
 |---|---|
 | Account profile | `GET /me?fields=user_id,username,name,account_type,profile_picture_url,followers_count,media_count` |
+| Live stories (My content), last 24h only, never cached | `GET /me/stories?fields=id,media_type,media_url,thumbnail_url,permalink,timestamp` |
 | Media list (for the media picker) | `GET /me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,comments_count,like_count` |
 | Contact profile (incl. **`is_user_follow_business`** → the Follower Growth check, answered only for people who have messaged or tapped a button (§4); also how a DM sender gets a name, since DM webhooks carry only the IGSID. Looked up once for a nameless contact on ingest or when their thread opens, retried at most hourly. See `src/lib/meta/profile.ts`) | `GET /<IGSID>?fields=name,username,profile_pic,follower_count,is_user_follow_business,is_business_follow_user` |
 | Conversations / message history | `GET /me/conversations`, `GET /<CONVERSATION_ID>?fields=messages` |

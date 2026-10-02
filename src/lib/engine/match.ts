@@ -188,6 +188,26 @@ export type MatchResult = { automation: Automation; keyword?: string };
  * so the caller can decide (we run the top one per trigger type, which keeps a
  * contact from getting three DMs for one comment).
  */
+/**
+ * How specific an automation's post scope is for one comment, or null when it
+ * doesn't cover it. The most specific automation wins: picked posts (3), ads
+ * only (2), all posts (1), everything (0). Shared with the Content page, so
+ * what it shows as winning is what actually runs.
+ */
+export function scopeRank(scope: string, where: { onPost: boolean; isAd: boolean }): number | null {
+  switch (scope) {
+    case "SPECIFIC":
+      return where.onPost ? 3 : null;
+    case "AD":
+      return where.isAd ? 2 : null;
+    case "ALL_MEDIA":
+      return 1;
+    default:
+      // UNIVERSAL: anything, including future posts and ads.
+      return 0;
+  }
+}
+
 export async function findMatchingAutomations(
   accountId: string,
   event: NormalizedEvent,
@@ -215,25 +235,16 @@ export async function findMatchingAutomations(
     if (!automation.flow) continue;
 
     // Media scope
-    let rank = 0;
-    if (automation.scope === "SPECIFIC") {
-      if (!event.mediaId) continue;
+    let onPost = false;
+    if (automation.scope === "SPECIFIC" && event.mediaId) {
       const media = await prisma.media.findUnique({
         where: { accountId_igMediaId: { accountId, igMediaId: event.mediaId } },
         select: { id: true },
       });
-      if (!media) continue;
-      if (!automation.media.some((m) => m.mediaId === media.id)) continue;
-      rank = 3;
-    } else if (automation.scope === "AD") {
-      if (!event.adId) continue;
-      rank = 2;
-    } else if (automation.scope === "ALL_MEDIA") {
-      rank = 1;
-    } else {
-      // UNIVERSAL — matches anything, including future posts and ads.
-      rank = 0;
+      onPost = Boolean(media && automation.media.some((m) => m.mediaId === media.id));
     }
+    const rank = scopeRank(automation.scope, { onPost, isAd: Boolean(event.adId) });
+    if (rank === null) continue;
 
     // Ice breakers and postbacks match on payload, not free text.
     if (event.kind === "ICE_BREAKER" || event.kind === "POSTBACK") {

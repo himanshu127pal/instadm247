@@ -97,6 +97,18 @@ read. The owner chose to build every gap found (all four below).
 Pricing observed: Free (1,000 DMs, 500 contacts), Pro $9/mo, Business $29/mo.
 Not acted on — pricing is the owner's call.
 
+## B3. HeyTrigger — added by the owner, 2026-10-02
+
+https://heytrigger.com. The owner reviewed their product and asked for these five.
+
+| # | HeyTrigger capability | Status | Where it lives |
+|---|---|---|---|
+| 1 | **My content**: posts, Reels and live stories, with the automations on each | Done | `/dashboard/content`, `src/lib/content.ts`. Stories read live (`GET /me/stories`), only the last 24h. Shows which automation answers first on each post (same ranking as the matcher, `scopeRank`) |
+| 2 | Feature requests page (admin emailed) | Pending | |
+| 3 | Resources menu and docs | Pending | |
+| 4 | Support center with tickets (admin emailed) | Pending | |
+| 5 | Onboarding tour and getting-started checklist | Pending | |
+
 ---
 
 ## C. Deferred by explicit decision

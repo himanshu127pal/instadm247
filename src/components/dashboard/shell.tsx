@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import {
   AlertTriangle,
   BarChart3,
+  Images,
   Bot,
   ChevronDown,
   ClipboardList,
@@ -47,6 +48,7 @@ const NAV = [
     section: "Engage",
     items: [
       { href: "/dashboard/automations", label: "Automations", icon: Workflow },
+      { href: "/dashboard/content", label: "My content", icon: Images },
       { href: "/dashboard/inbox", label: "Inbox", icon: Inbox },
       { href: "/dashboard/broadcasts", label: "Broadcasts", icon: Megaphone },
       { href: "/dashboard/planner", label: "DM Planner", icon: ClipboardList },

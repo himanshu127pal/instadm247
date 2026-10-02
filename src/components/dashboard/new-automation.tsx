@@ -77,23 +77,27 @@ export function NewAutomationWizard({
   media,
   presets,
   existingNames,
+  initialPostId,
 }: {
   accounts: Account[];
   media: Media[];
   presets: Preset[];
   /** Names already used, per account, to warn about a duplicate. */
   existingNames: Array<{ accountId: string; name: string }>;
+  /** Start on comments for this one post. */
+  initialPostId?: string;
 }) {
   const router = useRouter();
   const [step, setStep] = React.useState(0);
   const [creating, setCreating] = React.useState(false);
 
-  const [accountId, setAccountId] = React.useState(accounts[0]?.id ?? "");
+  const initialPost = initialPostId ? media.find((m) => m.id === initialPostId) : undefined;
+  const [accountId, setAccountId] = React.useState(initialPost?.accountId ?? accounts[0]?.id ?? "");
   const [triggerType, setTriggerType] = React.useState<string>("COMMENT");
-  const [scope, setScope] = React.useState("ALL_MEDIA");
+  const [scope, setScope] = React.useState(initialPost ? "SPECIFIC" : "ALL_MEDIA");
   const [matchMode, setMatchMode] = React.useState("KEYWORD");
   const [keywordInput, setKeywordInput] = React.useState("LINK");
-  const [mediaIds, setMediaIds] = React.useState<string[]>([]);
+  const [mediaIds, setMediaIds] = React.useState<string[]>(initialPost ? [initialPost.id] : []);
   const [presetId, setPresetId] = React.useState(presets[0]?.id ?? "blank");
   // The name follows the choices (keyword, posts) until the person edits it.
   const [name, setName] = React.useState("");
