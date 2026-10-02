@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { AuthForm } from "@/components/auth-form";
 import { Logo } from "@/components/marketing/bits";
+import { MetaBadge } from "@/components/marketing/meta-badge";
 
 export const metadata: Metadata = { title: "Create your account" };
 
@@ -23,6 +24,9 @@ export default async function SignupPage({
       <p className="mt-1.5 text-[14px] text-[var(--text-muted)]">
         Free to start. Connect Instagram whenever you&rsquo;re ready.
       </p>
+      <div className="mt-3">
+        <MetaBadge />
+      </div>
 
       <div className="mt-8">
         <AuthForm mode="signup" toBilling={toBilling} />

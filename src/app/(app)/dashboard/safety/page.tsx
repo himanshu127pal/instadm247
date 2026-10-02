@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -79,6 +80,9 @@ export default async function SafetyPage() {
             rate limits and your suppression list. When a message can&rsquo;t be sent
             legally, it&rsquo;s recorded as skipped rather than attempted.
           </p>
+          <Link href="/meta-tech-provider" className="mt-2 inline-flex items-center gap-1 text-[13px] font-bold text-[var(--accent)] hover:underline">
+            InstaDM247 is a Meta Tech Provider. What that means for your account →
+          </Link>
         </div>
       </div>
 

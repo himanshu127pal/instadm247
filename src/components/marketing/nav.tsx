@@ -3,10 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useScroll, useMotionValueEvent } from "motion/react";
-import { ArrowRight, BookOpen, ChevronDown, LifeBuoy, Lightbulb, Menu, Newspaper, Scale, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, BadgeCheck, BookOpen, ChevronDown, LifeBuoy, Lightbulb, Menu, Newspaper, Scale, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui";
 import { Logo, ThemeToggle } from "./bits";
 import { cn } from "@/lib/utils";
+import { MetaBadge } from "./meta-badge";
 
 const LINKS = [
   { label: "Features", href: "/features" },
@@ -29,6 +30,7 @@ const RESOURCES = [
       { label: "Support", hint: "Get help from our team", href: "/dashboard/support", icon: LifeBuoy },
       { label: "Request a feature", hint: "Tell us what to build next", href: "/dashboard/requests", icon: Lightbulb },
       { label: "Account safety", hint: "How we keep your account safe", href: "/features/account-safety", icon: ShieldCheck },
+      { label: "Meta Tech Provider", hint: "What it means for your account", href: "/meta-tech-provider", icon: BadgeCheck },
     ],
   },
 ];
@@ -131,7 +133,11 @@ export function MarketingNav() {
       )}
     >
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
-        <Logo />
+        <div className="flex min-w-0 items-center gap-3">
+          <Logo />
+          {/* Always visible, on every screen size: what our access to Instagram is. */}
+          <MetaBadge className="hidden sm:inline-flex" />
+        </div>
 
         <div className="hidden items-center gap-1 md:flex">
           {LINKS.map((link) => (
@@ -160,6 +166,7 @@ export function MarketingNav() {
           </Link>
         </div>
 
+        <MetaBadge className="sm:hidden" />
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Close menu" : "Open menu"}

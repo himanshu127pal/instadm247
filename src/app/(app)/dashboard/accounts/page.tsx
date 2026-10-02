@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isInstagramConfigured } from "@/lib/env";
@@ -5,6 +6,7 @@ import { getLimits } from "@/lib/plan";
 import { WEBHOOK_FIELDS } from "@/lib/meta/types";
 import { PageHeader } from "@/components/dashboard/bits";
 import { AccountsView } from "@/components/dashboard/accounts-view";
+import { MetaBadge } from "@/components/marketing/meta-badge";
 
 export default async function AccountsPage({
   searchParams,
@@ -29,6 +31,14 @@ export default async function AccountsPage({
         title="Instagram accounts"
         description="Connect the professional accounts you want to automate. You can connect as many as you like."
       />
+
+      <p className="flex flex-wrap items-center gap-2 text-[12.5px] text-[var(--text-muted)]">
+        <MetaBadge />
+        You sign in on Instagram&rsquo;s own screen and choose what we can do; we never see your password.
+        <Link href="/meta-tech-provider" className="font-semibold text-[var(--accent)] hover:underline">
+          What this means
+        </Link>
+      </p>
 
       <AccountsView
         accounts={accounts.map((account) => ({

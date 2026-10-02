@@ -12,6 +12,7 @@ import { renderInline } from "../src/components/marketing/content";
 import sitemap from "../src/app/sitemap";
 import { allDocs, parseDoc, plain } from "../src/content/docs";
 import { searchDocs } from "../src/components/marketing/docs-search";
+import { readFileSync } from "node:fs";
 import { GUIDE } from "../src/lib/helper/guide";
 import { env } from "../src/lib/env";
 
@@ -27,6 +28,7 @@ export async function runContentChecks(check: Check, section: Section) {
     ...COMPARISONS.map((c) => `/compare/${c.slug}`),
     ...POSTS.map((p) => `/blog/${p.slug}`),
     "/docs",
+    "/meta-tech-provider",
     ...allDocs({ billingEnabled: env.billing.enabled }).map((d) => `/docs/${d.slug}`),
   ]);
 
@@ -45,6 +47,10 @@ export async function runContentChecks(check: Check, section: Section) {
   const searchable = docs.map((d) => ({ slug: d.slug, title: d.title, summary: d.summary, group: d.group, text: plain(d.body) }));
   const found = searchDocs(searchable, "story react").map((d) => d.slug);
   check("docs search needs every word, and finds the scheduler for 'schedule'", found.length > 0 && found.length < docs.length && searchDocs(searchable, "schedule")[0]?.slug === "scheduler", found.join());
+  const home = readFileSync("src/app/(marketing)/page.tsx", "utf8");
+  check("the homepage hero names our Meta Tech Provider standing and links to what it means", home.includes("Meta Tech Provider") && home.includes('href="/meta-tech-provider"'));
+  const trust = readFileSync("src/app/(marketing)/meta-tech-provider/page.tsx", "utf8");
+  check("the trust page never claims a partnership, certification or endorsement", !/\b(partner|certified|endorsed by Meta)\b/i.test(trust.replace(/not affiliated with or endorsed by Meta/gi, "")));
   check("plain text drops markup", plain("**Bold** and *soft* [link](/docs)") === "Bold and soft link");
 
   const unique = (xs: string[]) => new Set(xs).size === xs.length;

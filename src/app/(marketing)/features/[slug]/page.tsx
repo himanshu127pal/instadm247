@@ -79,6 +79,25 @@ export default async function FeaturePage({ params }: { params: Promise<{ slug: 
         </div>
       </section>
 
+      {feature.slug === "account-safety" && (
+        <section className="mx-auto max-w-5xl px-5 pt-16">
+          <Link
+            href="/meta-tech-provider"
+            className="flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)] p-5 text-[#12110e] shadow-[4px_4px_0_0_var(--shadow-ink)] transition-transform hover:-translate-y-0.5"
+          >
+            <span>
+              <span className="block text-[18px] font-extrabold">
+                We&rsquo;re a Meta Tech Provider
+              </span>
+              <span className="mt-1 block text-[14px]">What that means for your account: official login, permissions you control, and Instagram&rsquo;s rules on every message.</span>
+            </span>
+            <span className="flex items-center gap-1.5 text-[14px] font-extrabold">
+              Read more <ArrowRight className="h-4 w-4" />
+            </span>
+          </Link>
+        </section>
+      )}
+
       <section className="mx-auto grid max-w-5xl gap-10 px-5 py-16 lg:grid-cols-[minmax(0,280px)_1fr]">
         <h2 className="font-display text-[clamp(1.8rem,4vw,2.4rem)] leading-[0.98]">Questions</h2>
         <Accordion items={feature.faqs.map((f) => ({ question: f.question, answer: f.answer }))} />

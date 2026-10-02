@@ -89,13 +89,16 @@ function Hero() {
       <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 lg:grid-cols-[1.05fr_minmax(0,440px)]">
         <div>
           <Reveal>
-            <span className="inline-flex -rotate-1 items-center gap-2 rounded-full border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[12.5px] font-bold text-[var(--text)] shadow-[3px_3px_0_0_var(--shadow-ink)]">
+            <Link
+              href="/meta-tech-provider"
+              className="inline-flex -rotate-1 items-center gap-2 rounded-full border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[12.5px] font-bold text-[var(--text)] shadow-[3px_3px_0_0_var(--shadow-ink)] transition-transform hover:-rotate-0 hover:-translate-y-0.5"
+            >
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-[pulse-ring_2.4s_ease-out_infinite] rounded-full bg-[var(--color-boom-400)]" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-boom-400)]" />
               </span>
-              Built on Meta&rsquo;s official Instagram API
-            </span>
+              Meta Tech Provider · official Instagram API
+            </Link>
           </Reveal>
 
           <Reveal delay={0.06}>
@@ -457,7 +460,7 @@ const FAQ_ITEMS = [
   {
     question: "Do I need my own Meta app to use this?",
     answer:
-      "No. This runs as a Meta tech provider app. You just click connect and approve the permissions on Instagram's own screen. Self-hosting is also supported if you'd rather run it under your own Meta app credentials.",
+      "No. You just click connect and approve the permissions on Instagram's own screen. Self-hosting is also supported if you'd rather run it under your own Meta app credentials.",
   },
   {
     question: "How fast does a DM actually go out?",
@@ -477,7 +480,24 @@ function Faq() {
           </h2>
         </Reveal>
         <Reveal delay={0.08}>
-          <Accordion items={FAQ_ITEMS} />
+          <Accordion
+            items={FAQ_ITEMS.map((item) =>
+              item.question === "Do I need my own Meta app to use this?"
+                ? {
+                    ...item,
+                    answer: (
+                      <>
+                        No. InstaDM247 is a Meta Tech Provider:{" "}
+                        {item.answer.replace(/^No\. /, "")}{" "}
+                        <Link href="/meta-tech-provider" className="font-semibold text-[var(--accent)] underline underline-offset-2">
+                          What that means for you
+                        </Link>
+                      </>
+                    ),
+                  }
+                : item,
+            )}
+          />
         </Reveal>
       </div>
     </section>
