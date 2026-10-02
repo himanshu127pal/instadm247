@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Tag, X } from "lucide-react";
+import { Plus, Tag, X } from "lucide-react";
 import { fuzzyFilter } from "@/lib/fuzzy";
+import { normalizeTag } from "@/lib/tags";
 import { cn } from "@/lib/utils";
 
 export type TagOption = { tag: string; count: number };
@@ -17,13 +18,18 @@ export function TagPicker({
   value,
   onChange,
   placeholder = "Search tags",
-  emptyHint = "No tags yet. Contacts get tags from a Tag step in your automations.",
+  emptyHint = "No tags yet. Add them on the Contacts page, or with a Tag step in an automation.",
+  allowCreate = false,
+  autoFocus = false,
 }: {
   options: TagOption[];
   value: string[];
   onChange: (tags: string[]) => void;
   placeholder?: string;
   emptyHint?: string;
+  /** Offer to make a new tag from what's typed (for tagging, not filtering). */
+  allowCreate?: boolean;
+  autoFocus?: boolean;
 }) {
   const [query, setQuery] = React.useState("");
   const [open, setOpen] = React.useState(false);
@@ -32,7 +38,11 @@ export function TagPicker({
   const listId = React.useId();
 
   const available = options.filter((o) => !value.includes(o.tag));
-  const matches = fuzzyFilter(available, query, (o) => o.tag).slice(0, 50);
+  const found = fuzzyFilter(available, query, (o) => o.tag).slice(0, 50);
+  const typed = normalizeTag(query);
+  const isNew = allowCreate && typed !== "" && !options.some((o) => o.tag === typed) && !value.includes(typed);
+  // A new tag is offered last, after the existing ones it might be a typo of.
+  const matches: Array<TagOption & { isNew?: boolean }> = isNew ? [...found, { tag: typed, count: 0, isNew: true }] : found;
 
   React.useEffect(() => setActive(0), [query, open]);
 
@@ -103,6 +113,7 @@ export function TagPicker({
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
+          autoFocus={autoFocus}
           onBlur={() => setOpen(false)}
           onKeyDown={onKeyDown}
           placeholder={value.length ? "" : placeholder}
@@ -114,11 +125,13 @@ export function TagPicker({
         <div
           id={listId}
           role="listbox"
-          className="absolute left-0 right-0 z-30 mt-1.5 max-h-64 overflow-auto rounded-xl border-2 border-[var(--border)] bg-[var(--bg-raised)] p-1 shadow-[4px_4px_0_0_var(--shadow-ink)]"
+          className="absolute left-0 right-0 z-30 mt-1.5 max-h-64 min-w-[15rem] overflow-auto rounded-xl border-2 border-[var(--border)] bg-[var(--bg-raised)] p-1 shadow-[4px_4px_0_0_var(--shadow-ink)]"
         >
           {matches.length === 0 ? (
             <p className="px-2.5 py-2 text-[12px] text-[var(--text-muted)]">
-              {options.length === 0
+              {allowCreate && !typed
+                ? "Type a tag to add."
+                : options.length === 0
                 ? emptyHint
                 : available.length === 0
                   ? "Every tag is already picked."
@@ -143,12 +156,20 @@ export function TagPicker({
                 )}
               >
                 <span className="flex min-w-0 items-center gap-2">
-                  <Tag className="h-3.5 w-3.5 shrink-0 text-[var(--text-faint)]" />
-                  <span className="truncate font-mono text-[12.5px]">{option.tag}</span>
+                  {option.isNew ? (
+                    <Plus className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
+                  ) : (
+                    <Tag className="h-3.5 w-3.5 shrink-0 text-[var(--text-faint)]" />
+                  )}
+                  <span className="truncate font-mono text-[12.5px]">
+                    {option.isNew ? `New tag "${option.tag}"` : option.tag}
+                  </span>
                 </span>
-                <span className="shrink-0 text-[11.5px] text-[var(--text-faint)]">
-                  {option.count.toLocaleString()} {option.count === 1 ? "contact" : "contacts"}
-                </span>
+                {!option.isNew && (
+                  <span className="shrink-0 text-[11.5px] text-[var(--text-faint)]">
+                    {option.count.toLocaleString()} {option.count === 1 ? "contact" : "contacts"}
+                  </span>
+                )}
               </div>
             ))
           )}

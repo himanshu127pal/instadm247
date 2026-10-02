@@ -31,7 +31,7 @@ to Phase 2 by an explicit decision recorded below.
 | 16 | **Advertising AutoDM** | Auto-reply to comments on sponsored content | Done | `AD_COMMENT` trigger |
 | 17 | **Inbox Automation** | Auto-reply to inbox messages | Done | `DM_KEYWORD` trigger |
 | 18 | **Referral Program** | Access our referral program and start earning | **N/A** | LinkDM's own affiliate scheme, not a creator-facing capability |
-| 19 | **Lead Generation** | Capture email addresses directly in chat | Done | Lead forms + `COLLECT_INPUT` |
+| 19 | **Lead Generation** | Capture email addresses directly in chat | Done | Lead forms + `COLLECT_INPUT`; "Save to the contact" keeps the answer as a custom field for broadcasts |
 | 20 | **DM Planner** | Draft DMs for scheduled posts in advance | Done | Draft codes + scheduler linkage |
 | 21 | **DM Templates** | Save and re-use DMs | Done | Template library |
 | 22 | **DM Coupons** | Send coupons via DMs | Done | Coupon pools + `SEND_COUPON` node |
@@ -57,7 +57,7 @@ Filtered to actual product capabilities; quotas and support tiers are marked.
 | 8 | Unlimited **Message Templates** | Done | |
 | 9 | Advanced **Keyword Triggers** | Done | contains/exact/starts-with/regex, negatives, typo tolerance |
 | 10 | **Analytics Dashboard** | Done | |
-| 11 | **Contact Management** | Done | |
+| 11 | **Contact Management** | Done | Search and filter; add and remove tags per contact or in bulk (`/api/contacts/tags`) |
 | 12 | **Contact Export** | Done | CSV + XLSX |
 | 13 | **WhatsApp/Email Redirect** | Done | One-click presets in the message editor |
 | 14 | **Priority Support** | **N/A** | Service tier, not software |

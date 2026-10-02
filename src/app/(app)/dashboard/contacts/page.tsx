@@ -1,7 +1,7 @@
 import { Download, Users } from "lucide-react";
 import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getAccountIds } from "@/lib/queries";
+import { getAccountIds, getTagCounts } from "@/lib/queries";
 import { Button, EmptyState } from "@/components/ui";
 import { PageHeader, StatCard } from "@/components/dashboard/bits";
 import { ContactsTable } from "@/components/dashboard/contacts-table";
@@ -12,7 +12,7 @@ export default async function ContactsPage() {
 
   const accountIds = await getAccountIds(workspace.id);
 
-  const [contacts, total, reachable, followers, optedOut] = await Promise.all([
+  const [contacts, total, reachable, followers, optedOut, tagsByAccount] = await Promise.all([
     prisma.contact.findMany({
       where: { accountId: { in: accountIds } },
       include: { account: { select: { username: true } } },
@@ -25,7 +25,15 @@ export default async function ContactsPage() {
     }),
     prisma.contact.count({ where: { accountId: { in: accountIds }, isFollower: true } }),
     prisma.contact.count({ where: { accountId: { in: accountIds }, optedOut: true } }),
+    getTagCounts(accountIds),
   ]);
+
+  // Tags across all of the workspace's accounts, for the tag pickers.
+  const tagTotals = new Map<string, number>();
+  for (const list of Object.values(tagsByAccount)) {
+    for (const { tag, count } of list) tagTotals.set(tag, (tagTotals.get(tag) ?? 0) + count);
+  }
+  const tagCounts = [...tagTotals].map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 
   const allTags = [...new Set(contacts.flatMap((c) => c.tags))].sort();
 
@@ -81,6 +89,7 @@ export default async function ContactsPage() {
             customFields: (c.customFields as Record<string, unknown>) ?? {},
           }))}
           allTags={allTags}
+          tagCounts={tagCounts}
         />
       )}
     </div>

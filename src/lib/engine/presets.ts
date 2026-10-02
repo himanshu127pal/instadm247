@@ -199,6 +199,7 @@ export const PRESETS: Preset[] = [
           variable: "email",
           fieldType: "email",
           timeoutMinutes: 120,
+          contactField: "email",
         },
       });
 

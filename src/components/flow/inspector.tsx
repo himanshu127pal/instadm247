@@ -370,6 +370,32 @@ function NodeFields({
               />
             </Field>
           )}
+          <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3">
+            <Switch
+              checked={Boolean(node.data.contactField)}
+              onCheckedChange={(v) =>
+                patch({ contactField: v ? (node.data.variable || "answer").replace(/[^\w]/g, "_").slice(0, 40) : undefined })
+              }
+              label="Save to the contact"
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13px] font-medium">Save to the contact</span>
+              <span className="mt-0.5 block text-[11.5px] leading-relaxed text-[var(--text-muted)]">
+                Keeps the answer on their contact as a custom field, so broadcasts and other automations can use it
+                {node.data.contactField ? ` as {{${node.data.contactField}}}` : ""}. Off, it&rsquo;s only available in
+                this automation{form ? " and the lead form" : ""}.
+              </span>
+              {node.data.contactField !== undefined && (
+                <Input
+                  className="mt-2 h-8 font-mono text-[12px]"
+                  value={node.data.contactField}
+                  maxLength={40}
+                  onChange={(e) => patch({ contactField: e.target.value.replace(/[^\w]/g, "_").toLowerCase() || "answer" })}
+                  aria-label="Contact field name"
+                />
+              )}
+            </span>
+          </label>
           <Field label="Give up after" hint="Then the 'no reply' path runs.">
             <div className="flex items-center gap-2">
               <Input
