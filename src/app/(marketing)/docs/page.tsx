@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { env } from "@/lib/env";
-import { DOC_GROUPS, allDocs } from "@/content/docs";
+import { DOC_GROUPS, allDocs, plain } from "@/content/docs";
 import { CtaBand, PageHero } from "@/components/marketing/content";
 import { DocsSearch } from "@/components/marketing/docs-search";
 
@@ -20,7 +20,7 @@ export default function DocsIndex() {
         title="Everything InstaDM247 does, and where to find it."
         intro="Step-by-step setup and product guidance, kept in step with the app."
       >
-        <DocsSearch docs={docs.map(({ slug, title, summary, group }) => ({ slug, title, summary, group }))} />
+        <DocsSearch docs={docs.map(({ slug, title, summary, group, body }) => ({ slug, title, summary, group, text: plain(body) }))} />
       </PageHero>
       <section className="mx-auto max-w-5xl space-y-12 px-5 py-14">
         {DOC_GROUPS.map((group) => {

@@ -120,14 +120,19 @@ export function DashboardShell({
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [tourOpen, setTourOpen] = React.useState(false);
+  // The layout (and so `onboarding`) isn't re-read when moving between pages,
+  // so after a skip it would still say "show the tour". Start it at most once.
+  const tourStarted = React.useRef(false);
 
   // New here: the tour starts on its own once. "Take the tour" (?tour=1) brings it back.
   React.useEffect(() => {
     if (!onboarding) return;
     if (new URLSearchParams(window.location.search).get("tour") === "1") {
+      tourStarted.current = true;
       setTourOpen(true);
       router.replace(pathname);
-    } else if (onboarding.showTour && window.innerWidth >= 1024) {
+    } else if (onboarding.showTour && !tourStarted.current && window.innerWidth >= 1024) {
+      tourStarted.current = true;
       setTourOpen(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

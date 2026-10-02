@@ -11,6 +11,7 @@ import { POSTS } from "../src/content/blog";
 import { renderInline } from "../src/components/marketing/content";
 import sitemap from "../src/app/sitemap";
 import { allDocs, parseDoc, plain } from "../src/content/docs";
+import { searchDocs } from "../src/components/marketing/docs-search";
 import { GUIDE } from "../src/lib/helper/guide";
 import { env } from "../src/lib/env";
 
@@ -41,6 +42,9 @@ export async function runContentChecks(check: Check, section: Section) {
     lists.length === 3 && lists[1].kind === "ol" && lists[1].items.length === 2 && lists[1].items[0].children[0] === "nested" && lists[2].kind === "ul",
     JSON.stringify(lists),
   );
+  const searchable = docs.map((d) => ({ slug: d.slug, title: d.title, summary: d.summary, group: d.group, text: plain(d.body) }));
+  const found = searchDocs(searchable, "story react").map((d) => d.slug);
+  check("docs search needs every word, and finds the scheduler for 'schedule'", found.length > 0 && found.length < docs.length && searchDocs(searchable, "schedule")[0]?.slug === "scheduler", found.join());
   check("plain text drops markup", plain("**Bold** and *soft* [link](/docs)") === "Bold and soft link");
 
   const unique = (xs: string[]) => new Set(xs).size === xs.length;

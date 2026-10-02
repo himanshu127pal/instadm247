@@ -3,12 +3,40 @@
 import * as React from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { fuzzyFilter } from "@/lib/fuzzy";
+import { fuzzyScore } from "@/lib/fuzzy";
 
 /** Filter the docs as you type: titles first, then what they're about. */
-export function DocsSearch({ docs }: { docs: Array<{ slug: string; title: string; summary: string; group: string }> }) {
+type SearchDoc = { slug: string; title: string; summary: string; group: string; text: string };
+
+/**
+ * Every word has to appear somewhere in the doc (a word can be the start of
+ * a longer one: "react" finds "reactions"). Title hits rank first; a typo in
+ * a title still finds it.
+ */
+export function searchDocs(docs: SearchDoc[], query: string): SearchDoc[] {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  return docs
+    .map((d, i) => {
+      const title = d.title.toLowerCase();
+      const all = `${title} ${d.summary.toLowerCase()} ${d.text.toLowerCase()}`;
+      let score = 0;
+      for (const w of words) {
+        if (title.includes(w)) score += 10;
+        else if (all.includes(w)) score += 3;
+        else if ((fuzzyScore(w, title) ?? -1) >= 150) score += 1;
+        else return null;
+      }
+      return { d, i, score };
+    })
+    .filter((x): x is { d: SearchDoc; i: number; score: number } => x !== null)
+    .sort((a, b) => b.score - a.score || a.i - b.i)
+    .map((x) => x.d);
+}
+
+export function DocsSearch({ docs }: { docs: SearchDoc[] }) {
   const [q, setQ] = React.useState("");
-  const hits = q.trim() ? fuzzyFilter(docs, q, (d) => `${d.title} ${d.summary}`).slice(0, 8) : [];
+  const hits = searchDocs(docs, q).slice(0, 8);
   return (
     <div className="relative mt-8 max-w-xl">
       <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
