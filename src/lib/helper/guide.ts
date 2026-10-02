@@ -98,8 +98,8 @@ Steps:
 - **Reply publicly**: replies in the comment thread; add several replies and one is picked at random.
 - **Wait**: pause up to 24h. The whole flow's waits can't exceed 24h (Instagram's window).
 - **If / else**: branch on: follows you, has a tag, custom field, variable, message text, hour of day, first time, or **replied** (they messaged since the flow last sent them something; useful for follow-ups).
-- **Follower check**: branch yes/no on whether they follow you.
-- **Ask for follow**: asks non-followers to follow, waits (Re-check after), then continues down yes/no. People who already follow skip it.
+- **Follower check**: branch yes/no on whether they follow you. Instagram only tells us once the person has messaged you or tapped one of your buttons, so for someone who has only commented it takes the no path. Use Ask for follow for them.
+- **Ask for follow**: sends your message with a button (**Button**, default "I've followed ✅"). When they tap it, we check whether they follow you: yes continues down yes; if not, they get **If they tap but aren't following yet** once with the button again, and the next tap continues down yes or no. If nobody taps within **Wait for a tap**, it takes no. From a comment, this message is the private reply, so someone who never taps or replies can't be messaged again and the flow stops there. People who already follow skip it.
 - **Ask a question**: asks something in the DM and saves the answer; can **Save to a lead form** (pick the form and **Which question**). Has a "no reply" path after **Give up after**.
 - **AI replies**: answers from your AI agent's knowledge base; hands to you when unsure.
 - **Send a coupon**: issues a code from a coupon pool (paste the pool ID from Templates → Coupons); "ran out" path when empty.
@@ -116,7 +116,7 @@ Up to 8 DMs after the starter DM is the safe ceiling.`,
     id: "recipes",
     title: "Common recipes",
     body: `- **Send a link when people comment a keyword**: New automation → Comment on a post or Reel → Only specific keywords (e.g. LINK) → Comment to DM template → edit the Send DM button URL → Save → switch Live. Tell people in the caption: "Comment LINK and I'll DM it to you".
-- **Grow followers**: use the Follower growth gate template. Followers get the link straight away, non-followers are asked to follow first.
+- **Grow followers**: use the Follower growth gate template. Commenters are asked to follow and tap "I've followed"; followers get the link on the tap. There's no way to react the moment someone follows you: Instagram doesn't tell apps about new followers.
 - **Collect emails**: Capture an email template, or add Ask a question with Answer type Email. To export or sync them, create a form under Lead forms and choose it in **Save to a lead form**.
 - **Sell a product**: comment-to-DM on the product post with keyword (e.g. BUY/PRICE) → Send DM with a Buttons message linking to the checkout (use a tracked link from Templates → Tracked links to count clicks) → optional Send a coupon → Wait 4h → If / else "replied" → a gentle nudge on the "no" path. Put the keyword in the caption and in a story.
 - **Giveaways**: Story mention giveaway template; entrants are tagged "giveaway-entry" so you can filter them in Contacts.
@@ -223,7 +223,7 @@ Skips are normal and protect the account, for example a follow-up after the 24h 
     title: "Dashboard & Analytics",
     path: "/dashboard/analytics",
     body: `**Dashboard** shows the last 14 days: automations triggered, DMs sent, open rate, click-through rate, recent runs and busiest automations.
-**Analytics** covers 30 days: Triggered, DMs sent, Opened, Clicked, Leads captured, New followers, activity over time, a table by automation, and link clicks. Each automation's own **Performance** tab shows where people drop off in its flow.`,
+**Analytics** covers 30 days: Triggered, DMs sent, Opened, Clicked, Leads captured, New followers, activity over time, a table by automation, and link clicks. Numbers update as things happen. **Clicked** counts taps on link buttons in your automations' DMs (once per person per message); links typed into message text aren't counted. **CTR** is clicks ÷ DMs sent. **New followers** counts people seen switching to following during an Ask for follow or Follower check. Each automation's own **Performance** tab shows where people drop off in its flow.`,
   },
   {
     id: "developers",

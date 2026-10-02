@@ -153,6 +153,22 @@ async function feedWaitingRun(
   contactId: string,
   event: NormalizedEvent,
 ): Promise<boolean> {
+  // "I've followed" on an Ask for follow step: re-check that run now. The
+  // payload names the run and step, so it goes to exactly that one.
+  if (event.payload?.startsWith("FOLLOWED:")) {
+    const [, runId, nodeId] = event.payload.split(":");
+    const waiting = await prisma.flowRun.updateMany({
+      where: { id: runId, accountId, contactId, status: "waiting", currentNodeId: nodeId },
+      data: { status: "running" },
+    });
+    if (waiting.count === 0) return true; // already moved on; nothing else should run
+    const run = await prisma.flowRun.findUnique({ where: { id: runId }, select: { variables: true } });
+    const variables = { ...((run?.variables as Record<string, unknown>) ?? {}), [`__follow_tapped_${nodeId}`]: true };
+    await prisma.flowRun.update({ where: { id: runId }, data: { variables: variables as object } });
+    await resumeFlowRun(runId, nodeId);
+    return true;
+  }
+
   const run = await prisma.flowRun.findFirst({
     where: { accountId, contactId, status: "waiting" },
     orderBy: { startedAt: "desc" },
@@ -296,16 +312,38 @@ export async function handleSideEffect(effect: SideEffect): Promise<void> {
         where: { accountId_igsid: { accountId: account.id, igsid: effect.igsid } },
       });
       if (!contact) return;
-      await prisma.message.updateMany({
+      // A read receipt covers everything sent before it. Count each message
+      // once, the first time it's seen, against the automation that sent it,
+      // so "Opened" means the same thing as "Sent" and adds up per automation.
+      const newlySeen = await prisma.message.findMany({
         where: {
           contactId: contact.id,
           direction: "outbound",
+          // Only what actually went out: a skipped or failed message can't be read.
+          status: { in: ["sent", "delivered"] },
           seenAt: null,
           createdAt: { lte: effect.at },
         },
+        select: { id: true, flowRunId: true },
+      });
+      if (newlySeen.length === 0) return;
+      await prisma.message.updateMany({
+        where: { id: { in: newlySeen.map((m) => m.id) } },
         data: { seenAt: effect.at, status: "seen" },
       });
-      await recordEvent({ accountId: account.id, contactId: contact.id, type: "message_seen" });
+      const runIds = [...new Set(newlySeen.flatMap((m) => (m.flowRunId ? [m.flowRunId] : [])))];
+      const runs = runIds.length
+        ? await prisma.flowRun.findMany({ where: { id: { in: runIds } }, select: { id: true, automationId: true } })
+        : [];
+      const automationOf = new Map(runs.map((r) => [r.id, r.automationId]));
+      for (const message of newlySeen) {
+        await recordEvent({
+          accountId: account.id,
+          contactId: contact.id,
+          automationId: message.flowRunId ? automationOf.get(message.flowRunId) ?? null : null,
+          type: "message_seen",
+        });
+      }
       return;
     }
 

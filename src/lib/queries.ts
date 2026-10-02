@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import { countEvents, utcDayStart, type StatRow } from "./engine/analytics";
 
 /**
  * Read-side queries for the dashboard. Everything here is scoped by workspace —
@@ -11,6 +12,27 @@ export async function getAccountIds(workspaceId: string): Promise<string[]> {
     select: { id: true },
   });
   return accounts.map((a) => a.id);
+}
+
+/**
+ * Daily counts since `since`. Days before yesterday come from DailyStat (the
+ * worker's rollup); yesterday and today are counted from the events
+ * themselves, so a run shows up the moment it happens rather than after the
+ * next rollup, and the day the rollup is still finishing isn't short.
+ */
+export async function getStatRows(accountIds: string[], since: Date): Promise<StatRow[]> {
+  if (accountIds.length === 0) return [];
+  const liveFrom = utcDayStart(1);
+  const [rolled, live] = await Promise.all([
+    since < liveFrom
+      ? prisma.dailyStat.findMany({
+          where: { accountId: { in: accountIds }, date: { gte: since, lt: liveFrom } },
+          orderBy: { date: "asc" },
+        })
+      : Promise.resolve([]),
+    countEvents(accountIds, since > liveFrom ? since : liveFrom),
+  ]);
+  return [...rolled, ...live];
 }
 
 export type OverviewStats = {
@@ -53,10 +75,7 @@ export async function getOverviewStats(
   const since = startOfDayUTC(new Date(Date.now() - (days - 1) * 86_400_000));
 
   const [stats, contacts, activeAutomations, openConversations] = await Promise.all([
-    prisma.dailyStat.findMany({
-      where: { accountId: { in: accountIds }, date: { gte: since } },
-      orderBy: { date: "asc" },
-    }),
+    getStatRows(accountIds, since),
     prisma.contact.count({ where: { accountId: { in: accountIds } } }),
     prisma.automation.count({ where: { accountId: { in: accountIds }, enabled: true } }),
     prisma.conversation.count({
@@ -113,7 +132,7 @@ function buildEmptySeries(days: number) {
   });
 }
 
-function startOfDayUTC(date: Date): Date {
+export function startOfDayUTC(date: Date): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
 
@@ -124,7 +143,7 @@ export async function getAutomationPerformance(workspaceId: string, days = 30) {
 
   const since = startOfDayUTC(new Date(Date.now() - (days - 1) * 86_400_000));
 
-  const [automations, stats] = await Promise.all([
+  const [automations, rows] = await Promise.all([
     prisma.automation.findMany({
       where: { accountId: { in: accountIds } },
       include: {
@@ -134,17 +153,23 @@ export async function getAutomationPerformance(workspaceId: string, days = 30) {
       },
       orderBy: { updatedAt: "desc" },
     }),
-    prisma.dailyStat.groupBy({
-      by: ["automationId"],
-      where: { accountId: { in: accountIds }, date: { gte: since } },
-      _sum: { triggered: true, sent: true, opened: true, clicked: true, leads: true },
-    }),
+    getStatRows(accountIds, since),
   ]);
 
-  const statsById = new Map(stats.map((s) => [s.automationId, s._sum]));
+  const stats = new Map<string, { triggered: number; sent: number; opened: number; clicked: number; leads: number }>();
+  for (const row of rows) {
+    if (!row.automationId) continue;
+    const sum = stats.get(row.automationId) ?? { triggered: 0, sent: 0, opened: 0, clicked: 0, leads: 0 };
+    sum.triggered += row.triggered;
+    sum.sent += row.sent;
+    sum.opened += row.opened;
+    sum.clicked += row.clicked;
+    sum.leads += row.leads;
+    stats.set(row.automationId, sum);
+  }
 
   return automations.map((automation) => {
-    const sum = statsById.get(automation.id);
+    const sum = stats.get(automation.id);
     const sent = sum?.sent ?? 0;
     const clicked = sum?.clicked ?? 0;
     const stepCount = Array.isArray(automation.flow?.nodes) ? automation.flow.nodes.length : 0;

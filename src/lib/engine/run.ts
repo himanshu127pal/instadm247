@@ -4,6 +4,7 @@ import type { NormalizedEvent, OutboundMessage } from "@/lib/meta/types";
 import { getClientForAccount } from "@/lib/meta/account";
 import { dispatch } from "./dispatch";
 import { recordEvent } from "./analytics";
+import { trackedUrl } from "./links";
 import { enqueue } from "./queues";
 import {
   flowGraphSchema,
@@ -115,6 +116,27 @@ export async function startFlowRun(params: {
 
 /** Resume a run that was waiting on a delay, a follow re-check, or an answer. */
 export async function resumeFlowRun(flowRunId: string, nodeId: string): Promise<FlowRun | null> {
+  return advance(flowRunId, nodeId);
+}
+
+/**
+ * Resume a run because its timer is up: a delay ending, or a re-check with no
+ * reply. Only if it's still waiting at that step for that time. An answer or
+ * a tap can move a run on before its timer fires, and the timer's job must
+ * not then run the step a second time (sending its message again). The claim
+ * is atomic, so the queued job and the sweep can't both resume it.
+ */
+export async function resumeDueRun(flowRunId: string, nodeId: string, now = Date.now()): Promise<FlowRun | null> {
+  const claimed = await prisma.flowRun.updateMany({
+    where: {
+      id: flowRunId,
+      status: "waiting",
+      currentNodeId: nodeId,
+      OR: [{ resumeAt: null }, { resumeAt: { lte: new Date(now + 5_000) } }],
+    },
+    data: { status: "running" },
+  });
+  if (claimed.count === 0) return null;
   return advance(flowRunId, nodeId);
 }
 
@@ -311,7 +333,7 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
         target: usePrivateReply
           ? { to: "comment", commentId: commentId! }
           : { to: "user", igsid: ctx.contact.igsid },
-        message: toOutbound(node.data.message, ctx),
+        message: toOutbound(node.data.message, ctx, node.id),
         source: "automation",
         flowRunId: ctx.run.id,
         nodeId: node.id,
@@ -368,27 +390,77 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
     }
 
     case "ASK_FOR_FOLLOW": {
-      // Already following? Skip the ask entirely.
-      if (await resolveFollowerStatus(ctx)) return { kind: "continue", handle: "yes" };
+      const asked = ctx.variables[`__asked_follow_${node.id}`] === true;
+      const tapped = ctx.variables[`__follow_tapped_${node.id}`] === true;
+      const askedAgain = ctx.variables[`__asked_follow_again_${node.id}`] === true;
 
+      // A tap is the moment Instagram lets us check, so check fresh then.
+      if (await resolveFollowerStatus(ctx, { fresh: tapped })) return { kind: "continue", handle: "yes" };
+
+      // Asked already, and this is the re-check: a tap, or the timer.
+      if (asked) {
+        if (!tapped && ctx.variables[`__asked_follow_private_${node.id}`] === true) {
+          // Asked in a comment's private reply, and they haven't tapped or
+          // written back since: Instagram allows nothing more until they do.
+          const askedAt = Number(ctx.variables[`__asked_follow_at_${node.id}`] ?? 0);
+          const since = ctx.contact.lastInteractionAt?.getTime() ?? 0;
+          if (since <= askedAt) {
+            return { kind: "halt", reason: "They didn't tap the button or reply, so Instagram allows no more messages yet." };
+          }
+        }
+        if (!tapped || askedAgain) return { kind: "continue", handle: "no" };
+        // They tapped but aren't following yet. Say so once, and wait for
+        // another tap.
+        ctx.variables[`__follow_tapped_${node.id}`] = false;
+        ctx.variables[`__asked_follow_again_${node.id}`] = true;
+        const retry = await dispatch({
+          accountId: ctx.account.id,
+          contactId: ctx.contact.id,
+          conversationId: ctx.conversationId,
+          target: { to: "user", igsid: ctx.contact.igsid },
+          message: withFollowedButton(
+            { kind: "text", text: renderTemplate(node.data.notFollowingText, ctx) },
+            node.data.buttonTitle,
+            followedPayload(ctx.run.id, node.id),
+          ),
+          source: "automation",
+          flowRunId: ctx.run.id,
+          nodeId: node.id,
+        });
+        if (retry.status !== "sent") return { kind: "continue", handle: "no" };
+        return {
+          kind: "wait",
+          resumeAt: new Date(Date.now() + node.data.recheckAfterMinutes * 60 * 1000),
+          nodeId: node.id,
+        };
+      }
+
+      // First ask. From a comment, this is the private reply: the only
+      // message Instagram allows before the person writes back.
+      const where = await firstMessageTarget(ctx);
       const result = await dispatch({
         accountId: ctx.account.id,
         contactId: ctx.contact.id,
         conversationId: ctx.conversationId,
-        target: { to: "user", igsid: ctx.contact.igsid },
-        message: toOutbound(node.data.message, ctx),
+        target: where.target,
+        message: withFollowedButton(
+          toOutbound(node.data.message, ctx, node.id),
+          node.data.buttonTitle,
+          followedPayload(ctx.run.id, node.id),
+        ),
         source: "automation",
         flowRunId: ctx.run.id,
         nodeId: node.id,
+        commentAt: where.commentAt,
+        isLiveComment: where.isLive,
       });
       if (result.status === "skipped") return { kind: "halt", reason: result.explanation };
+      if (result.status === "failed" && !result.retryable) return { kind: "halt", reason: result.error };
 
-      // Come back to this same node later to re-check whether they followed.
+      // Wait for the tap; the timer is the fallback for people who never do.
       ctx.variables[`__asked_follow_${node.id}`] = true;
-      const alreadyAsked = ctx.variables[`__follow_recheck_${node.id}`] === true;
-      if (alreadyAsked) return { kind: "continue", handle: "no" };
-      ctx.variables[`__follow_recheck_${node.id}`] = true;
-
+      ctx.variables[`__asked_follow_at_${node.id}`] = Date.now();
+      ctx.variables[`__asked_follow_private_${node.id}`] = where.target.to === "comment";
       return {
         kind: "wait",
         resumeAt: new Date(Date.now() + node.data.recheckAfterMinutes * 60 * 1000),
@@ -424,7 +496,7 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
         contactId: ctx.contact.id,
         conversationId: ctx.conversationId,
         target: { to: "user", igsid: ctx.contact.igsid },
-        message: toOutbound(message, ctx),
+        message: toOutbound(message, ctx, node.id),
         source: "automation",
         flowRunId: ctx.run.id,
         nodeId: node.id,
@@ -507,7 +579,7 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
         contactId: ctx.contact.id,
         conversationId: ctx.conversationId,
         target: { to: "user", igsid: ctx.contact.igsid },
-        message: toOutbound(node.data.message, ctx),
+        message: toOutbound(node.data.message, ctx, node.id),
         source: "automation",
         flowRunId: ctx.run.id,
         nodeId: node.id,
@@ -598,7 +670,7 @@ async function executeNode(ctx: RunContext, node: FlowNode): Promise<NodeResult>
           contactId: ctx.contact.id,
           conversationId: ctx.conversationId,
           target: { to: "user", igsid: ctx.contact.igsid },
-          message: toOutbound(node.data.notifyMessage, ctx),
+          message: toOutbound(node.data.notifyMessage, ctx, node.id),
           source: "automation",
           flowRunId: ctx.run.id,
           nodeId: node.id,
@@ -705,21 +777,32 @@ export async function evaluateCondition(
 }
 
 /**
- * Follower status, cached for an hour. `is_user_follow_business` comes from the
- * User Profile API and is what the Follower Growth Tool branches on.
+ * Whether this person follows the account: true, false, or null when
+ * Instagram won't say.
+ *
+ * `is_user_follow_business` comes from the User Profile API, which Instagram
+ * only answers for someone who has messaged the account or tapped one of its
+ * buttons. A person who has only commented hasn't, so for them the answer is
+ * null: unknown, not "no". There is no follow webhook to learn it any other
+ * way. That's why Ask for follow carries an "I've followed" button: the tap is
+ * the interaction that lets us check. Cached for an hour unless `fresh`.
  */
-async function resolveFollowerStatus(ctx: RunContext): Promise<boolean> {
-  const fresh =
+async function followerStatus(ctx: RunContext, opts: { fresh?: boolean } = {}): Promise<boolean | null> {
+  const cached =
+    !opts.fresh &&
+    ctx.contact.isFollower !== null &&
     ctx.contact.followerCheckedAt &&
     Date.now() - ctx.contact.followerCheckedAt.getTime() < 60 * 60 * 1000;
-  if (fresh && ctx.contact.isFollower !== null) return ctx.contact.isFollower;
+  if (cached) return ctx.contact.isFollower;
 
   const client = await getClientForAccount(ctx.account);
-  if (!client) return ctx.contact.isFollower ?? false;
+  // Demo accounts and an unconfigured server have no one to ask.
+  if (!client) return ctx.contact.isFollower;
 
   try {
     const profile = await client.getUserProfile(ctx.contact.igsid);
-    const isFollower = profile.is_user_follow_business ?? false;
+    if (typeof profile.is_user_follow_business !== "boolean") return null;
+    const isFollower = profile.is_user_follow_business;
 
     if (isFollower && ctx.contact.isFollower === false) {
       await recordEvent({
@@ -730,27 +813,85 @@ async function resolveFollowerStatus(ctx: RunContext): Promise<boolean> {
       });
     }
 
+    const checkedAt = new Date();
     await prisma.contact.update({
       where: { id: ctx.contact.id },
       data: {
         isFollower,
-        followerCheckedAt: new Date(),
+        followerCheckedAt: checkedAt,
         username: profile.username ?? ctx.contact.username,
         name: profile.name ?? ctx.contact.name,
         profilePicUrl: profile.profile_pic ?? ctx.contact.profilePicUrl,
       },
     });
-    ctx.contact = { ...ctx.contact, isFollower, followerCheckedAt: new Date() };
+    ctx.contact = { ...ctx.contact, isFollower, followerCheckedAt: checkedAt };
     return isFollower;
-  } catch {
-    return ctx.contact.isFollower ?? false;
+  } catch (error) {
+    // Usually "this person hasn't messaged you yet". Not logged with the
+    // person's ID: it's a third party's identifier.
+    console.info(`[engine] follower status unknown for a contact of account ${ctx.account.id}: ${(error as Error).message}`);
+    return null;
   }
+}
+
+/** For branching: only a confirmed follower takes the "yes" path. */
+async function resolveFollowerStatus(ctx: RunContext, opts: { fresh?: boolean } = {}): Promise<boolean> {
+  return (await followerStatus(ctx, opts)) === true;
+}
+
+/** The "I've followed" button's payload. Parsed in ingest.ts. */
+export function followedPayload(runId: string, nodeId: string): string {
+  return `FOLLOWED:${runId}:${nodeId}`;
+}
+
+/** Put the "I've followed" button on an Ask for follow message. */
+function withFollowedButton(message: OutboundMessage, title: string, payload: string): OutboundMessage {
+  const button = { type: "postback" as const, title: title.slice(0, 20), payload };
+  if (message.kind === "text") return { kind: "buttons", text: message.text, buttons: [button] };
+  // Instagram allows three buttons on a message; a full one goes as written.
+  if (message.kind === "buttons" && message.buttons.length < 3) {
+    return { ...message, buttons: [...message.buttons, button] };
+  }
+  return message;
+}
+
+/**
+ * Where a step that can't wait for the person to message first should send:
+ * as the comment's private reply when the run came from a comment that hasn't
+ * had one yet (Instagram's only way to start a DM from a comment), otherwise
+ * as a normal DM.
+ */
+async function firstMessageTarget(ctx: RunContext): Promise<{
+  target: { to: "comment"; commentId: string } | { to: "user"; igsid: string };
+  commentAt?: Date;
+  isLive?: boolean;
+}> {
+  const payload = (ctx.run.triggerPayload ?? {}) as Record<string, unknown>;
+  const commentId = typeof payload.commentId === "string" ? payload.commentId : undefined;
+  if (commentId) {
+    const used = await prisma.commentReplyLog.findUnique({
+      where: { accountId_igCommentId_kind: { accountId: ctx.account.id, igCommentId: commentId, kind: "private" } },
+      select: { id: true },
+    });
+    if (!used) {
+      return {
+        target: { to: "comment", commentId },
+        commentAt: payload.timestamp ? new Date(String(payload.timestamp)) : undefined,
+        isLive: payload.isLive === true,
+      };
+    }
+  }
+  return { target: { to: "user", igsid: ctx.contact.igsid } };
 }
 
 // --- helpers ----------------------------------------------------------------
 
-/** Interpolate personalisation variables into every text field of a payload. */
-function toOutbound(payload: MessagePayload, ctx: RunContext): OutboundMessage {
+/**
+ * Interpolate personalisation variables into every text field of a payload,
+ * and route link buttons through click tracking (src/lib/engine/links.ts).
+ */
+function toOutbound(payload: MessagePayload, ctx: RunContext, nodeId: string): OutboundMessage {
+  const link = (url: string) => trackedUrl(renderTemplate(url, ctx), ctx.run.id, nodeId);
   switch (payload.kind) {
     case "text":
       return { kind: "text", text: renderTemplate(payload.text, ctx) };
@@ -760,7 +901,7 @@ function toOutbound(payload: MessagePayload, ctx: RunContext): OutboundMessage {
         text: renderTemplate(payload.text, ctx),
         buttons: payload.buttons.map((b) =>
           b.type === "web_url"
-            ? { type: "web_url", title: b.title, url: renderTemplate(b.url, ctx) }
+            ? { type: "web_url", title: b.title, url: link(b.url) }
             : { type: "postback", title: b.title, payload: b.payload },
         ),
       };
@@ -773,7 +914,7 @@ function toOutbound(payload: MessagePayload, ctx: RunContext): OutboundMessage {
           image_url: s.image_url,
           buttons: s.buttons?.map((b) =>
             b.type === "web_url"
-              ? { type: "web_url" as const, title: b.title, url: renderTemplate(b.url, ctx) }
+              ? { type: "web_url" as const, title: b.title, url: link(b.url) }
               : { type: "postback" as const, title: b.title, payload: b.payload },
           ),
         })),

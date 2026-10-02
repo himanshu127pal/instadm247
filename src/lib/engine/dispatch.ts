@@ -161,6 +161,7 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
       await recordEvent({
         accountId: req.accountId,
         contactId: req.contactId,
+        automationId: await automationIdOf(req.flowRunId),
         type: "message_sent",
         nodeId: req.nodeId,
         meta: { simulated: true },

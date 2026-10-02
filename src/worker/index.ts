@@ -17,7 +17,7 @@ import {
   processWebhookEvent,
   purgeOldWebhookEvents,
 } from "@/lib/engine/ingest";
-import { resumeFlowRun } from "@/lib/engine/run";
+import { resumeDueRun } from "@/lib/engine/run";
 import { dispatch } from "@/lib/engine/dispatch";
 import { rollupDailyStats } from "@/lib/engine/analytics";
 import { runBroadcast, runDueReengagements } from "@/lib/engine/broadcast";
@@ -66,7 +66,7 @@ workers.push(
     QUEUE_NAMES.flow,
     async (job) => {
       if (job.data.kind === "resume") {
-        await resumeFlowRun(job.data.flowRunId, job.data.nodeId);
+        await resumeDueRun(job.data.flowRunId, job.data.nodeId);
       }
     },
     { connection, concurrency: 10 },
@@ -204,7 +204,7 @@ async function sweepStalledRuns(): Promise<void> {
   for (const run of due) {
     if (!run.currentNodeId) continue;
     try {
-      await resumeFlowRun(run.id, run.currentNodeId);
+      await resumeDueRun(run.id, run.currentNodeId);
     } catch (error) {
       log("sweep", `failed to resume ${run.id}`, (error as Error).message);
     }

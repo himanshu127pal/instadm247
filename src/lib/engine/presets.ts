@@ -113,75 +113,64 @@ export const PRESETS: Preset[] = [
     id: "follower-growth",
     name: "Follower growth gate",
     description:
-      "Deliver the goods to everyone, but nudge the people who don't follow you yet, and skip the ask entirely for those who already do.",
+      "Ask commenters to follow you, with a button they tap once they have. Followers get the goods on the tap; anyone who taps without following gets one reminder, then the goods anyway.",
     triggerType: "COMMENT",
     matchMode: "KEYWORD",
     keywords: ["GUIDE"],
     build() {
-      const { graph, lastId } = starter("Hey {{first_name}}! Sending that over now 🙌");
-
-      const checkId = id("check");
-      append(graph, lastId, {
-        id: checkId,
-        type: "FOLLOWER_CHECK",
-        position: { x: 0, y: 320 },
-        data: { label: "Following me?" },
-      });
-
-      // Already a follower — straight to the payload.
-      const deliverId = id("send");
-      append(
-        graph,
-        checkId,
-        {
-          id: deliverId,
-          type: "SEND_MESSAGE",
-          position: { x: -220, y: 480 },
-          data: {
-            label: "Deliver the guide",
-            asPrivateReply: false,
-            message: {
-              kind: "buttons",
-              text: "Here it is, enjoy! 📘",
-              buttons: [{ type: "web_url", title: "Get the guide", url: "https://example.com" }],
-            },
-          },
-        },
-        "yes",
-      );
-
-      // Not following — ask, then deliver either way.
+      // Instagram allows one message to a commenter (the private reply) until
+      // they write back or tap a button, and only answers "do they follow
+      // me?" after that. So the ask comes first, as the private reply, with
+      // an "I've followed" button: the tap opens the conversation and lets
+      // the follow be checked. People who already follow get the guide as
+      // soon as they tap.
+      const triggerId = id("trigger");
       const askId = id("ask");
-      append(
-        graph,
-        checkId,
-        {
-          id: askId,
-          type: "ASK_FOR_FOLLOW",
-          position: { x: 220, y: 480 },
-          data: {
-            label: "Ask for a follow",
-            recheckAfterMinutes: 5,
-            message: {
-              kind: "text",
-              text: "One tiny thing: give me a follow so you don't miss the next one 🙏 Then it's all yours!",
+      const deliverId = id("send");
+      const endId = id("end");
+      const graph: FlowGraph = {
+        nodes: [
+          { id: triggerId, type: "TRIGGER", position: { x: 0, y: 0 }, data: { label: "When this happens" } },
+          {
+            id: askId,
+            type: "ASK_FOR_FOLLOW",
+            position: { x: 0, y: 160 },
+            data: {
+              label: "Ask for a follow",
+              recheckAfterMinutes: 60,
+              buttonTitle: "I've followed ✅",
+              notFollowingText: "Hmm, I can't see your follow yet. Follow, then tap the button again 🙏",
+              message: {
+                kind: "text",
+                text: "Hey {{first_name}}! Give me a follow so you don't miss the next one, then tap the button below and the guide is yours 🙌",
+              },
             },
           },
-        },
-        "no",
-      );
-
-      graph.edges.push({ id: id("edge"), source: askId, target: deliverId, sourceHandle: "yes" });
-      graph.edges.push({ id: id("edge"), source: askId, target: deliverId, sourceHandle: "no" });
-
-      const endId = id("end");
-      append(graph, deliverId, {
-        id: endId,
-        type: "END",
-        position: { x: -220, y: 640 },
-        data: { label: "Done", goal: true },
-      });
-
+          {
+            id: deliverId,
+            type: "SEND_MESSAGE",
+            position: { x: 0, y: 340 },
+            data: {
+              label: "Deliver the guide",
+              asPrivateReply: false,
+              message: {
+                kind: "buttons",
+                text: "Here it is, enjoy! 📘",
+                buttons: [{ type: "web_url", title: "Get the guide", url: "https://example.com" }],
+              },
+            },
+          },
+          { id: endId, type: "END", position: { x: 0, y: 500 }, data: { label: "Done", goal: true } },
+        ],
+        edges: [
+          { id: id("edge"), source: triggerId, target: askId, sourceHandle: "next" },
+          // Followers get it straight away; people who tapped but still
+          // don't follow get it too, after one reminder.
+          { id: id("edge"), source: askId, target: deliverId, sourceHandle: "yes" },
+          { id: id("edge"), source: askId, target: deliverId, sourceHandle: "no" },
+          { id: id("edge"), source: deliverId, target: endId, sourceHandle: "next" },
+        ],
+      };
       return graph;
     },
   },

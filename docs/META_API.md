@@ -107,6 +107,18 @@ but has no published payload or documentation, so it is **not** subscribed to �
 building on it would break the "documented endpoints only" rule. Revisit if
 Meta documents it.
 
+**There is no documented follow webhook.** `follow` is also in the accepted set,
+but like `story_reactions` it has no published payload, so it is **not**
+subscribed to and no follow events appear in `/admin/webhooks`. Nothing tells an
+app the moment someone follows. Follower status comes only from
+`is_user_follow_business` on the User Profile API (§8), which Instagram answers
+only for someone who has **messaged the account or tapped one of its buttons**.
+A commenter has done neither, so for them it's unknown, not "no". That is why
+Ask for follow carries an "I've followed" postback button (payload
+`FOLLOWED:<runId>:<nodeId>`): the tap is the interaction that makes the check
+possible, and it opens the conversation after a private reply. Revisit if Meta
+documents `follow`.
+
 **`mentions` is not story mentions.** Story mentions arrive on `messages` as an
 attachment of type `story_mention`; `mentions` is caption and comment @mentions,
 which is not a feature in `docs/FEATURES.md`. Don't subscribe to it without
@@ -204,7 +216,7 @@ trigger automatically on repeated 429/613 errors and expose as a manual toggle.
 |---|---|
 | Account profile | `GET /me?fields=user_id,username,name,account_type,profile_picture_url,followers_count,media_count` |
 | Media list (for the media picker) | `GET /me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,comments_count,like_count` |
-| Contact profile (incl. **`is_user_follow_business`** → the Follower Growth check; also how a DM sender gets a name, since DM webhooks carry only the IGSID. Looked up once for a nameless contact on ingest or when their thread opens, retried at most hourly. See `src/lib/meta/profile.ts`) | `GET /<IGSID>?fields=name,username,profile_pic,follower_count,is_user_follow_business,is_business_follow_user` |
+| Contact profile (incl. **`is_user_follow_business`** → the Follower Growth check, answered only for people who have messaged or tapped a button (§4); also how a DM sender gets a name, since DM webhooks carry only the IGSID. Looked up once for a nameless contact on ingest or when their thread opens, retried at most hourly. See `src/lib/meta/profile.ts`) | `GET /<IGSID>?fields=name,username,profile_pic,follower_count,is_user_follow_business,is_business_follow_user` |
 | Conversations / message history | `GET /me/conversations`, `GET /<CONVERSATION_ID>?fields=messages` |
 | Ice breakers & persistent menu | `POST /me/messenger_profile` with `ice_breakers` / `persistent_menu` |
 | Subscribe app to webhooks | `POST /<IG_USER_ID>/subscribed_apps?subscribed_fields=...` |

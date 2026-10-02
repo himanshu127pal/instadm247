@@ -169,7 +169,7 @@ export default async function AutomationsPage() {
 
               <p className="mt-3 border-t-2 border-[var(--border-soft)] pt-3 text-[11.5px] text-[var(--text-faint)]">
                 Updated {timeAgo(automation.updatedAt)} · {automation._count.runs.toLocaleString()}{" "}
-                total run{automation._count.runs === 1 ? "" : "s"}
+                total run{automation._count.runs === 1 ? "" : "s"} · Triggered, Sent and CTR cover the last 30 days
               </p>
             </article>
           ))}
