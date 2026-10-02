@@ -34,6 +34,9 @@ The sidebar is grouped as:
 - Audience: Contacts, Lead forms, Link in bio
 - Intelligence: Analytics, AI agent, AI Helper
 - Account: Instagram accounts, Safety Center, Templates, Developers, Plan & billing, Settings
+- Help: Support, Request a feature
+
+Public docs (the same guidance, readable without signing in) are at /docs, under **Resources** in the site's header.
 
 Instagram's rules, which InstaDM247 enforces automatically on every plan:
 - **24-hour messaging window**: you can only DM someone within 24 hours of their last message, comment-triggered private reply, or story interaction. After that, messages are skipped, not sent.

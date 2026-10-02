@@ -105,7 +105,7 @@ https://heytrigger.com. The owner reviewed their product and asked for these fiv
 |---|---|---|---|
 | 1 | **My content**: posts, Reels and live stories, with the automations on each | Done | `/dashboard/content`, `src/lib/content.ts`. Stories read live (`GET /me/stories`), only the last 24h. Shows which automation answers first on each post (same ranking as the matcher, `scopeRank`) |
 | 2 | Feature requests page (admin emailed) | Done | `/dashboard/requests`, `/admin/requests`; admins emailed, customer emailed on status changes. `docs/SUPPORT.md` |
-| 3 | Resources menu and docs | Pending | |
+| 3 | Resources menu and docs | Done | "Resources" dropdown in the site header (Docs, Blog, Compare, Support, Request a feature, Account safety). `/docs` and `/docs/[slug]` are built from the AI Helper's guide (`src/content/docs.ts`), so the docs stay as true as the guide (rule 14); search, grouped sidebar, sitemap |
 | 4 | Support center with tickets (admin emailed) | Done | `/dashboard/support`, `/admin/support`; staff emailed on new tickets and replies, customer emailed on our replies. `docs/SUPPORT.md` |
 | 5 | Onboarding tour and getting-started checklist | Pending | |
 

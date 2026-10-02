@@ -10,6 +10,9 @@ import { COMPARISONS } from "../src/content/compare";
 import { POSTS } from "../src/content/blog";
 import { renderInline } from "../src/components/marketing/content";
 import sitemap from "../src/app/sitemap";
+import { allDocs, parseDoc, plain } from "../src/content/docs";
+import { GUIDE } from "../src/lib/helper/guide";
+import { env } from "../src/lib/env";
 
 type Check = (label: string, condition: boolean, detail?: string) => void;
 type Section = (title: string) => void;
@@ -22,7 +25,23 @@ export async function runContentChecks(check: Check, section: Section) {
     ...FEATURES.map((f) => `/features/${f.slug}`),
     ...COMPARISONS.map((c) => `/compare/${c.slug}`),
     ...POSTS.map((p) => `/blog/${p.slug}`),
+    "/docs",
+    ...allDocs({ billingEnabled: env.billing.enabled }).map((d) => `/docs/${d.slug}`),
   ]);
+
+  const docs = allDocs({ billingEnabled: true });
+  const grouped = new Set(docs.map((d) => d.slug));
+  const ungrouped = GUIDE.filter((g) => !grouped.has(g.id)).map((g) => g.id);
+  check("every section of the product guide is in the docs", ungrouped.length === 0, ungrouped.join(", "));
+  check("billing docs are hidden while plans aren't on sale", !allDocs({ billingEnabled: false }).some((d) => d.slug === "billing"));
+  check("every doc has a summary for its card and search result", docs.every((d) => d.summary.length > 20 && !d.summary.includes("**")), docs.find((d) => d.summary.length <= 20)?.slug);
+  const lists = parseDoc("Intro line.\n1. One\n   - nested\n2. Two\n- dash");
+  check(
+    "doc markdown becomes paragraphs, numbered and bulleted lists with sub-items",
+    lists.length === 3 && lists[1].kind === "ol" && lists[1].items.length === 2 && lists[1].items[0].children[0] === "nested" && lists[2].kind === "ul",
+    JSON.stringify(lists),
+  );
+  check("plain text drops markup", plain("**Bold** and *soft* [link](/docs)") === "Bold and soft link");
 
   const unique = (xs: string[]) => new Set(xs).size === xs.length;
   check("feature, comparison and post slugs are unique", unique(FEATURES.map((f) => f.slug)) && unique(COMPARISONS.map((c) => c.slug)) && unique(POSTS.map((p) => p.slug)));
