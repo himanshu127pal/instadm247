@@ -50,6 +50,17 @@ export function windowCountdown(
   return { label, open: true, urgency: hours < 2 ? "closing" : "open" };
 }
 
+/**
+ * How to name a contact on screen. A person who reached us by DM may have no
+ * username until Instagram's profile lookup comes back; their scoped ID means
+ * nothing to anyone, so it's never shown as if it were a handle.
+ */
+export function contactLabel(contact: { username: string | null; name: string | null }): string {
+  if (contact.username) return `@${contact.username}`;
+  if (contact.name) return contact.name;
+  return "Instagram user";
+}
+
 export function initials(name: string | null | undefined, fallback = "?"): string {
   if (!name) return fallback;
   const parts = name.trim().split(/\s+/).slice(0, 2);

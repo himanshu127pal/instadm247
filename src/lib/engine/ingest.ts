@@ -1,3 +1,4 @@
+import { refreshContactProfile } from "@/lib/meta/profile";
 import { prisma } from "@/lib/db";
 import { byEitherInstagramId } from "@/lib/meta/identity";
 import type { NormalizedEvent } from "@/lib/meta/types";
@@ -86,7 +87,9 @@ export async function handleEvent(event: NormalizedEvent): Promise<void> {
   // before Instagram has any reason to throttle us.
   void recordInboundAndCheckSpike(account);
 
-  const contact = await upsertContact(account.id, event);
+  // A DM carries only the sender's ID; look up who they are, so the Inbox
+  // shows their name and {{first_name}} works in the flow this triggers.
+  const contact = await refreshContactProfile(account, await upsertContact(account.id, event));
   const conversation = await upsertConversation(account.id, contact.id, event);
 
   // Log the inbound message so the Inbox is a complete record.

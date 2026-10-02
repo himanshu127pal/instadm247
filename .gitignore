@@ -15,3 +15,6 @@ tsconfig.tsbuildinfo
 
 # Local Redis snapshot
 dump.rdb
+
+# Scheduler uploads (UPLOAD_DIR default)
+/storage/

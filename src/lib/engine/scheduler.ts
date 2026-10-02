@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { hasFeature } from "@/lib/plan";
 import { getClientForAccount } from "@/lib/meta/account";
 import { MetaApiError } from "@/lib/meta/types";
+import { tokenFromUrl } from "@/lib/media/store";
 
 /**
  * Content scheduler — SendDM's "Schedule & Auto-Post".
@@ -109,7 +110,9 @@ export async function publishScheduledPost(postId: string): Promise<void> {
         igMediaId: published.id,
         caption: post.caption ?? null,
         mediaType: post.mediaType,
-        mediaUrl: post.mediaUrls[0] ?? null,
+        // A file we hosted is deleted a week after publishing, so don't keep
+        // its link as the post's picture; the next account sync fills it in.
+        mediaUrl: post.mediaUrls[0] && !tokenFromUrl(post.mediaUrls[0]) ? post.mediaUrls[0] : null,
         thumbnailUrl: post.thumbUrl ?? null,
         timestamp: new Date(),
       },

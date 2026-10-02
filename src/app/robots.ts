@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       // Signed-in areas and machine endpoints have nothing for a search engine,
       // and tracked-link redirects (/r) would only muddy click counts.
-      disallow: ["/dashboard", "/admin", "/api/", "/r/", "/verify-email", "/reset-password"],
+      disallow: ["/dashboard", "/admin", "/api/", "/r/", "/m/", "/verify-email", "/reset-password"],
     },
     sitemap: `${env.appUrl}/sitemap.xml`,
     host: env.appUrl,

@@ -73,7 +73,8 @@ export type MaintenanceJob =
   | { kind: "publish_due" }
   | { kind: "purge_webhooks" }
   | { kind: "reconcile_plans" }
-  | { kind: "billing_reminders" };
+  | { kind: "billing_reminders" }
+  | { kind: "purge_uploads" };
 
 /**
  * Enqueue, tolerating a missing Redis. Returns false when the job could not be
@@ -115,6 +116,8 @@ export async function scheduleMaintenance(): Promise<void> {
     // Renewal and plan-ending reminders. Daily is enough: each is deduped per
     // subscription and period, so a missed or repeated run can't double-send.
     ["billing_reminders", { kind: "billing_reminders" }, "0 9 * * *"],
+    // Scheduler uploads: unused ones after a day, published ones after a week.
+    ["purge_uploads", { kind: "purge_uploads" }, "15 5 * * *"],
   ];
 
   // BullMQ v5+ replaced repeatable jobs with job schedulers. Upserting by a

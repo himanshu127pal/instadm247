@@ -72,7 +72,9 @@ holds the researched competitor matrix, this holds what actually exists.
 - [x] **Link in Bio** — hosted `/l/[slug]` page, five themes, per-block click
       tracking, badge toggle
 - [x] **Schedule & Auto-Post** — container-based publishing with status polling,
-      carousels, and automations that switch on at publish
+      carousels, and automations that switch on at publish. Files are uploaded
+      from the device and hosted for Instagram to fetch; shape, size and length
+      are checked before scheduling (`docs/SCHEDULER.md`)
 - [x] **Next Post** — attach an automation to whatever publishes next, no code
 - [x] **DM Main Menu** — persistent menu manager, up to 20 items
 - [x] **Viral Post Protection** — proactive spike detection arms Slow Down

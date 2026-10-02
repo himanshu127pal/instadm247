@@ -4,6 +4,7 @@ import { isImpersonating } from "@/lib/impersonation";
 import { AuthError } from "@/lib/auth";
 import { ok, parseBody, route } from "@/lib/api";
 import { dispatch } from "@/lib/engine/dispatch";
+import { refreshContactProfile } from "@/lib/meta/profile";
 
 export const runtime = "nodejs";
 
@@ -18,7 +19,12 @@ async function assertConversation(workspaceId: string, id: string) {
 
 /** Full message history for one thread. */
 export const GET = route<{ id: string }>(async ({ workspace, params }) => {
-  const conversation = await assertConversation(workspace.id, params.id);
+  const found = await assertConversation(workspace.id, params.id);
+  // A sender who arrived before profiles were looked up, or whose lookup
+  // failed, is known only by ID. Opening the thread is a good time to ask.
+  const account = await prisma.instagramAccount.findUnique({ where: { id: found.accountId } });
+  const contact = account ? await refreshContactProfile(account, found.contact) : found.contact;
+  const conversation = { ...found, contact };
 
   const messages = await prisma.message.findMany({
     where: { conversationId: conversation.id },
