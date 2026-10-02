@@ -4,9 +4,12 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Megaphone, Plus, RefreshCw, Send, Users } from "lucide-react";
-import { Badge, Button, EmptyState, Field, Input, Select, Switch, Textarea } from "@/components/ui";
+import { Badge, Button, EmptyState, Field, Input, Select, Switch } from "@/components/ui";
 import { SectionCard } from "@/components/dashboard/bits";
 import { timeAgo } from "@/lib/utils";
+import { BROADCAST_TOKENS } from "@/lib/engine/template";
+import { TagPicker, type TagOption } from "@/components/dashboard/tag-picker";
+import { TokenTextarea } from "@/components/dashboard/token-textarea";
 
 type Broadcast = {
   id: string;
@@ -30,11 +33,15 @@ export function BroadcastsView({
   segments,
   broadcasts,
   reachableCount,
+  tagsByAccount,
+  fieldsByAccount,
 }: {
   accounts: Array<{ id: string; username: string }>;
   segments: Array<{ id: string; name: string }>;
   broadcasts: Broadcast[];
   reachableCount: number;
+  tagsByAccount: Record<string, TagOption[]>;
+  fieldsByAccount: Record<string, string[]>;
 }) {
   const [composing, setComposing] = React.useState(false);
 
@@ -68,6 +75,8 @@ export function BroadcastsView({
         <Composer
           accounts={accounts}
           segments={segments}
+          tagsByAccount={tagsByAccount}
+          fieldsByAccount={fieldsByAccount}
           onDone={() => setComposing(false)}
         />
       )}
@@ -153,10 +162,14 @@ function StatusBadge({ status }: { status: string }) {
 function Composer({
   accounts,
   segments,
+  tagsByAccount,
+  fieldsByAccount,
   onDone,
 }: {
   accounts: Array<{ id: string; username: string }>;
   segments: Array<{ id: string; name: string }>;
+  tagsByAccount: Record<string, TagOption[]>;
+  fieldsByAccount: Record<string, string[]>;
   onDone: () => void;
 }) {
   const router = useRouter();
@@ -164,21 +177,25 @@ function Composer({
   const [name, setName] = React.useState("");
   const [text, setText] = React.useState("");
   const [kind, setKind] = React.useState<"BROADCAST" | "REENGAGE">("BROADCAST");
-  const [tags, setTags] = React.useState("");
+  const [tags, setTags] = React.useState<string[]>([]);
   const [reengageAfterHours, setReengageAfterHours] = React.useState(12);
   const [recurring, setRecurring] = React.useState(false);
   const [segmentId, setSegmentId] = React.useState("");
   const [audience, setAudience] = React.useState<{ total: number; eligible: number } | null>(null);
   const [sending, setSending] = React.useState(false);
 
-  const filter = React.useMemo(
-    () => ({
-      tags: tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-    }),
-    [tags],
+  const filter = React.useMemo(() => ({ tags }), [tags]);
+
+  // What a broadcast can fill in: the contact's details and this account's
+  // custom fields. Not keyword or coupon: those come from a flow run.
+  const tokens = React.useMemo(
+    () => [
+      ...BROADCAST_TOKENS.map((t) => ({ token: t.token, description: t.description })),
+      ...(fieldsByAccount[accountId] ?? [])
+        .filter((key) => !BROADCAST_TOKENS.some((t) => t.token === key))
+        .map((key) => ({ token: key, description: "Custom field" })),
+    ],
+    [accountId, fieldsByAccount],
   );
 
   // Preview the audience as the targeting changes, so the number is never a surprise.
@@ -252,7 +269,13 @@ function Composer({
 
           {accounts.length > 1 && (
             <Field label="From account">
-              <Select value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+              <Select
+                value={accountId}
+                onChange={(e) => {
+                  setAccountId(e.target.value);
+                  setTags([]); // tags belong to an account
+                }}
+              >
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
                     @{account.username}
@@ -271,18 +294,19 @@ function Composer({
           />
         </Field>
 
-        <Field label="Message" hint="Supports {{first_name}} and your other tokens.">
-          <Textarea
+        <Field label="Message">
+          <TokenTextarea
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={setText}
+            tokens={tokens}
             placeholder="Hey {{first_name}}, the new drop is live and the code from earlier still works 👀"
             maxLength={1000}
           />
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Only contacts tagged" hint="Comma separated. Leave blank for everyone.">
-            <Input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="lead, vip" />
+          <Field label="Only contacts tagged" hint="Anyone with at least one of these tags. Leave empty for everyone.">
+            <TagPicker options={tagsByAccount[accountId] ?? []} value={tags} onChange={setTags} placeholder="Search your tags" />
           </Field>
 
           {segments.length > 0 && (

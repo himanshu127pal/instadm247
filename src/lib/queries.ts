@@ -233,3 +233,35 @@ export async function getSkipBreakdown(workspaceId: string, days = 7) {
     .map((row) => ({ reason: row.skipReason as string, count: row._count._all }))
     .sort((a, b) => b.count - a.count);
 }
+
+/**
+ * Every tag in use on these accounts, with how many contacts carry it, for
+ * pickers. Opted-out contacts aren't counted: nothing can be sent to them.
+ */
+export async function getTagCounts(accountIds: string[]): Promise<Record<string, Array<{ tag: string; count: number }>>> {
+  if (accountIds.length === 0) return {};
+  const rows = await prisma.$queryRaw<Array<{ accountId: string; tag: string; n: bigint }>>`
+    SELECT "accountId", tag, count(*) AS n
+    FROM "Contact", unnest("tags") AS tag
+    WHERE "accountId" = ANY(${accountIds}) AND "optedOut" = false
+    GROUP BY 1, 2
+    ORDER BY n DESC, tag ASC`;
+  const out: Record<string, Array<{ tag: string; count: number }>> = {};
+  for (const row of rows) (out[row.accountId] ??= []).push({ tag: row.tag, count: Number(row.n) });
+  return out;
+}
+
+/** The custom field names in use on these accounts, usable as {{tokens}}. */
+export async function getCustomFieldKeys(accountIds: string[]): Promise<Record<string, string[]>> {
+  if (accountIds.length === 0) return {};
+  const rows = await prisma.$queryRaw<Array<{ accountId: string; key: string }>>`
+    SELECT DISTINCT "accountId", jsonb_object_keys("customFields") AS key
+    FROM "Contact"
+    WHERE "accountId" = ANY(${accountIds}) AND jsonb_typeof("customFields") = 'object'
+    ORDER BY 2
+    LIMIT 500`;
+  const out: Record<string, string[]> = {};
+  // Only keys a token can name: letters, digits, underscores, dots.
+  for (const row of rows) if (/^[\w.]+$/.test(row.key)) (out[row.accountId] ??= []).push(row.key);
+  return out;
+}

@@ -1,3 +1,4 @@
+import type { Contact } from "@prisma/client";
 import type { RunContext } from "./run";
 
 /**
@@ -9,26 +10,55 @@ import type { RunContext } from "./run";
  */
 
 export const AVAILABLE_TOKENS = [
-  { token: "first_name", description: "The contact's first name" },
-  { token: "full_name", description: "The contact's full name" },
-  { token: "username", description: "Their Instagram @username" },
-  { token: "keyword", description: "The keyword that triggered this automation" },
-  { token: "trigger_text", description: "The comment or message they sent" },
-  { token: "account_username", description: "Your Instagram @username" },
-  { token: "coupon", description: "The coupon code they were issued" },
+  { token: "first_name", description: "The contact's first name", inBroadcasts: true },
+  { token: "full_name", description: "The contact's full name", inBroadcasts: true },
+  { token: "username", description: "Their Instagram @username", inBroadcasts: true },
+  { token: "account_username", description: "Your Instagram @username", inBroadcasts: true },
+  { token: "keyword", description: "The keyword that triggered this automation", inBroadcasts: false },
+  { token: "trigger_text", description: "The comment or message they sent", inBroadcasts: false },
+  { token: "coupon", description: "The coupon code they were issued", inBroadcasts: false },
 ] as const;
 
-export function renderTemplate(input: string, ctx: RunContext): string {
+/**
+ * What a broadcast can fill in: everything about the contact, nothing about a
+ * flow run (there isn't one). Custom fields come on top, per account.
+ */
+export const BROADCAST_TOKENS = AVAILABLE_TOKENS.filter((t) => t.inBroadcasts);
+
+/** Everything a token can be looked up from. A flow run is one of these. */
+export type TemplateScope = {
+  contact: Pick<Contact, "name" | "username" | "customFields">;
+  account: { username: string };
+  variables: Record<string, unknown>;
+};
+
+const TOKEN = /\{\{\s*([\w.]+)\s*\}\}/g;
+
+export function renderTemplate(input: string, ctx: RunContext | TemplateScope): string {
   if (!input.includes("{{")) return input;
 
-  return input.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_match, rawKey: string) => {
+  return input.replace(TOKEN, (_match, rawKey: string) => {
     const key = rawKey.trim();
     const value = resolveToken(key, ctx);
     return value == null ? "" : String(value);
   });
 }
 
-function resolveToken(key: string, ctx: RunContext): unknown {
+/** Fill in a broadcast's tokens for one contact. */
+export function renderForContact(
+  input: string,
+  contact: TemplateScope["contact"],
+  account: TemplateScope["account"],
+): string {
+  return renderTemplate(input, { contact, account, variables: {} });
+}
+
+/** The token names used in a piece of text, e.g. ["first_name"]. */
+export function tokensIn(input: string): string[] {
+  return [...new Set([...input.matchAll(TOKEN)].map((m) => m[1].trim()))];
+}
+
+function resolveToken(key: string, ctx: TemplateScope): unknown {
   const fullName = ctx.contact.name ?? ctx.contact.username ?? "";
 
   switch (key) {

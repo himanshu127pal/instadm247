@@ -1,6 +1,6 @@
 import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getAccountIds } from "@/lib/queries";
+import { getAccountIds, getCustomFieldKeys, getTagCounts } from "@/lib/queries";
 import { PageHeader } from "@/components/dashboard/bits";
 import { BroadcastsView } from "@/components/dashboard/broadcasts-view";
 
@@ -10,7 +10,7 @@ export default async function BroadcastsPage() {
 
   const accountIds = await getAccountIds(workspace.id);
 
-  const [accounts, broadcasts, segments, reachableCount] = await Promise.all([
+  const [accounts, broadcasts, segments, reachableCount, tagsByAccount, fieldsByAccount] = await Promise.all([
     prisma.instagramAccount.findMany({
       where: { workspaceId: workspace.id },
       select: { id: true, username: true },
@@ -33,6 +33,8 @@ export default async function BroadcastsPage() {
         windowExpiresAt: { gt: new Date() },
       },
     }),
+    getTagCounts(accountIds),
+    getCustomFieldKeys(accountIds),
   ]);
 
   return (
@@ -45,6 +47,8 @@ export default async function BroadcastsPage() {
         accounts={accounts}
         segments={segments.map((s) => ({ id: s.id, name: s.name }))}
         reachableCount={reachableCount}
+        tagsByAccount={tagsByAccount}
+        fieldsByAccount={fieldsByAccount}
         broadcasts={broadcasts.map((b) => ({
           id: b.id,
           name: b.name,

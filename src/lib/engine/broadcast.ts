@@ -3,6 +3,33 @@ import { hasFeature } from "@/lib/plan";
 import type { OutboundMessage } from "@/lib/meta/types";
 import { dispatch } from "./dispatch";
 import { evaluateWindow } from "./guards";
+import { renderForContact } from "./template";
+
+/** Personalise a broadcast for one contact: every text field, tokens filled in. */
+export function personalise(
+  message: OutboundMessage,
+  contact: Parameters<typeof renderForContact>[1],
+  account: { username: string },
+): OutboundMessage {
+  const fill = (text: string) => renderForContact(text, contact, account);
+  switch (message.kind) {
+    case "text":
+      return { kind: "text", text: fill(message.text) };
+    case "buttons":
+      return {
+        ...message,
+        text: fill(message.text),
+        buttons: message.buttons.map((b) => (b.type === "web_url" ? { ...b, url: fill(b.url) } : b)),
+      };
+    case "carousel":
+      return {
+        kind: "carousel",
+        slides: message.slides.map((s) => ({ ...s, title: fill(s.title), subtitle: s.subtitle ? fill(s.subtitle) : s.subtitle })),
+      };
+    default:
+      return message;
+  }
+}
 
 /**
  * Broadcasts and Smart Re-engage.
@@ -55,7 +82,7 @@ export async function previewAudience(accountId: string, filter: SegmentFilter) 
 export async function runBroadcast(broadcastId: string): Promise<void> {
   const broadcast = await prisma.broadcast.findUnique({
     where: { id: broadcastId },
-    include: { segment: true },
+    include: { segment: true, account: { select: { username: true } } },
   });
   if (!broadcast) return;
   if (broadcast.status === "sending" || broadcast.status === "sent") return;
@@ -125,7 +152,8 @@ export async function runBroadcast(broadcastId: string): Promise<void> {
       accountId: broadcast.accountId,
       contactId: contact.id,
       target: { to: "user", igsid: contact.igsid },
-      message: broadcast.payload as unknown as OutboundMessage,
+      // Each person gets their own name, not a literal "{{first_name}}".
+      message: personalise(broadcast.payload as unknown as OutboundMessage, contact, broadcast.account),
       source: "broadcast",
       broadcastId: broadcast.id,
     });
