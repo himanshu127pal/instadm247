@@ -94,7 +94,7 @@ The automation's name is editable by clicking it. **Delete** is at the bottom of
     body: `In the **Flow** tab, click **Add a step** to add a step, drag from a step's output dot to the next step to connect them, and click a step to edit it in the panel on the right. Press **Save** (or ⌘S / Ctrl+S). The badge top-right shows **Valid**, warnings, or "N to fix".
 
 Steps:
-- **Send DM**: a message: Text, Buttons (up to 3; link buttons), Carousel (up to 10 slides) or Image. **Send as a private reply** replies privately to the triggering comment. Use it on the first DM of a comment flow.
+- **Send DM**: a message: Text, Buttons (up to 3; link buttons), Carousel (up to 10 slides) or Image. **Send as a private reply** replies privately to the triggering comment. Use it on the first DM of a comment flow. A comment gets only one private reply, so if an earlier step already sent it (an Ask for follow, for example), this step goes as a normal DM instead.
 - **Reply publicly**: replies in the comment thread; add several replies and one is picked at random.
 - **Wait**: pause up to 24h. The whole flow's waits can't exceed 24h (Instagram's window).
 - **If / else**: branch on: follows you, has a tag, custom field, variable, message text, hour of day, first time, or **replied** (they messaged since the flow last sent them something; useful for follow-ups).

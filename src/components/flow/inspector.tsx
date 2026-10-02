@@ -128,7 +128,8 @@ function NodeFields({
               <span className="mt-0.5 block text-[11.5px] leading-relaxed text-[var(--text-muted)]">
                 The right choice for the first message of a comment-triggered flow.
                 It&rsquo;s how Instagram lets you open the conversation. Only one
-                private reply is allowed per comment, so use it once.
+                private reply is allowed per comment; if an earlier step already sent
+                it (an Ask for follow, say), this goes as a normal DM instead.
               </span>
             </span>
           </label>
