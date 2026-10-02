@@ -16,6 +16,11 @@ export default async function NewAutomationPage() {
   });
   if (accounts.length === 0) redirect("/dashboard/accounts");
 
+  const existing = await prisma.automation.findMany({
+    where: { accountId: { in: accounts.map((a) => a.id) } },
+    select: { accountId: true, name: true },
+  });
+
   const media = await prisma.media.findMany({
     where: { accountId: { in: accounts.map((a) => a.id) } },
     orderBy: { timestamp: "desc" },
@@ -42,6 +47,7 @@ export default async function NewAutomationPage() {
       <NewAutomationWizard
         accounts={accounts}
         media={media.map((m) => ({ ...m, timestamp: m.timestamp?.toISOString() ?? null }))}
+        existingNames={existing}
         presets={PRESETS.map((p) => ({
           id: p.id,
           name: p.name,

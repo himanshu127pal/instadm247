@@ -149,7 +149,13 @@ export async function getAutomationPerformance(workspaceId: string, days = 30) {
       include: {
         account: { select: { username: true, profilePictureUrl: true } },
         flow: { select: { id: true, nodes: true } },
-        _count: { select: { runs: true } },
+        _count: { select: { runs: true, media: true } },
+        // The picked posts, to show on the list: names drift, a thumbnail
+        // always says which post an automation is on.
+        media: {
+          take: 3,
+          select: { media: { select: { id: true, thumbnailUrl: true, mediaUrl: true, mediaType: true, caption: true, permalink: true } } },
+        },
       },
       orderBy: { updatedAt: "desc" },
     }),
