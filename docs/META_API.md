@@ -170,7 +170,16 @@ reply allowance. Used by the `REPLY_TO_COMMENT` node.
   inbound DM). The user replying resets it to 24 h from that reply.
 - **`HUMAN_AGENT` tag extends it to 7 days — for messages a human actually wrote.**
   Meta explicitly prohibits using it for automated messages and detects misuse. Our code
-  only ever sets it on Inbox messages typed by a real user.
+  only ever sets it on Inbox messages typed by a real user, **and only when the 24-hour
+  window has closed** (`dispatch.ts` step 4). Inside the window a human reply is an ordinary
+  message. The tag needs the **Human Agent** feature from App Review; until it's granted,
+  Instagram refuses tagged sends with a permission error, so tagging in-window replies would
+  break replies that need no permission at all (it did, once).
+- **Error code 10 is "permission denied", not "window closed".** Only subcodes 2018278 /
+  2534022, or a code-10 message that names the window, are window errors
+  (`MetaApiError.isWindowError`). Other code-10 and 200–299 errors are permission refusals
+  (`isPermissionError`): logged with Instagram's text and trace id, shown to the customer
+  as a fixable message.
 - Consequence for flows: a flow's delayed steps must all land inside the window. The
   builder validates delays (1 min – 24 h, matching LinkDM's limit) and the dispatcher
   re-checks at send time and drops with a `WINDOW_EXPIRED` reason rather than erroring.

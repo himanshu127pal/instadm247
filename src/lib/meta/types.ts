@@ -192,9 +192,25 @@ export class MetaApiError extends Error {
   /**
    * Outside the messaging window, or the comment can no longer be replied to.
    * Not retryable — drop the send and record why.
+   *
+   * Code 10 on its own is NOT a window error: it is Graph's general
+   * "permission denied", and the window is only one of its causes. Treating
+   * every code 10 as the window once told people a reply failed because the
+   * window had closed when it was wide open. Only the window subcodes, or a
+   * code 10 whose text says so, count.
    */
   get isWindowError(): boolean {
-    return this.code === 10 || this.subcode === 2534022 || this.subcode === 2018278;
+    if (this.subcode === 2534022 || this.subcode === 2018278) return true;
+    return this.code === 10 && /window|24.?hour|outside of allowed/i.test(this.message);
+  }
+
+  /**
+   * The app isn't allowed to do this: a permission or feature it hasn't been
+   * granted (code 10, or Graph's 200–299 range). Not retryable.
+   */
+  get isPermissionError(): boolean {
+    if (this.isWindowError) return false;
+    return this.code === 10 || (this.code !== undefined && this.code >= 200 && this.code <= 299);
   }
 
   get isRetryable(): boolean {

@@ -118,6 +118,12 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
       contact.lastInteractionAt &&
       Date.now() - contact.lastInteractionAt.getTime() < 7 * 24 * 60 * 60 * 1000;
     if (!window.open && !humanExtension) return skip(req, SkipReason.WINDOW_EXPIRED);
+
+    // The tag is only for what the window doesn't cover. Inside the 24 hours a
+    // reply is an ordinary message; tagging it anyway asks Instagram for a
+    // permission (Human Agent) that the reply doesn't need, and if the app
+    // hasn't been granted it, Instagram refuses a reply it would have accepted.
+    req = { ...req, humanAgent: req.humanAgent === true && req.source === "human" && !window.open };
   }
 
   // 5. One private reply per comment, claimed atomically.
@@ -263,8 +269,14 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
     }
     if (meta?.isAuthError) await markReconnectNeeded(req.accountId);
 
-    // A window error is a fact of life, not a bug — record it as a skip.
-    if (meta?.isWindowError) {
+    // A window error is a fact of life, not a bug — record it as a skip. So is
+    // Instagram refusing a tagged reply past 24 hours: the tag is the only way
+    // to send then, and it wasn't allowed.
+    const taggedReply = req.humanAgent === true && req.source === "human";
+    if (meta?.isWindowError || (meta?.isPermissionError && taggedReply)) {
+      if (!meta.isWindowError) {
+        console.error(`[dispatch] Instagram refused a HUMAN_AGENT reply (${meta.code}/${meta.subcode}): ${meta.message}`);
+      }
       await writeMessage(req, "skipped", { skipReason: SkipReason.WINDOW_EXPIRED });
       return {
         status: "skipped",
@@ -273,7 +285,16 @@ export async function dispatch(req: DispatchRequest): Promise<DispatchResult> {
       };
     }
 
-    const message = meta?.message ?? (error as Error).message ?? "Unknown error";
+    // A permission refusal is reported in words the customer can act on.
+    // Instagram's own text is logged for us, and its code kept for support.
+    if (meta?.isPermissionError) {
+      console.error(
+        `[dispatch] Instagram refused a message for permission (${meta.code}/${meta.subcode}, trace ${meta.fbtraceId ?? "?"}): ${meta.message}`,
+      );
+    }
+    const message = meta?.isPermissionError
+      ? `Instagram didn't allow this message (error ${meta.code}). Check that Allow access to messages is on in the Instagram app, under Settings, Messages and story replies, Message controls, Connected tools. If it is, contact support.`
+      : (meta?.message ?? (error as Error).message ?? "Unknown error");
     await writeMessage(req, "failed", { failReason: message });
     await recordEvent({
       accountId: req.accountId,
