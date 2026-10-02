@@ -60,7 +60,7 @@ Down mode. Full detail in `docs/ARCHITECTURE.md`.
 ## Repo layout
 
 ```
-docs/                  Memory + specs (FEATURES, ARCHITECTURE, META_API, SETUP, ROADMAP, BILLING, EMAIL, INTEGRATIONS, HELPER, SCHEDULER, SUPPORT)
+docs/                  Memory + specs (FEATURES, ARCHITECTURE, META_API, SETUP, ROADMAP, BILLING, EMAIL, INTEGRATIONS, HELPER, SCHEDULER, SUPPORT, ONBOARDING)
 prisma/schema.prisma   All domain models
 src/app/(marketing)/   Public landing site
 src/app/(auth)/        Login / signup

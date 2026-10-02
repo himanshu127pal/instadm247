@@ -34,7 +34,9 @@ The sidebar is grouped as:
 - Audience: Contacts, Lead forms, Link in bio
 - Intelligence: Analytics, AI agent, AI Helper
 - Account: Instagram accounts, Safety Center, Templates, Developers, Plan & billing, Settings
-- Help: Support, Request a feature
+- Help: Support, Request a feature, Take the tour
+
+New workspaces see a **Getting started** bar under the header: progress through confirming your email, connecting Instagram, creating an automation, switching it on and your first automated DM, with a button for the next step. Click its title to see every step; × hides it. **Help → Take the tour** shows where everything is in the sidebar.
 
 Public docs (the same guidance, readable without signing in) are at /docs, under **Resources** in the site's header.
 

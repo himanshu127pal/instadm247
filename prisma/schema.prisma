@@ -30,6 +30,11 @@ model User {
   /// Set when the user proves they own the address. See docs/EMAIL.md.
   emailVerifiedAt DateTime?
 
+  /// Onboarding (src/lib/onboarding.ts): when they finished or skipped the
+  /// first-run tour, and when they hid the getting-started checklist.
+  tourCompletedAt      DateTime?
+  checklistDismissedAt DateTime?
+
   memberships Membership[]
   sessions    Session[]
   emailTokens EmailToken[]

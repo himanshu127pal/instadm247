@@ -7,6 +7,7 @@ import { DashboardShell } from "@/components/dashboard/shell";
 import { getImpersonation } from "@/lib/impersonation";
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { VerifyEmailBanner } from "@/components/dashboard/verify-email-banner";
+import { getOnboarding } from "@/lib/onboarding";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -47,6 +48,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       accounts={accounts}
       instagramConfigured={isInstagramConfigured()}
       showBilling={env.billing.enabled || Boolean(await getPlatformStaff())}
+      onboarding={impersonation ? undefined : await getOnboarding(workspace.id, user)}
     >
         {children}
       </DashboardShell>
