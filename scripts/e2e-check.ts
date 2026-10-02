@@ -32,6 +32,7 @@ import { runMediaChecks } from "./e2e-media";
 import { runFollowAnalyticsChecks } from "./e2e-follow-analytics";
 import { runBroadcastFieldChecks } from "./e2e-broadcast-fields";
 import { runContactTagChecks } from "./e2e-contact-tags";
+import { runAutomationNameChecks } from "./e2e-automation-names";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -1020,6 +1021,7 @@ async function main() {
   await runFollowAnalyticsChecks(prisma, check, section);
   await runBroadcastFieldChecks(prisma, check, section);
   await runContactTagChecks(prisma, check, section);
+  runAutomationNameChecks(check, section);
 
   section("Tenant boundary in the customer UI");
   {

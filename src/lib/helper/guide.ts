@@ -68,7 +68,11 @@ Nobody can DM people who have never interacted with the account. There is no "ma
    - Comment on an ad or boosted post
    - Conversation starter (they tap a starter in your inbox)
 2. **Match**: who it responds to: **Only specific keywords** (comma separated; matching ignores case, accents and emoji) or **Everyone**. For story replies there are also **Emoji reactions only** and **Written replies only**. For comment triggers choose **Which posts?**: All my posts and Reels / Only the posts I pick / Everything, including future posts and ads / Only ads and boosted posts.
-3. **Flow**: name it and pick a starting template, then **Create and build the flow**.
+3. **Flow**: name it and pick a starting template, then **Create and build the flow**. The name is filled in from the keyword and where it listens, e.g. "LINK · New drop is live (Oct 2)" for one post or "LINK · all posts", and you can change it. You're warned if another automation on the account has the same name.
+
+On the **Automations** list, an automation on picked posts shows their thumbnails and how many posts it's on.
+
+**When several automations match the same comment, only one runs** (a comment can get one private reply). The most specific wins: picked posts, then ads only, then all posts, then everything. Between equals, the most recently edited wins. If the winner won't run for that person (its re-entry setting, e.g. once per person), nothing else runs instead.
 
 Starting templates: Comment to DM · Follower growth gate · Capture an email · Story mention giveaway · Thank people who react to your story · Follow up if they don't reply · AI answers your FAQ · Start from scratch.
 

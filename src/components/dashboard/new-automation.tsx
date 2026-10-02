@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Badge, Button, Field, Input, Select } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { suggestAutomationName } from "@/lib/automation-name";
 
 type Account = { id: string; username: string; profilePictureUrl: string | null };
 type Media = {
@@ -75,10 +76,13 @@ export function NewAutomationWizard({
   accounts,
   media,
   presets,
+  existingNames,
 }: {
   accounts: Account[];
   media: Media[];
   presets: Preset[];
+  /** Names already used, per account, to warn about a duplicate. */
+  existingNames: Array<{ accountId: string; name: string }>;
 }) {
   const router = useRouter();
   const [step, setStep] = React.useState(0);
@@ -91,7 +95,9 @@ export function NewAutomationWizard({
   const [keywordInput, setKeywordInput] = React.useState("LINK");
   const [mediaIds, setMediaIds] = React.useState<string[]>([]);
   const [presetId, setPresetId] = React.useState(presets[0]?.id ?? "blank");
+  // The name follows the choices (keyword, posts) until the person edits it.
   const [name, setName] = React.useState("");
+  const [nameEdited, setNameEdited] = React.useState(false);
 
   const keywords = keywordInput
     .split(",")
@@ -108,6 +114,18 @@ export function NewAutomationWizard({
   const accountMedia = media.filter((m) => m.accountId === accountId);
   const supportsMedia = MEDIA_TRIGGERS.has(triggerType);
 
+  const suggested = suggestAutomationName({
+    triggerType,
+    matchMode,
+    keywords: matchMode === "KEYWORD" ? keywords : [],
+    scope: supportsMedia ? scope : "ALL_MEDIA",
+    posts: scope === "SPECIFIC" ? accountMedia.filter((m) => mediaIds.includes(m.id)) : [],
+  });
+  const finalName = (nameEdited ? name : suggested).trim();
+  const duplicate = existingNames.some(
+    (e) => e.accountId === accountId && e.name.trim().toLowerCase() === finalName.toLowerCase(),
+  );
+
   const steps = ["Trigger", "Match", "Flow"];
 
   const canContinue =
@@ -115,7 +133,7 @@ export function NewAutomationWizard({
       ? Boolean(accountId && triggerType)
       : step === 1
         ? matchMode !== "KEYWORD" || keywords.length > 0
-        : Boolean(presetId);
+        : Boolean(presetId) && finalName.length > 0;
 
   async function create() {
     setCreating(true);
@@ -125,9 +143,7 @@ export function NewAutomationWizard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           accountId,
-          name:
-            name.trim() ||
-            suggestName(triggerType === "STORY_REPLY" && matchMode === "REACTION" ? "STORY_REACTION" : triggerType, keywords),
+          name: finalName || suggested,
           triggerType,
           scope: supportsMedia ? scope : "ALL_MEDIA",
           matchMode,
@@ -392,11 +408,24 @@ export function NewAutomationWizard({
 
         {step === 2 && (
           <>
-            <Field label="Name this automation" hint="Just for you. People never see it.">
+            <Field
+              label="Name this automation"
+              hint="Just for you, people never see it. We've named it after the keyword and post so it's easy to find; change it if you like."
+              error={
+                finalName.length === 0
+                  ? "Give it a name."
+                  : duplicate
+                    ? "You already have an automation with this name on this account. A different one makes them easier to tell apart."
+                    : undefined
+              }
+            >
               <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={suggestName(triggerType, keywords)}
+                value={nameEdited ? name : suggested}
+                maxLength={120}
+                onChange={(e) => {
+                  setNameEdited(true);
+                  setName(e.target.value);
+                }}
               />
             </Field>
 
@@ -468,19 +497,4 @@ export function NewAutomationWizard({
       </div>
     </div>
   );
-}
-
-function suggestName(triggerType: string, keywords: string[]): string {
-  const base: Record<string, string> = {
-    COMMENT: "Comment to DM",
-    AD_COMMENT: "Ad comment to DM",
-    LIVE_COMMENT: "Live comment to DM",
-    STORY_REPLY: "Story reply auto-reply",
-    STORY_REACTION: "Story reaction auto-reply",
-    STORY_MENTION: "Story mention auto-reply",
-    DM_KEYWORD: "DM keyword auto-reply",
-    ICE_BREAKER: "Conversation starter",
-  };
-  const name = base[triggerType] ?? "Automation";
-  return keywords.length ? `${name}: ${keywords[0]}` : name;
 }

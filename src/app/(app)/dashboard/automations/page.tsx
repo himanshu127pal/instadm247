@@ -7,6 +7,7 @@ import { formatPercent, timeAgo } from "@/lib/utils";
 import { Badge, Button, EmptyState } from "@/components/ui";
 import { PageHeader } from "@/components/dashboard/bits";
 import { AutomationToggle } from "@/components/dashboard/automation-toggle";
+import { PostThumbs } from "@/components/dashboard/post-thumbs";
 
 const TRIGGER_LABELS: Record<string, string> = {
   COMMENT: "Comment",
@@ -104,7 +105,14 @@ export default async function AutomationsPage() {
                       {TRIGGER_LABELS[automation.triggerType] ?? automation.triggerType}
                     </span>
                     <span>·</span>
-                    <span>{SCOPE_LABELS[automation.scope] ?? automation.scope}</span>
+                    {automation.scope === "SPECIFIC" && automation._count.media > 0 ? (
+                      <span className="flex items-center gap-1.5">
+                        <PostThumbs posts={automation.media.map((m) => m.media)} total={automation._count.media} />
+                        {automation._count.media === 1 ? "1 post" : `${automation._count.media} posts`}
+                      </span>
+                    ) : (
+                      <span>{SCOPE_LABELS[automation.scope] ?? automation.scope}</span>
+                    )}
                     <span>·</span>
                     <span className="flex items-center gap-1.5">
                       <MessageSquare className="h-3.5 w-3.5" />
