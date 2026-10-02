@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Badge, Button, EmptyState, Input, Switch } from "@/components/ui";
 import { cn, initials, timeAgo, windowCountdown } from "@/lib/utils";
+import { useNow } from "./use-now";
 import { AlertToggles, playChime, showDesktopAlert, useAlertPrefs, useInboxLive } from "./inbox-live";
 
 type Contact = {
@@ -65,6 +66,8 @@ export function InboxView({
   const [conversations, setConversations] = React.useState(initial);
   const [activeId, setActiveId] = React.useState<string | null>(initial[0]?.id ?? null);
   const [prefs, updatePrefs] = useAlertPrefs();
+  // Keeps every "time left" badge counting down without a refresh.
+  const now = useNow();
 
   const activeRef = React.useRef(activeId);
   activeRef.current = activeId;
@@ -175,7 +178,7 @@ export function InboxView({
             </p>
           ) : (
             filtered.map((conversation) => {
-              const window = windowCountdown(conversation.contact.windowExpiresAt);
+              const window = windowCountdown(conversation.contact.windowExpiresAt, now);
               return (
                 <button
                   key={conversation.id}
@@ -285,7 +288,8 @@ function Thread({
   const [sending, setSending] = React.useState(false);
   const bottomRef = React.useRef<HTMLDivElement>(null);
 
-  const window = windowCountdown(conversation.contact.windowExpiresAt);
+  const now = useNow();
+  const window = windowCountdown(conversation.contact.windowExpiresAt, now);
 
   React.useEffect(() => {
     let cancelled = false;

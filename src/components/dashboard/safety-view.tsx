@@ -308,7 +308,7 @@ export function SafetyView({
             ],
             [
               "The HUMAN_AGENT tag, used honestly",
-              "It extends replies to 7 days and is only ever attached to messages you type yourself in the inbox. Never to automation, because Meta detects that.",
+              "It extends replies to 7 days. It's only attached to messages you type yourself in the inbox, and only once the 24-hour window has closed. Never to automation, because Meta detects that.",
             ],
             [
               "Viral post protection",

@@ -31,14 +31,17 @@ export function timeAgo(date: Date | string | null | undefined): string {
 }
 
 /** Remaining time in the 24h messaging window, phrased for humans. */
-export function windowCountdown(expiresAt: Date | string | null | undefined): {
+export function windowCountdown(
+  expiresAt: Date | string | null | undefined,
+  now: number = Date.now(),
+): {
   label: string;
   open: boolean;
   urgency: "open" | "closing" | "closed";
 } {
   if (!expiresAt) return { label: "No window", open: false, urgency: "closed" };
   const expiry = typeof expiresAt === "string" ? new Date(expiresAt) : expiresAt;
-  const ms = expiry.getTime() - Date.now();
+  const ms = expiry.getTime() - now;
 
   if (ms <= 0) return { label: "Window closed", open: false, urgency: "closed" };
   const hours = Math.floor(ms / 3_600_000);

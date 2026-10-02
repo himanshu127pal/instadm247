@@ -130,7 +130,7 @@ Up to 8 DMs after the starter DM is the safe ceiling.`,
     path: "/dashboard/inbox",
     body: `**Inbox** shows every conversation across connected accounts, updating live. Type a reply at the bottom to answer yourself. Your own replies are never limited by your plan.
 - **Pause automation for this thread** stops automations messaging that person while you handle it ("You're handling this").
-- Replies you type are marked "· human". Automations stop 24 hours after the person's last message, but a reply you type yourself can still go out for up to 7 days.
+- Inside the 24-hour window, a reply you type goes out like any other message. Automations stop 24 hours after the person's last message; after that, a reply you type yourself can sometimes still go out for up to 7 days, marked "· human". If Instagram doesn't allow it, the message says so, and you can reply as soon as they message you again.
 - The speaker and bell buttons turn on a sound and desktop notifications for new messages (your browser asks permission the first time).`,
   },
   {

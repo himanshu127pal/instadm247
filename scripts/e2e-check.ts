@@ -27,6 +27,7 @@ import { runSheetsChecks } from "./e2e-sheets";
 import { runParityChecks } from "./e2e-parity";
 import { runHelperChecks } from "./e2e-helper";
 import { runDodoCheckChecks } from "./e2e-dodo-check";
+import { runInboxReplyChecks } from "./e2e-inbox-reply";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -460,7 +461,7 @@ async function main() {
     source: "automation",
     humanAgent: true,
   });
-  // A real human reply gets it.
+  // A human reply inside the window doesn't need it, so doesn't get it.
   await dispatch({
     accountId: account.id,
     contactId: tagContact.id,
@@ -469,17 +470,41 @@ async function main() {
     source: "human",
     humanAgent: true,
   });
+  // Past 24 hours but within 7 days, it's the only way to send, so it does.
+  const lateContact = await prisma.contact.create({
+    data: {
+      accountId: account.id,
+      igsid: `e2e_tag_late_${Date.now()}`,
+      username: "late.tester",
+      lastInteractionAt: new Date(Date.now() - 2 * 86_400_000),
+      windowExpiresAt: new Date(Date.now() - 86_400_000),
+    },
+  });
+  const lateReply = await dispatch({
+    accountId: account.id,
+    contactId: lateContact.id,
+    target: { to: "user", igsid: lateContact.igsid },
+    message: { kind: "text", text: "late human message" },
+    source: "human",
+    humanAgent: true,
+  });
 
   const tagged = await prisma.message.findMany({
     where: { contactId: tagContact.id, direction: "outbound" },
   });
+  const late = await prisma.message.findMany({ where: { contactId: lateContact.id, direction: "outbound" } });
   check(
     "automation never carries the HUMAN_AGENT tag",
     tagged.filter((m) => m.source === "automation").every((m) => !m.humanAgentTag),
   );
   check(
-    "a human reply does carry it",
-    tagged.filter((m) => m.source === "human").every((m) => m.humanAgentTag),
+    "a human reply inside the 24-hour window goes out untagged",
+    tagged.some((m) => m.source === "human") && tagged.filter((m) => m.source === "human").every((m) => !m.humanAgentTag),
+  );
+  check(
+    "a human reply after 24 hours (within 7 days) carries it",
+    lateReply.status === "sent" && late.every((m) => m.humanAgentTag),
+    JSON.stringify(lateReply),
   );
 
   // --- 11. Coupons ----------------------------------------------------------
@@ -986,6 +1011,7 @@ async function main() {
   await runParityChecks(prisma, check, section);
   await runHelperChecks(prisma, check, section);
   await runDodoCheckChecks(check, section);
+  await runInboxReplyChecks(prisma, check, section);
 
   section("Tenant boundary in the customer UI");
   {

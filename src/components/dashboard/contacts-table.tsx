@@ -4,6 +4,7 @@ import * as React from "react";
 import { Search, ShieldOff } from "lucide-react";
 import { Badge, Input, Select } from "@/components/ui";
 import { cn, initials, timeAgo, windowCountdown } from "@/lib/utils";
+import { useNow } from "./use-now";
 
 type Contact = {
   id: string;
@@ -30,6 +31,7 @@ export function ContactsTable({
   const [query, setQuery] = React.useState("");
   const [tag, setTag] = React.useState("");
   const [status, setStatus] = React.useState("all");
+  const now = useNow();
 
   const filtered = React.useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -37,7 +39,7 @@ export function ContactsTable({
       if (tag && !contact.tags.includes(tag)) return false;
 
       if (status === "reachable") {
-        const window = windowCountdown(contact.windowExpiresAt);
+        const window = windowCountdown(contact.windowExpiresAt, now);
         if (!window.open || contact.optedOut) return false;
       }
       if (status === "followers" && contact.isFollower !== true) return false;
@@ -51,7 +53,7 @@ export function ContactsTable({
         contact.tags.some((t) => t.toLowerCase().includes(needle))
       );
     });
-  }, [contacts, query, tag, status]);
+  }, [contacts, query, tag, status, now]);
 
   return (
     <div className="space-y-3">
@@ -108,7 +110,7 @@ export function ContactsTable({
             </thead>
             <tbody>
               {filtered.map((contact) => {
-                const window = windowCountdown(contact.windowExpiresAt);
+                const window = windowCountdown(contact.windowExpiresAt, now);
                 return (
                   <tr
                     key={contact.id}

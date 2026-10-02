@@ -299,7 +299,7 @@ const GUARDS = [
   },
   {
     title: "The HUMAN_AGENT tag, used honestly",
-    body: "That tag extends your reply window to 7 days, for messages a human actually typed. Meta detects abuse of it. We attach it only when you reply yourself from the inbox. Never on automation.",
+    body: "That tag extends your reply window to 7 days, for messages a human actually typed. Meta detects abuse of it. We attach it only when you reply yourself from the inbox after the 24-hour window, never on automation.",
   },
   {
     title: "Opt-outs that actually work",
