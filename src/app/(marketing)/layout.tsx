@@ -4,6 +4,7 @@ import { Button } from "@/components/ui";
 import { MarketingNav } from "@/components/marketing/nav";
 import { FEATURES } from "@/content/features";
 import { COMPARISONS } from "@/content/compare";
+import { MetaBadge } from "@/components/marketing/meta-badge";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -37,6 +38,7 @@ function Footer() {
         { label: "Docs", href: "/docs" },
         { label: "Blog", href: "/blog" },
         { label: "Account safety", href: "/features/account-safety" },
+        { label: "Meta Tech Provider", href: "/meta-tech-provider" },
         { label: "Support", href: "/dashboard/support" },
         { label: "Sign in", href: "/login" },
         { label: "Create account", href: "/signup" },
@@ -108,10 +110,14 @@ function Footer() {
               </a>
             </p>
           </div>
-          <p className="sm:max-w-[19rem] sm:shrink-0 sm:text-right">
-            Not affiliated with or endorsed by Meta. Instagram is a trademark of
-            Meta Platforms, Inc.
-          </p>
+          <div className="space-y-2 sm:max-w-[19rem] sm:shrink-0 sm:text-right">
+            <MetaBadge size="lg" />
+            <p>
+              A Meta Tech Provider, built only on Meta&rsquo;s official Instagram API.{" "}
+              Not affiliated with or endorsed by Meta. Instagram is a trademark of
+              Meta Platforms, Inc.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

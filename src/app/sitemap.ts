@@ -20,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/compare", priority: 0.7 },
     { path: "/blog", priority: 0.7 },
     { path: "/docs", priority: 0.7 },
+    { path: "/meta-tech-provider", priority: 0.7 },
     // Pricing 404s until billing is switched on; don't advertise a dead page.
     ...(env.billing.enabled ? [{ path: "/pricing", priority: 0.8 }] : []),
     { path: "/signup", priority: 0.5 },

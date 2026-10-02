@@ -246,7 +246,8 @@ AI replies are counted against your plan's monthly AI reply allowance.`,
     path: "/dashboard/safety",
     body: `**Safety Center** shows what the safety checks did: messages skipped (last 7 days) with the reason for each, recent failures Instagram returned, suppressed contacts and policy notices.
 Per account you can switch **Automations enabled** off (pause everything), turn **Slow Down mode** on by hand, and toggle **Viral post protection**.
-Skips are normal and protect the account, for example a follow-up after the 24h window, or a second private reply to the same comment.`,
+Skips are normal and protect the account, for example a follow-up after the 24h window, or a second private reply to the same comment.
+InstaDM247 is a Meta Tech Provider: it runs only on Meta's official Instagram API, with the permissions you approved on Instagram's own screen. The page at /meta-tech-provider (linked from the Safety Center, the badge in the site header and the footer) explains what that means for your account: official login, permissions you control, data deletion, and what we never do (ask for your password, message people who never contacted you, follow or like on your behalf, scrape).`,
   },
   {
     id: "analytics",
