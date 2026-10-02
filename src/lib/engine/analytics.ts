@@ -46,7 +46,13 @@ export async function recordEvent(input: AnalyticsEventInput): Promise<void> {
   }
 }
 
-const COLUMN_FOR: Partial<Record<AnalyticsEventInput["type"], string>> = {
+export const STAT_COLUMNS = [
+  "triggered", "sent", "delivered", "opened", "clicked", "failed", "skipped", "newFollowers", "leads",
+] as const;
+export type StatColumn = (typeof STAT_COLUMNS)[number];
+export type StatCounts = Record<StatColumn, number>;
+
+export const COLUMN_FOR: Partial<Record<AnalyticsEventInput["type"], StatColumn>> = {
   trigger_fired: "triggered",
   message_sent: "sent",
   message_delivered: "delivered",
@@ -58,47 +64,70 @@ const COLUMN_FOR: Partial<Record<AnalyticsEventInput["type"], string>> = {
   form_completed: "leads",
 };
 
+export function emptyCounts(): StatCounts {
+  return Object.fromEntries(STAT_COLUMNS.map((c) => [c, 0])) as StatCounts;
+}
+
+export type StatRow = StatCounts & { accountId: string; automationId: string | null; date: Date };
+
 /**
- * Fold raw events into DailyStat rows. Idempotent per window: we roll up events
- * newer than the last rollup marker only.
+ * Events since `since`, counted per account, automation and UTC day, in the
+ * same shape as DailyStat. Counted in the database: a busy account can log a
+ * lot of events in a day, and only the totals are needed.
  */
-export async function rollupDailyStats(sinceHours = 48): Promise<number> {
-  const since = new Date(Date.now() - sinceHours * 60 * 60 * 1000);
+export async function countEvents(accountIds: string[] | "all", since: Date): Promise<StatRow[]> {
+  if (accountIds !== "all" && accountIds.length === 0) return [];
+  const types = Object.keys(COLUMN_FOR);
+  type Row = { accountId: string; automationId: string | null; type: string; day: Date; n: bigint };
+  const rows =
+    accountIds === "all"
+      ? await prisma.$queryRaw<Row[]>`
+          SELECT "accountId", "automationId", "type", date_trunc('day', "createdAt") AS day, count(*) AS n
+          FROM "AnalyticsEvent"
+          WHERE "createdAt" >= ${since} AND "type" = ANY(${types})
+          GROUP BY 1, 2, 3, 4`
+      : await prisma.$queryRaw<Row[]>`
+          SELECT "accountId", "automationId", "type", date_trunc('day', "createdAt") AS day, count(*) AS n
+          FROM "AnalyticsEvent"
+          WHERE "accountId" = ANY(${accountIds}) AND "createdAt" >= ${since} AND "type" = ANY(${types})
+          GROUP BY 1, 2, 3, 4`;
 
-  const grouped = await prisma.analyticsEvent.groupBy({
-    by: ["accountId", "automationId", "type"],
-    where: { createdAt: { gte: since } },
-    _count: { _all: true },
-  });
-
-  // Group by day requires the raw rows; do it in one pass keyed by day.
-  const events = await prisma.analyticsEvent.findMany({
-    where: { createdAt: { gte: since } },
-    select: { accountId: true, automationId: true, type: true, createdAt: true },
-  });
-
-  type Key = string;
-  const buckets = new Map<Key, Record<string, number> & { accountId: string; automationId: string | null; date: Date }>();
-
-  for (const event of events) {
-    const column = COLUMN_FOR[event.type as AnalyticsEventInput["type"]];
+  const buckets = new Map<string, StatRow>();
+  for (const row of rows) {
+    const column = COLUMN_FOR[row.type as AnalyticsEventInput["type"]];
     if (!column) continue;
-
-    const date = new Date(
-      Date.UTC(event.createdAt.getUTCFullYear(), event.createdAt.getUTCMonth(), event.createdAt.getUTCDate()),
-    );
-    const key = `${event.accountId}|${event.automationId ?? ""}|${date.toISOString()}`;
-
+    const date = new Date(Date.UTC(row.day.getUTCFullYear(), row.day.getUTCMonth(), row.day.getUTCDate()));
+    const key = `${row.accountId}|${row.automationId ?? ""}|${date.toISOString()}`;
     let bucket = buckets.get(key);
     if (!bucket) {
-      bucket = { accountId: event.accountId, automationId: event.automationId, date } as never;
+      bucket = { accountId: row.accountId, automationId: row.automationId, date, ...emptyCounts() };
       buckets.set(key, bucket);
     }
-    bucket[column] = (bucket[column] ?? 0) + 1;
+    bucket[column] += Number(row.n);
   }
+  return [...buckets.values()];
+}
 
-  for (const bucket of buckets.values()) {
-    const { accountId, automationId, date, ...counts } = bucket;
+/** Midnight UTC, `daysAgo` days back. */
+export function utcDayStart(daysAgo = 0, now = Date.now()): Date {
+  const d = new Date(now - daysAgo * 86_400_000);
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
+/**
+ * Fold raw events into DailyStat rows, recounting whole UTC days so each row
+ * is the complete count for its day, however often this runs. (It used to
+ * count the last 48 hours and write that over the row, which left the oldest
+ * day in the window holding only part of its events.)
+ *
+ * Dashboards read today and yesterday from the events directly (see
+ * `src/lib/queries.ts`), so numbers don't wait for this to run.
+ */
+export async function rollupDailyStats(days = 3, now = Date.now()): Promise<number> {
+  const rows = await countEvents("all", utcDayStart(days - 1, now));
+
+  for (const row of rows) {
+    const { accountId, automationId, date, ...counts } = row;
     // Prisma can't target a compound unique that contains a NULL, so upsert by
     // hand: automationId is null for account-level (non-automation) events.
     const existing = await prisma.dailyStat.findFirst({
@@ -114,5 +143,5 @@ export async function rollupDailyStats(sinceHours = 48): Promise<number> {
     }
   }
 
-  return grouped.length;
+  return rows.length;
 }

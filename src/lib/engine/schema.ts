@@ -148,8 +148,21 @@ export const flowNodeSchema = z.discriminatedUnion("type", [
     data: z.object({
       label: z.string().default("Ask for follow"),
       message: messagePayloadSchema,
-      /** How long to wait for them to follow before taking the "not yet" branch. */
+      /**
+       * How long to wait for a tap on the button before taking the "no"
+       * branch. Instagram only lets us check someone's follow status once
+       * they've tapped a button or messaged, so the button is what makes the
+       * check work for people who came from a comment.
+       */
       recheckAfterMinutes: z.number().int().min(1).max(1440).default(5),
+      /** The button that says they've followed; tapping it re-checks. */
+      buttonTitle: z.string().min(1).max(20).default("I've followed ✅"),
+      /** Sent once if they tap the button but aren't following yet. */
+      notFollowingText: z
+        .string()
+        .min(1)
+        .max(1000)
+        .default("Hmm, I can't see your follow yet. Follow, then tap the button again 🙏"),
     }),
   }),
 

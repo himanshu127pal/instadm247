@@ -20,7 +20,7 @@ to Phase 2 by an explicit decision recorded below.
 | 5 | **Story Mentions** | Auto-reply to story @mentions | Done | `STORY_MENTION` |
 | 6 | **Inbox Starters** | Up to 4 conversation starters in your inbox | Done | Ice breakers manager |
 | 7 | **Next Post** | Draft your next linked post in advance | Done | Planner → "Next post" mode |
-| 8 | **Click Analytics** | Track link click analytics on DMs sent | Done | Tracked links + `/r/[code]` |
+| 8 | **Click Analytics** | Track link click analytics on DMs sent | Done | Every link button in an automation DM goes through `/go/` and counts per automation (CTR); hand-made tracked links at `/r/[code]` |
 | 9 | **Flow Automation** | Sequence of DMs and reminders after engagement | Done | Visual flow builder |
 | 10 | **Comment Auto-Reply** | Reply to the comment publicly once a DM is sent | Done | `REPLY_TO_COMMENT` node |
 | 11 | **White Label** | Remove LinkDM branding from DMs sent | Done | Free plan: the first automated DM a person gets each day ends with a short "Sent with InstaDM247" line, and the Link-in-Bio badge can't be turned off. Paid plans remove both (`removeBranding`). Never on Inbox replies a person typed. `src/lib/branding.ts` |
@@ -84,7 +84,7 @@ read. The owner chose to build every gap found (all four below).
 |---|---|---|---|
 | 1 | Comment / keyword → DM | Done | `COMMENT`, `DM_KEYWORD` |
 | 2 | **Story reactions** fire a DM | Done | `STORY_REPLY` with match mode `REACTION` (emoji-only replies — how Instagram delivers a quick reaction; see `docs/META_API.md` §4). `REPLY` is the reverse. Preset: "Thank people who react to your story" |
-| 3 | Growth Gate (follow to unlock) | Done | `FOLLOWER_CHECK` / `ASK_FOR_FOLLOW` |
+| 3 | Growth Gate (follow to unlock) | Done | `FOLLOWER_CHECK` / `ASK_FOR_FOLLOW`. Ask for follow carries an "I've followed" button; the tap is what lets Instagram's profile API answer for a commenter (no follow webhook exists). See `docs/META_API.md` §4 |
 | 4 | Email capture in the DM | Done | `COLLECT_INPUT`, lead forms |
 | 5 | **Leads to Google Sheets** | Done | Google sign-in (`drive.file`), one tab per form, every completed response a row — `src/lib/integrations/google-sheets.ts`, `docs/INTEGRATIONS.md` |
 | 6 | Tracked links | Done | `/r/[code]` |

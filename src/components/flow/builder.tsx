@@ -485,10 +485,12 @@ function createNode(type: FlowNodeType): FlowNode {
         position,
         data: {
           label,
-          recheckAfterMinutes: 5,
+          recheckAfterMinutes: 30,
+          buttonTitle: "I've followed ✅",
+          notFollowingText: "Hmm, I can't see your follow yet. Follow, then tap the button again 🙏",
           message: {
             kind: "text",
-            text: "One quick thing: give me a follow so you don't miss the next one 🙏",
+            text: "One quick thing: give me a follow, then tap the button below 🙏",
           },
         },
       };

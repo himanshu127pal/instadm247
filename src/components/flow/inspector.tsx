@@ -219,8 +219,25 @@ function NodeFields({
         <>
           <MessageEditor value={node.data.message} onChange={(message) => patch({ message })} />
           <Field
-            label="Re-check after"
-            hint="How long to give them before taking the 'no' path. People who already follow you skip this step entirely."
+            label="Button"
+            hint="Added under your message. Instagram only lets us check whether someone follows you after they tap a button or message you, so the tap is what makes the check work, above all for people who came from a comment."
+          >
+            <Input
+              value={node.data.buttonTitle ?? "I've followed ✅"}
+              maxLength={20}
+              onChange={(e) => patch({ buttonTitle: e.target.value || "I've followed ✅" })}
+            />
+          </Field>
+          <Field label="If they tap but aren't following yet" hint="Sent once, with the button again. A second tap takes the yes or no path.">
+            <Textarea
+              value={node.data.notFollowingText ?? ""}
+              maxLength={1000}
+              onChange={(e) => patch({ notFollowingText: e.target.value })}
+            />
+          </Field>
+          <Field
+            label="Wait for a tap"
+            hint="If nobody taps by then, take the 'no' path. Someone who came from a comment and never tapped or replied can't be messaged again, so the flow stops there for them. People who already follow you skip this step."
           >
             <div className="flex items-center gap-2">
               <Input

@@ -118,9 +118,20 @@ exactly why a message was or wasn't sent.
 
 Every meaningful action appends an `AnalyticsEvent` (trigger fired, message sent,
 delivered, seen, link clicked, follow gained, form completed, flow node entered/exited).
-A `maintenance` job rolls them into `DailyStat` per automation/account. Funnel and
-drop-off come from `FlowRunStep`. Link clicks come from the tracked-link redirector at
-`/r/[code]`, which 302s to the destination after recording.
+A `maintenance` job rolls them into `DailyStat` per automation/account every 15
+minutes, recounting whole UTC days. Dashboards read days before yesterday from
+`DailyStat` and yesterday and today straight from the events (`getStatRows` in
+`src/lib/queries.ts`), so a run counts the moment it happens. Funnel and drop-off
+come from `FlowRunStep`.
+
+Clicks: Instagram reports reads (`messaging_seen`) but never link taps. Every
+link button an automation sends goes out as `/go/<token>`
+(`src/lib/engine/links.ts`): the token is the destination, run and step,
+HMAC-signed, so it can't be turned into an open redirect. The redirect counts
+one `link_clicked` per run and step against the automation, skipping link
+previewers, then 302s. Reads are counted once per message, against the
+automation whose run sent it. Hand-made tracked links in Templates still use
+`/r/[code]`.
 
 ## Security
 

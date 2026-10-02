@@ -66,7 +66,7 @@ export const NODE_META: Record<
     icon: UserPlus,
     label: "Ask for follow",
     accent: "#ff5d73",
-    description: "Nudge non-followers, then re-check",
+    description: "Ask for a follow, check when they tap",
   },
   FOLLOWER_CHECK: {
     icon: UserCheck,
@@ -141,7 +141,7 @@ export function describeNode(node: FlowNode): string {
     case "CONDITION":
       return `${node.data.conditions.length} condition${node.data.conditions.length > 1 ? "s" : ""} · match ${node.data.mode}`;
     case "ASK_FOR_FOLLOW":
-      return `Ask, then re-check after ${node.data.recheckAfterMinutes} min`;
+      return `Ask with an "${node.data.buttonTitle ?? "I've followed ✅"}" button, check on tap`;
     case "FOLLOWER_CHECK":
       return "Yes if they already follow you";
     case "COLLECT_INPUT":
