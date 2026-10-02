@@ -41,6 +41,7 @@ See `.env.example` for the full list. The three that matter:
 | `REDIS_URL` | for delays | Falls back to inline processing when absent |
 | `SESSION_SECRET` / `ENCRYPTION_KEY` | in production | The app refuses to boot in production with the dev defaults |
 | `META_APP_ID` / `META_APP_SECRET` | to go live | Without them the UI works fully; only live Instagram calls are disabled |
+| `UPLOAD_DIR` | no | Where scheduler uploads are kept until published. Default `storage/uploads`. See `docs/SCHEDULER.md` |
 | `ANTHROPIC_API_KEY` | for AI replies | Without it the AI node answers from the knowledge base directly, or falls back |
 
 Generate secrets with:

@@ -29,6 +29,7 @@ import { reconcilePlans } from "@/lib/billing/resolve";
 import { purgeRejectedPaymentEvents } from "@/lib/billing/trace";
 import { deliverEmail } from "@/lib/email/send";
 import { sendBillingReminders } from "@/lib/email/notify";
+import { purgeUploads } from "@/lib/media/store";
 import type { OutboundMessage } from "@/lib/meta/types";
 
 /**
@@ -158,6 +159,11 @@ workers.push(
         case "billing_reminders": {
           const sent = await sendBillingReminders();
           if (sent) log("maintenance", `queued ${sent} billing reminders`);
+          return;
+        }
+        case "purge_uploads": {
+          const removed = await purgeUploads();
+          if (removed) log("maintenance", `removed ${removed} scheduler uploads`);
           return;
         }
         case "reconcile_plans": {

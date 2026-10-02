@@ -98,6 +98,7 @@ model Workspace {
   integrations     Integration[]
   adminNotes       AdminNote[]
   subscriptions    Subscription[]
+  mediaUploads     MediaUpload[]
   usageCounters    UsageCounter[]
   paymentEvents    PaymentEvent[]
 }
@@ -108,8 +109,8 @@ model Workspace {
 model AdminAuditLog {
   id          String   @id @default(cuid())
   actorUserId String
-  action      String   // impersonate.start | impersonate.end | workspace.suspend | ...
-  targetType  String   // workspace | user | account
+  action      String // impersonate.start | impersonate.end | workspace.suspend | ...
+  targetType  String // workspace | user | account
   targetId    String
   reason      String?
   meta        Json?
@@ -977,6 +978,35 @@ model BioPageView {
 // Content scheduling (SendDM "Schedule & Auto-Post")
 // ---------------------------------------------------------------------------
 
+/// A file uploaded for the scheduler. Instagram's publishing API only takes a
+/// public link, so the file is stored on our server and served at
+/// /m/<token>.<ext> until it's published, then deleted. See docs/SCHEDULER.md.
+model MediaUpload {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  /// Unguessable: the public link is the only thing protecting the file
+  /// until it's published. Never the customer's file name.
+  token           String   @unique
+  /// image | video
+  kind            String
+  /// image/jpeg | video/mp4 | video/quicktime, from the file's bytes
+  mime            String
+  sizeBytes       Int
+  width           Int
+  height          Int
+  /// Videos only, as measured in the customer's browser.
+  durationSec     Float?
+  /// Set when a scheduled post uses it; unused uploads are swept after a day.
+  scheduledPostId String?
+  createdAt       DateTime @default(now())
+
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  scheduledPost ScheduledPost? @relation(fields: [scheduledPostId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([scheduledPostId])
+}
+
 model ScheduledPost {
   id        String @id @default(cuid())
   accountId String
@@ -1002,6 +1032,7 @@ model ScheduledPost {
   updatedAt DateTime @updatedAt
 
   account InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  uploads MediaUpload[]
 
   @@index([accountId, status])
   @@index([status, scheduledAt])
@@ -1178,8 +1209,8 @@ model PaymentEvent {
   providerSubscriptionId String?
   providerPaymentId      String?
   /// Minor units, as the provider reports them.
-  amount   Int?
-  currency String?
+  amount                 Int?
+  currency               String?
 
   signatureValid Boolean?
   /// processed | ignored | duplicate | unmatched | rejected | failed | ok
@@ -1229,16 +1260,16 @@ model EmailToken {
 /// verification or reset link sitting in this table would let anyone who can
 /// read it take over the account.
 model EmailMessage {
-  id       String @id @default(cuid())
-  to       String
-  from     String
+  id        String  @id @default(cuid())
+  to        String
+  from      String
   /// accounts | billing | alerts
-  category String
-  template String
-  subject  String
+  category  String
+  template  String
+  subject   String
   /// Non-secret render inputs, kept so a failed send can be retried.
   /// Always null for templates that carry a secret.
-  params   Json?
+  params    Json?
   /// Makes a send idempotent: a second send with the same key is a no-op.
   dedupeKey String? @unique
 
@@ -1246,7 +1277,7 @@ model EmailMessage {
   status            String
   providerMessageId String?
   error             String?
-  attempts          Int       @default(0)
+  attempts          Int     @default(0)
 
   userId      String?
   workspaceId String?

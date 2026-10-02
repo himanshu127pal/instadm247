@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { AlertTriangle, CalendarClock, Plus, RotateCcw, Send, Trash2, X } from "lucide-react";
 import { Badge, Button, EmptyState, Field, Input, Select, Textarea } from "@/components/ui";
 import { SectionCard } from "@/components/dashboard/bits";
+import { MediaPicker, pickerBlocker, type PickedMedia } from "@/components/dashboard/media-picker";
+import type { PostType } from "@/lib/media/rules";
 import { timeAgo } from "@/lib/utils";
 
 type Post = {
@@ -228,22 +230,35 @@ function Composer({
 }) {
   const router = useRouter();
   const [accountId, setAccountId] = React.useState(accounts[0].id);
-  const [mediaType, setMediaType] = React.useState("IMAGE");
-  const [urls, setUrls] = React.useState("");
+  const [mediaType, setMediaType] = React.useState<PostType>("IMAGE");
+  const [items, setItems] = React.useState<PickedMedia[]>([]);
   const [caption, setCaption] = React.useState("");
   const [when, setWhen] = React.useState(defaultWhen());
   const [attach, setAttach] = React.useState<string[]>([]);
   const [saving, setSaving] = React.useState(false);
 
   const accountAutomations = automations.filter((a) => a.accountId === accountId);
-  const mediaUrls = urls
-    .split(/[\s,\n]+/)
-    .map((u) => u.trim())
-    .filter(Boolean);
+  const blocker = pickerBlocker(items, mediaType);
+  const mediaUrls = items.flatMap((m) => (m.url ? [m.url] : []));
+
+  /** Take back files uploaded for a post that won't be made. */
+  function cancel() {
+    for (const m of items) {
+      if (m.source === "file") URL.revokeObjectURL(m.preview);
+      if (m.token) {
+        void fetch("/api/uploads", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: m.token }),
+        }).catch(() => undefined);
+      }
+    }
+    onDone();
+  }
 
   async function save() {
-    if (mediaUrls.length === 0) {
-      toast.error("Add at least one media URL.");
+    if (blocker) {
+      toast.error(blocker);
       return;
     }
     setSaving(true);
@@ -295,7 +310,7 @@ function Composer({
             </Field>
           )}
           <Field label="Type">
-            <Select value={mediaType} onChange={(e) => setMediaType(e.target.value)}>
+            <Select value={mediaType} onChange={(e) => setMediaType(e.target.value as PostType)}>
               <option value="IMAGE">Image</option>
               <option value="REELS">Reel</option>
               <option value="VIDEO">Video</option>
@@ -304,17 +319,10 @@ function Composer({
           </Field>
         </div>
 
-        <Field
-          label="Media URLs"
-          hint="Public HTTPS URLs Instagram can fetch. One per line; a carousel takes up to 10."
-        >
-          <Textarea
-            value={urls}
-            onChange={(e) => setUrls(e.target.value)}
-            placeholder="https://cdn.example.com/photo.jpg"
-            className="min-h-[80px] font-mono text-[12px]"
-          />
-        </Field>
+        <div>
+          <p className="mb-2 text-[13px] font-extrabold">Media</p>
+          <MediaPicker postType={mediaType} items={items} setItems={setItems} />
+        </div>
 
         <Field label="Caption" hint="Drop a DM Planner draft code in here to link an automation.">
           <Textarea
@@ -365,12 +373,15 @@ function Composer({
         )}
 
         <div className="flex items-center gap-2">
-          <Button variant="primary" onClick={save} loading={saving}>
+          <Button variant="primary" onClick={save} loading={saving} disabled={Boolean(blocker)}>
             Schedule
           </Button>
-          <Button variant="ghost" onClick={onDone}>
+          <Button variant="ghost" onClick={cancel}>
             Cancel
           </Button>
+          {blocker && items.length > 0 && (
+            <span className="text-[12px] font-medium text-[var(--text-muted)]">{blocker}</span>
+          )}
         </div>
       </div>
     </SectionCard>

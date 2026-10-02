@@ -65,8 +65,8 @@ Filtered to actual product capabilities; quotas and support tiers are marked.
 | 16 | **Custom Integrations** | Done | `HTTP_REQUEST` node + outbound webhooks |
 | 17 | **Dedicated Account Manager** | **N/A** | Service tier |
 | 18 | **SLA Guarantee** | **N/A** | Contractual, not software |
-| 19 | Unlimited **Schedule & Auto-Post** | Done | Content scheduler (`instagram_business_content_publish`) |
-| 20 | 300MB **Large Video Uploads** | Done | Scheduler accepts video by URL; no artificial cap |
+| 19 | Unlimited **Schedule & Auto-Post** | Done | Content scheduler (`instagram_business_content_publish`). Upload from device; every file checked against Instagram's shape, size and length rules before scheduling, with crop-to-fit for photos. See `docs/SCHEDULER.md` |
+| 20 | 300MB **Large Video Uploads** | Done | Videos up to 300 MB (Instagram's limit) uploaded from device and streamed to disk; links still accepted |
 | 21 | 4 **Conversation Starters** | Done | Ice breakers (5 stored, 4 shown — Instagram's limit) |
 | 22 | 20 items **DM Main Menu** | Done | Persistent menu manager |
 | 23 | Unlimited **Link in Bio Page** | Done | Hosted at `/l/[slug]` |

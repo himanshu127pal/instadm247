@@ -53,6 +53,13 @@ export const env = {
   helperModel: str("AI_HELPER_MODEL", "claude-sonnet-5"),
 
   /**
+   * Where scheduler uploads are kept until Instagram has published them. Must
+   * survive restarts and be writable by the web process; the worker sweeps it.
+   * See docs/SCHEDULER.md.
+   */
+  uploadDir: str("UPLOAD_DIR", "storage/uploads"),
+
+  /**
    * Transactional email via Amazon SES. See docs/EMAIL.md. With no provider
    * set, nothing is sent: messages are recorded as skipped, and outside
    * production the text is printed to the console so links can be followed.

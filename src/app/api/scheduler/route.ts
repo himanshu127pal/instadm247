@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { assertAccount, ok, parseBody, route } from "@/lib/api";
 import { publishScheduledPost } from "@/lib/engine/scheduler";
+import { checkScheduledMedia } from "@/lib/media/validate";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -27,9 +28,9 @@ export const POST = route(async ({ workspace, request }) => {
   if (when.getTime() < Date.now() - 60_000) {
     return Response.json({ error: "Pick a time in the future." }, { status: 400 });
   }
-  if (body.mediaType === "CAROUSEL" && body.mediaUrls.length < 2) {
-    return Response.json({ error: "A carousel needs at least two files." }, { status: 400 });
-  }
+  const media = await checkScheduledMedia(workspace.id, body.mediaType, body.mediaUrls);
+  if (media.error !== null) return Response.json({ error: media.error }, { status: 400 });
+  const { uploads } = media;
 
   const post = await prisma.scheduledPost.create({
     data: {
@@ -43,6 +44,12 @@ export const POST = route(async ({ workspace, request }) => {
       status: "scheduled",
     },
   });
+  if (uploads.length) {
+    await prisma.mediaUpload.updateMany({
+      where: { id: { in: uploads.map((u) => u.id) } },
+      data: { scheduledPostId: post.id },
+    });
+  }
 
   return ok({ post });
 });

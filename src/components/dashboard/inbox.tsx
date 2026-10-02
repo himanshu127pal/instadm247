@@ -14,7 +14,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { Badge, Button, EmptyState, Input, Switch } from "@/components/ui";
-import { cn, initials, timeAgo, windowCountdown } from "@/lib/utils";
+import { cn, contactLabel, initials, timeAgo, windowCountdown } from "@/lib/utils";
 import { useNow } from "./use-now";
 import { AlertToggles, playChime, showDesktopAlert, useAlertPrefs, useInboxLive } from "./inbox-live";
 
@@ -197,7 +197,7 @@ export function InboxView({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="truncate text-[13px] font-medium">
-                        @{conversation.contact.username ?? conversation.contact.igsid.slice(0, 8)}
+                        {contactLabel(conversation.contact)}
                       </span>
                       <span className="shrink-0 text-[10.5px] text-[var(--text-faint)]">
                         {timeAgo(conversation.lastMessageAt)}
@@ -297,8 +297,22 @@ function Thread({
 
     fetch(`/api/conversations/${conversation.id}`)
       .then((res) => res.json())
-      .then((data: { messages?: Message[] }) => {
-        if (!cancelled) setMessages(data.messages ?? []);
+      .then((data: { messages?: Message[]; conversation?: { contact?: Partial<Contact> } }) => {
+        if (cancelled) return;
+        setMessages(data.messages ?? []);
+        // Opening a thread looks up a sender we only knew by ID; show who it is.
+        const fresh = data.conversation?.contact;
+        if (fresh && (fresh.username !== conversation.contact.username || fresh.name !== conversation.contact.name)) {
+          onUpdate({
+            contact: {
+              ...conversation.contact,
+              username: fresh.username ?? null,
+              name: fresh.name ?? null,
+              profilePicUrl: fresh.profilePicUrl ?? conversation.contact.profilePicUrl,
+              isFollower: fresh.isFollower ?? conversation.contact.isFollower,
+            },
+          });
+        }
       })
       .catch(() => {
         if (!cancelled) toast.error("Could not load this conversation.");
@@ -379,7 +393,7 @@ function Thread({
         <Avatar contact={conversation.contact} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[14px] font-semibold">
-            @{conversation.contact.username ?? conversation.contact.igsid.slice(0, 10)}
+            {contactLabel(conversation.contact)}
           </p>
           <p className="truncate text-[11.5px] text-[var(--text-faint)]">
             via @{conversation.accountUsername}

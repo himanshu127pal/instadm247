@@ -279,6 +279,14 @@ sudo systemctl reload caddy
 curl -I https://app.yourdomain.com/      # expect 200 over TLS
 ```
 
+The Scheduler uploads videos of up to 300 MB through this proxy. Caddy has no
+body size limit by default, so nothing to change. If you put nginx in front
+instead, add `client_max_body_size 300m;` or large videos fail to upload.
+
+Uploads are written to `storage/uploads` under the app directory (or
+`UPLOAD_DIR`) by the `deploy` user, and deleted by the worker once published.
+They are short-lived and don't need to be in backups. See `docs/SCHEDULER.md`.
+
 ## 9. Wire up Meta
 
 With the site live on HTTPS, fill in `META_APP_ID` and `META_APP_SECRET` in

@@ -60,7 +60,7 @@ Down mode. Full detail in `docs/ARCHITECTURE.md`.
 ## Repo layout
 
 ```
-docs/                  Memory + specs (FEATURES, ARCHITECTURE, META_API, SETUP, ROADMAP, BILLING, EMAIL, INTEGRATIONS, HELPER)
+docs/                  Memory + specs (FEATURES, ARCHITECTURE, META_API, SETUP, ROADMAP, BILLING, EMAIL, INTEGRATIONS, HELPER, SCHEDULER)
 prisma/schema.prisma   All domain models
 src/app/(marketing)/   Public landing site
 src/app/(auth)/        Login / signup
@@ -72,6 +72,7 @@ src/lib/ai/            AI agent + knowledge base retrieval
 src/lib/helper/        AI Helper: product guide, read-only tools, draft automations
 src/lib/email/         SES sending, templates, verification/reset tokens, notifications
 src/lib/billing/       Plans, metering, plan resolution, Dodo, payment trace
+src/lib/media/         Scheduler uploads: Instagram media rules, storage, sweep
 src/components/        UI (marketing/, dashboard/, flow/, ui/)
 src/content/           Public content: feature pages, comparisons, blog posts
 src/worker/            BullMQ worker process entrypoint

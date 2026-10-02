@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Search, ShieldOff } from "lucide-react";
 import { Badge, Input, Select } from "@/components/ui";
-import { cn, initials, timeAgo, windowCountdown } from "@/lib/utils";
+import { cn, contactLabel, initials, timeAgo, windowCountdown } from "@/lib/utils";
 import { useNow } from "./use-now";
 
 type Contact = {
@@ -132,7 +132,7 @@ export function ContactsTable({
                         )}
                         <span className="min-w-0">
                           <span className="block truncate font-medium">
-                            @{contact.username ?? contact.igsid.slice(0, 10)}
+                            {contactLabel(contact)}
                           </span>
                           {contact.name && (
                             <span className="block truncate text-[11.5px] text-[var(--text-faint)]">

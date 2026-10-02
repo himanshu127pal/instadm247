@@ -131,6 +131,7 @@ Up to 8 DMs after the starter DM is the safe ceiling.`,
     body: `**Inbox** shows every conversation across connected accounts, updating live. Type a reply at the bottom to answer yourself. Your own replies are never limited by your plan.
 - **Pause automation for this thread** stops automations messaging that person while you handle it ("You're handling this").
 - Inside the 24-hour window, a reply you type goes out like any other message. Automations stop 24 hours after the person's last message; after that, a reply you type yourself can sometimes still go out for up to 7 days, marked "· human". If Instagram doesn't allow it, the message says so, and you can reply as soon as they message you again.
+- People show by their @username. Someone who messages you first is looked up on Instagram to get it, which can take a moment; if Instagram doesn't share it, they show as their name or "Instagram user".
 - The speaker and bell buttons turn on a sound and desktop notifications for new messages (your browser asks permission the first time).`,
   },
   {
@@ -158,10 +159,14 @@ Up to 8 DMs after the starter DM is the safe ceiling.`,
     path: "/dashboard/scheduler",
     body: `**Scheduler** → **Schedule a post**:
 1. Choose the **Account** and **Type** (Image, Reel, Video, Carousel).
-2. **Media URLs**: public HTTPS links to the files (one per line; a carousel takes up to 10). Instagram fetches the media from these links, so they must open without a login.
+2. **Media**: drop files in or click **Choose from your device**. Image takes one photo, Reel and Video take one video, Carousel takes 2 to 10 photos and videos (reorder them with the arrows). Each file is checked against Instagram's rules before you can schedule:
+   - Photos: any photo works and is converted to JPEG. The shape must be between 4:5 (portrait) and 1.91:1 (landscape). A photo that's too tall or too wide shows **Crop to 4:5 portrait**, **Crop to 1:1 square** or **Crop to 1.91:1 landscape**, which crop from the centre. Up to 8 MB after converting. HEIC photos only work in browsers that can open them; on iPhone, Camera > Formats > Most Compatible saves JPEGs.
+   - Videos: MP4 or MOV, 3 seconds to 15 minutes, up to 300 MB. 9:16 (like 1080 × 1920) fills the screen; other shapes get a warning because Instagram crops them or adds bars. In a carousel, videos can be up to 60 seconds.
+   - Carousel: every slide is cropped to the first slide's shape, so you get a warning if they differ.
+   Red text blocks scheduling; orange text is a warning you can ignore. **Or paste a link to a file** adds a public HTTPS link instead; those can't be checked until Instagram publishes them.
 3. Write the **Caption**, and pick **When**.
 4. Under **Switch these on when it publishes**, pick any automations to attach to the post. They're enabled automatically when it goes live.
-5. **Schedule**. From the list you can publish a scheduled post right away, cancel it, or delete it.`,
+5. **Schedule**. From the list you can publish a scheduled post right away, cancel it, or delete it. Uploaded files are kept only until the post is published (a few days after, in case you need them), then deleted.`,
   },
   {
     id: "contacts",
