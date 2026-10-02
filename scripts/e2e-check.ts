@@ -33,6 +33,9 @@ import { runFollowAnalyticsChecks } from "./e2e-follow-analytics";
 import { runBroadcastFieldChecks } from "./e2e-broadcast-fields";
 import { runContactTagChecks } from "./e2e-contact-tags";
 import { runAutomationNameChecks } from "./e2e-automation-names";
+import { runMyContentChecks } from "./e2e-my-content";
+import { runSupportChecks } from "./e2e-support";
+import { runOnboardingChecks } from "./e2e-onboarding";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
 import { claimCommentReply, isOptOutMessage } from "../src/lib/engine/guards";
 import { cumulativeDelayMinutes, flowGraphSchema, validateGraph } from "../src/lib/engine/schema";
@@ -1022,6 +1025,9 @@ async function main() {
   await runBroadcastFieldChecks(prisma, check, section);
   await runContactTagChecks(prisma, check, section);
   runAutomationNameChecks(check, section);
+  runMyContentChecks(check, section);
+  await runSupportChecks(prisma, check, section);
+  await runOnboardingChecks(prisma, check, section);
 
   section("Tenant boundary in the customer UI");
   {

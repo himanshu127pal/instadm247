@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { FEATURES } from "@/content/features";
 import { COMPARISONS } from "@/content/compare";
 import { POSTS } from "@/content/blog";
+import { allDocs } from "@/content/docs";
 
 /** Read at request time: which pages exist depends on runtime env (billing). */
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/features", priority: 0.9 },
     { path: "/compare", priority: 0.7 },
     { path: "/blog", priority: 0.7 },
+    { path: "/docs", priority: 0.7 },
     // Pricing 404s until billing is switched on; don't advertise a dead page.
     ...(env.billing.enabled ? [{ path: "/pricing", priority: 0.8 }] : []),
     { path: "/signup", priority: 0.5 },
@@ -31,6 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...staticPages.map((p) => ({ url: url(p.path), priority: p.priority })),
     ...FEATURES.map((f) => ({ url: url(`/features/${f.slug}`), priority: 0.8 })),
     ...COMPARISONS.map((c) => ({ url: url(`/compare/${c.slug}`), priority: 0.6 })),
+    ...allDocs({ billingEnabled: env.billing.enabled }).map((d) => ({ url: url(`/docs/${d.slug}`), priority: 0.6 })),
     ...POSTS.map((p) => ({
       url: url(`/blog/${p.slug}`),
       lastModified: new Date(`${p.updated ?? p.published}T00:00:00Z`),

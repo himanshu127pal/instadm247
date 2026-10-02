@@ -30,11 +30,19 @@ model User {
   /// Set when the user proves they own the address. See docs/EMAIL.md.
   emailVerifiedAt DateTime?
 
+  /// Onboarding (src/lib/onboarding.ts): when they finished or skipped the
+  /// first-run tour, and when they hid the getting-started checklist.
+  tourCompletedAt      DateTime?
+  checklistDismissedAt DateTime?
+
   memberships Membership[]
   sessions    Session[]
   emailTokens EmailToken[]
   auditEvents AdminAuditLog[] @relation("AuditActor")
   adminNotes  AdminNote[]
+  supportTickets  SupportTicket[]
+  supportMessages SupportMessage[]
+  featureRequests FeatureRequest[]
 }
 
 model Session {
@@ -99,6 +107,8 @@ model Workspace {
   adminNotes       AdminNote[]
   subscriptions    Subscription[]
   mediaUploads     MediaUpload[]
+  supportTickets   SupportTicket[]
+  featureRequests  FeatureRequest[]
   usageCounters    UsageCounter[]
   paymentEvents    PaymentEvent[]
 }
@@ -126,6 +136,69 @@ model AdminAuditLog {
 }
 
 /// Internal notes staff leave on a customer. Never shown to the customer.
+/// A customer's support ticket. See docs/SUPPORT.md.
+model SupportTicket {
+  id          String  @id @default(cuid())
+  workspaceId String
+  createdById String?
+  subject     String
+  /// automations | inbox | instagram | billing | other
+  category    String  @default("other")
+  /// open (waiting on us) | answered (waiting on them) | closed
+  status      String  @default("open")
+
+  lastActivityAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  workspace Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  messages  SupportMessage[]
+
+  @@index([workspaceId, lastActivityAt])
+  @@index([status, lastActivityAt])
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  authorId  String?
+  /// Written by platform staff, not the customer.
+  fromStaff Boolean  @default(false)
+  body      String
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId, createdAt])
+}
+
+/// A customer's feature request. See docs/SUPPORT.md.
+model FeatureRequest {
+  id          String  @id @default(cuid())
+  workspaceId String
+  createdById String?
+  title       String
+  /// automations | inbox | broadcasts | contacts | analytics | ai | billing | other
+  area        String  @default("other")
+  problem     String
+  outcome     String?
+  /// new | planned | in_progress | shipped | declined
+  status      String  @default("new")
+  /// What we told them, shown on their request.
+  staffNote   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([status, createdAt])
+}
+
 model AdminNote {
   id          String   @id @default(cuid())
   workspaceId String

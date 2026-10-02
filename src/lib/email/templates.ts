@@ -71,6 +71,12 @@ export type TemplateParams = {
   instagram_access_removed: Named & { username: string };
   account_suspended: Named & { reason: string };
   account_reinstated: Named;
+
+  // Support. The *_staff ones go to our team, the rest to the customer.
+  support_ticket_staff: { workspace: string; from: string; subject: string; category: string; body: string; url: string; isReply: boolean };
+  feature_request_staff: { workspace: string; from: string; title: string; area: string; problem: string; outcome: string | null; url: string };
+  support_reply: Named & { subject: string; body: string; url: string };
+  feature_request_update: Named & { title: string; status: string; note: string | null; url: string };
 };
 
 export type TemplateName = keyof TemplateParams;
@@ -338,6 +344,66 @@ export const TEMPLATES: { [K in TemplateName]: Def<TemplateParams[K]> } = {
   },
 
   // Alerts --------------------------------------------------------------------
+
+  // Support ----------------------------------------------------------------
+
+  support_ticket_staff: {
+    category: "alerts",
+    build: (p) => ({
+      subject: `${p.isReply ? "Reply on" : "New ticket"}: ${p.subject} (${p.workspace})`,
+      preheader: p.body.slice(0, 120),
+      heading: p.isReply ? "A customer replied to a ticket" : "New support ticket",
+      blocks: [
+        { facts: [["Workspace", p.workspace], ["From", p.from], ["Subject", p.subject], ["Area", p.category]] },
+        { p: p.body },
+        { cta: { label: "Open the ticket", url: p.url } },
+      ],
+    }),
+  },
+
+  feature_request_staff: {
+    category: "alerts",
+    build: (p) => ({
+      subject: `Feature request: ${p.title} (${p.workspace})`,
+      preheader: p.problem.slice(0, 120),
+      heading: "New feature request",
+      blocks: [
+        { facts: [["Workspace", p.workspace], ["From", p.from], ["Title", p.title], ["Area", p.area]] },
+        { p: `Problem: ${p.problem}` },
+        ...(p.outcome ? [{ p: `Good outcome: ${p.outcome}` }] : []),
+        { cta: { label: "Open feature requests", url: p.url } },
+      ],
+    }),
+  },
+
+  support_reply: {
+    category: "accounts",
+    build: (p) => ({
+      subject: `Re: ${p.subject}`,
+      preheader: p.body.slice(0, 120),
+      heading: "We replied to your ticket",
+      blocks: [
+        { p: `${hi(p)} here's our reply to "${p.subject}":` },
+        { p: p.body },
+        { cta: { label: "View and reply", url: p.url } },
+        { note: "Reply from the ticket page so the whole conversation stays in one place." },
+      ],
+    }),
+  },
+
+  feature_request_update: {
+    category: "accounts",
+    build: (p) => ({
+      subject: `Your feature request: ${p.status}`,
+      preheader: p.title,
+      heading: `"${p.title}" is ${p.status.toLowerCase()}`,
+      blocks: [
+        { p: `${hi(p)} we've updated your feature request "${p.title}". It's now: ${p.status}.` },
+        ...(p.note ? [{ p: p.note }] : []),
+        { cta: { label: "See your requests", url: p.url } },
+      ],
+    }),
+  },
 
   instagram_reconnect: {
     category: "alerts",

@@ -5,7 +5,8 @@ import { PRESETS } from "@/lib/engine/presets";
 import { PageHeader } from "@/components/dashboard/bits";
 import { NewAutomationWizard } from "@/components/dashboard/new-automation";
 
-export default async function NewAutomationPage() {
+export default async function NewAutomationPage({ searchParams }: { searchParams: Promise<{ post?: string }> }) {
+  const { post } = await searchParams;
   const workspace = await getActiveWorkspace();
   if (!workspace) return null;
 
@@ -48,6 +49,8 @@ export default async function NewAutomationPage() {
         accounts={accounts}
         media={media.map((m) => ({ ...m, timestamp: m.timestamp?.toISOString() ?? null }))}
         existingNames={existing}
+        // From "New automation for this post" on My content.
+        initialPostId={post && media.some((m) => m.id === post) ? post : undefined}
         presets={PRESETS.map((p) => ({
           id: p.id,
           name: p.name,

@@ -30,10 +30,15 @@ The core idea: an **automation** listens for something on Instagram (a comment, 
 
 The sidebar is grouped as:
 - Overview: Dashboard
-- Engage: Automations, Inbox, Broadcasts, DM Planner, Scheduler
+- Engage: Automations, My content, Inbox, Broadcasts, DM Planner, Scheduler
 - Audience: Contacts, Lead forms, Link in bio
 - Intelligence: Analytics, AI agent, AI Helper
 - Account: Instagram accounts, Safety Center, Templates, Developers, Plan & billing, Settings
+- Help: Support, Request a feature, Take the tour
+
+New workspaces see a **Getting started** bar under the header: progress through confirming your email, connecting Instagram, creating an automation, switching it on and your first automated DM, with a button for the next step. Click its title to see every step; × hides it. **Help → Take the tour** shows where everything is in the sidebar.
+
+Public docs (the same guidance, readable without signing in) are at /docs, under **Resources** in the site's header.
 
 Instagram's rules, which InstaDM247 enforces automatically on every plan:
 - **24-hour messaging window**: you can only DM someone within 24 hours of their last message, comment-triggered private reply, or story interaction. After that, messages are skipped, not sent.
@@ -172,6 +177,23 @@ Up to 8 DMs after the starter DM is the safe ceiling.`,
 3. Write the **Caption**, and pick **When**.
 4. Under **Switch these on when it publishes**, pick any automations to attach to the post. They're enabled automatically when it goes live.
 5. **Schedule**. From the list you can publish a scheduled post right away, cancel it, or delete it. Uploaded files are kept only until the post is published (a few days after, in case you need them), then deleted.`,
+  },
+  {
+    id: "content",
+    title: "My content",
+    path: "/dashboard/content",
+    body: `**My content** shows your posts and Reels, and your live stories, with the automations that answer on each.
+- **Posts & Reels**: every post with its comment and like counts and the comment automations that cover it, in the order they'd answer (picked posts first, then ads only, then all posts, then everything; between equals, the most recently edited). A green dot answers; orange means it **never runs here** because another answers first, or answers first only for some of its keywords; grey is paused. **New automation for this post** starts the wizard on that post. **Sync posts** pulls your latest posts from Instagram.
+- **Stories**: only stories that are live right now (the last 24 hours), with how long each has left. Story reply and reaction automations answer on every story, so they're listed once at the top.`,
+  },
+  {
+    id: "support",
+    title: "Support and feature requests",
+    path: "/dashboard/support",
+    body: `**Help** in the sidebar has **Support** and **Request a feature**.
+- **Support** → **New ticket**: a subject, what it's **About**, and what's happening. Our team is notified and replies on the ticket; you're emailed when we do. Reply on the ticket page to keep the conversation in one place, **Close ticket** when you're done, or reply to reopen it. Status shows **Waiting on us**, **Waiting on you** or **Closed**. Only your team and our support staff see your tickets.
+- **Request a feature**: a short title, the **Area**, the problem you're running into and, optionally, what a good outcome looks like. Your requests are listed below the form with our status (Received, Planned, In progress, Shipped, Not planned) and any note from us; you're emailed when one changes.
+- You can send up to 10 of each a day. For a quick how-to, ask the AI Helper first: it usually answers faster than a ticket.`,
   },
   {
     id: "contacts",

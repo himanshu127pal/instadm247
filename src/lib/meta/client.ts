@@ -96,6 +96,18 @@ export class InstagramClient {
   }
 
   /**
+   * The account's stories that are live now (Instagram returns only the last
+   * 24 hours). Not cached: a story is gone within a day, so it's read fresh
+   * whenever it's shown.
+   */
+  async getStories(): Promise<IgMedia[]> {
+    const res = await this.request<{ data?: IgMedia[] }>("/me/stories", {
+      params: { fields: "id,media_type,media_url,thumbnail_url,permalink,timestamp" },
+    });
+    return res.data ?? [];
+  }
+
+  /**
    * Profile of a person who messaged us. `is_user_follow_business` is what the
    * Follower Growth Tool and Ask-for-Follow gate branch on.
    */

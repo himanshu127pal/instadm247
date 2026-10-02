@@ -7,6 +7,10 @@ import { motion } from "motion/react";
 import {
   AlertTriangle,
   BarChart3,
+  Compass,
+  LifeBuoy,
+  Lightbulb,
+  Images,
   Bot,
   ChevronDown,
   ClipboardList,
@@ -29,6 +33,8 @@ import {
   X,
 } from "lucide-react";
 import { Badge } from "@/components/ui";
+import { GettingStarted, Tour } from "@/components/dashboard/onboarding";
+import type { Onboarding } from "@/lib/onboarding";
 import { Logo, ThemeToggle } from "@/components/marketing/bits";
 import { cn, initials } from "@/lib/utils";
 
@@ -47,6 +53,7 @@ const NAV = [
     section: "Engage",
     items: [
       { href: "/dashboard/automations", label: "Automations", icon: Workflow },
+      { href: "/dashboard/content", label: "My content", icon: Images },
       { href: "/dashboard/inbox", label: "Inbox", icon: Inbox },
       { href: "/dashboard/broadcasts", label: "Broadcasts", icon: Megaphone },
       { href: "/dashboard/planner", label: "DM Planner", icon: ClipboardList },
@@ -80,6 +87,14 @@ const NAV = [
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
     ],
   },
+  {
+    section: "Help",
+    items: [
+      { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
+      { href: "/dashboard/requests", label: "Request a feature", icon: Lightbulb },
+      { href: "/dashboard?tour=1", label: "Take the tour", icon: Compass },
+    ],
+  },
 ];
 
 export function DashboardShell({
@@ -88,6 +103,7 @@ export function DashboardShell({
   accounts,
   instagramConfigured,
   showBilling = false,
+  onboarding,
   children,
 }: {
   user: { id: string; email: string; name: string | null };
@@ -96,10 +112,31 @@ export function DashboardShell({
   instagramConfigured: boolean;
   /** False while billing is off — there is nothing to buy, so no page offering it. */
   showBilling?: boolean;
+  /** Absent in a support session: staff looking in get no checklist or tour. */
+  onboarding?: Onboarding;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [tourOpen, setTourOpen] = React.useState(false);
+  // The layout (and so `onboarding`) isn't re-read when moving between pages,
+  // so after a skip it would still say "show the tour". Start it at most once.
+  const tourStarted = React.useRef(false);
+
+  // New here: the tour starts on its own once. "Take the tour" (?tour=1) brings it back.
+  React.useEffect(() => {
+    if (!onboarding) return;
+    if (new URLSearchParams(window.location.search).get("tour") === "1") {
+      tourStarted.current = true;
+      setTourOpen(true);
+      router.replace(pathname);
+    } else if (onboarding.showTour && !tourStarted.current && window.innerWidth >= 1024) {
+      tourStarted.current = true;
+      setTourOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const warnings = React.useMemo(() => {
     const list: Array<{ tone: "warning" | "danger"; message: string; href: string }> = [];
@@ -167,6 +204,23 @@ export function DashboardShell({
                   .filter((item) => !("billingOnly" in item && item.billingOnly) || showBilling)
                   .map((item) => {
                   const Icon = item.icon;
+                  if (item.href === "/dashboard?tour=1") {
+                    // A button, not a link: it has to work from any page, the dashboard included.
+                    return (
+                      <button
+                        key={item.href}
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false);
+                          setTourOpen(true);
+                        }}
+                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[13.5px] font-bold text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-sunken)] hover:text-[var(--text)]"
+                      >
+                        <Icon className="h-[16px] w-[16px]" />
+                        {item.label}
+                      </button>
+                    );
+                  }
                   const active =
                     item.href === "/dashboard"
                       ? pathname === "/dashboard"
@@ -175,6 +229,7 @@ export function DashboardShell({
                     <Link
                       key={item.href}
                       href={item.href}
+                      data-tour={item.href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
                         "relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13.5px] font-bold transition-colors",
@@ -229,6 +284,7 @@ export function DashboardShell({
           {!pathname.startsWith("/dashboard/helper") && (
             <Link
               href={`/dashboard/helper?from=${encodeURIComponent(pathname)}`}
+              data-tour="ask-ai"
               className="flex items-center gap-1.5 rounded-xl border-[2.5px] border-[var(--border)] bg-[var(--color-pow-400)] px-3 py-1.5 text-[12.5px] font-extrabold text-[#12110e] shadow-[2px_2px_0_0_var(--shadow-ink)] transition-transform hover:-translate-y-0.5"
             >
               <Sparkles className="h-3.5 w-3.5" />
@@ -264,7 +320,10 @@ export function DashboardShell({
           </div>
         )}
 
+        {onboarding?.showChecklist && <GettingStarted steps={onboarding.steps} onTour={() => setTourOpen(true)} />}
+
         <main className="flex-1 p-5">{children}</main>
+        <Tour open={tourOpen} onClose={() => setTourOpen(false)} />
       </div>
     </div>
   );

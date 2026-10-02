@@ -34,8 +34,10 @@ function Footer() {
     {
       title: "Resources",
       links: [
+        { label: "Docs", href: "/docs" },
         { label: "Blog", href: "/blog" },
         { label: "Account safety", href: "/features/account-safety" },
+        { label: "Support", href: "/dashboard/support" },
         { label: "Sign in", href: "/login" },
         { label: "Create account", href: "/signup" },
       ],
