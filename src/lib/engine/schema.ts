@@ -187,6 +187,15 @@ export const flowNodeSchema = z.discriminatedUnion("type", [
       options: z.array(z.string()).optional(),
       /** Give up waiting after this long and take the timeout branch. */
       timeoutMinutes: z.number().int().min(1).max(1440).default(60),
+      /**
+       * Also keep the answer on the contact, as this custom field, so
+       * broadcasts and other automations can use it as {{field}}. Unset:
+       * the answer lives only in this run (and its lead form).
+       */
+      contactField: z
+        .string()
+        .regex(/^\w{1,40}$/)
+        .optional(),
     }),
   }),
 

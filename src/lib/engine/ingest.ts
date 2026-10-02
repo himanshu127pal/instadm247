@@ -180,7 +180,7 @@ async function feedWaitingRun(
   const node = nodes.find((n) => n.id === run.currentNodeId);
   if (!node || node.type !== "COLLECT_INPUT") return false;
 
-  const data = (node.data ?? {}) as { variable?: string; formId?: string };
+  const data = (node.data ?? {}) as { variable?: string; formId?: string; contactField?: string };
   if (!data.variable) return false;
 
   // A button answer carries "ANSWER:<runId>:<nodeId>:<value>".
@@ -199,9 +199,19 @@ async function feedWaitingRun(
   });
 
   if (data.formId) await saveLeadAnswer(data.formId, contactId, run.id, data.variable, answer);
+  if (data.contactField && /^\w{1,40}$/.test(data.contactField)) {
+    await saveContactField(contactId, data.contactField, answer);
+  }
 
   await resumeFlowRun(run.id, run.currentNodeId);
   return true;
+}
+
+/** Keep a collected answer on the contact, as a custom field. */
+async function saveContactField(contactId: string, key: string, value: string) {
+  const contact = await prisma.contact.findUnique({ where: { id: contactId }, select: { customFields: true } });
+  const fields = { ...(((contact?.customFields as Record<string, unknown>) ?? {}) as object), [key]: value };
+  await prisma.contact.update({ where: { id: contactId }, data: { customFields: fields as object } });
 }
 
 async function saveLeadAnswer(

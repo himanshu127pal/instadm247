@@ -100,7 +100,7 @@ Steps:
 - **If / else**: branch on: follows you, has a tag, custom field, variable, message text, hour of day, first time, or **replied** (they messaged since the flow last sent them something; useful for follow-ups).
 - **Follower check**: branch yes/no on whether they follow you. Instagram only tells us once the person has messaged you or tapped one of your buttons, so for someone who has only commented it takes the no path. Use Ask for follow for them.
 - **Ask for follow**: sends your message with a button (**Button**, default "I've followed ✅"). When they tap it, we check whether they follow you: yes continues down yes; if not, they get **If they tap but aren't following yet** once with the button again, and the next tap continues down yes or no. If nobody taps within **Wait for a tap**, it takes no. From a comment, this message is the private reply, so someone who never taps or replies can't be messaged again and the flow stops there. People who already follow skip it.
-- **Ask a question**: asks something in the DM and saves the answer; can **Save to a lead form** (pick the form and **Which question**). Has a "no reply" path after **Give up after**.
+- **Ask a question**: asks something in the DM and saves the answer; can **Save to a lead form** (pick the form and **Which question**). Turn on **Save to the contact** to also keep the answer on their contact as a custom field (you choose its name), so broadcasts and other automations can use it, e.g. {{email}}. Off, the answer is only usable later in the same automation. Has a "no reply" path after **Give up after**.
 - **AI replies**: answers from your AI agent's knowledge base; hands to you when unsure.
 - **Send a coupon**: issues a code from a coupon pool (paste the pool ID from Templates → Coupons); "ran out" path when empty.
 - **Tag contact**, **Set field**: label people or store values.
@@ -109,7 +109,7 @@ Steps:
 - **Hand to a human**: stops automating and flags the thread in the Inbox.
 - **End**: finishes; **Count as a conversion** marks it as a goal in analytics.
 
-Personalise any message with tokens: {{first_name}}, {{full_name}}, {{username}}, {{keyword}}, {{trigger_text}}, {{account_username}}, {{coupon}}, plus any answer saved by Ask a question (e.g. {{email}}).
+Personalise any message with tokens: {{first_name}}, {{full_name}}, {{username}}, {{keyword}}, {{trigger_text}}, {{account_username}}, {{coupon}}, plus any answer saved by Ask a question (e.g. {{email}}) and any custom field on the contact.
 Up to 8 DMs after the starter DM is the safe ceiling.`,
   },
   {
@@ -173,7 +173,10 @@ Up to 8 DMs after the starter DM is the safe ceiling.`,
     id: "contacts",
     title: "Contacts",
     path: "/dashboard/contacts",
-    body: `**Contacts** lists everyone who interacted with your automations, with tags and follower status. Filter by Everyone / Reachable now / Followers / Not following / Opted out, or by tag. **Export** downloads a CSV.`,
+    body: `**Contacts** lists everyone who interacted with your automations, with tags and follower status. Filter by Everyone / Reachable now / Followers / Not following / Opted out, or by tag. **Export** downloads a CSV.
+- **Tag one contact**: click the pencil next to their tags, pick an existing tag or type a new one (it offers **New tag**), remove one with its ×, then the tick to finish. Changes save as you make them.
+- **Tag many**: tick contacts (the box in the header ticks everyone shown), pick tags in the bar that appears, then **Add to N** or **Remove from N**.
+- Contacts also get tags from a **Tag** step, and custom fields from **Set field** or **Ask a question** with **Save to the contact** on. Names, usernames and follower status come from Instagram.`,
   },
   {
     id: "forms",

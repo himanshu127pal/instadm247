@@ -507,6 +507,7 @@ function createNode(type: FlowNodeType): FlowNode {
           variable: "email",
           fieldType: "email",
           timeoutMinutes: 60,
+          contactField: "email",
         },
       };
     case "AI_REPLY":
