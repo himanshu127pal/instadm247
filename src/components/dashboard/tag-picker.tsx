@@ -17,7 +17,7 @@ export function TagPicker({
   value,
   onChange,
   placeholder = "Search tags",
-  emptyHint = "No tags yet. Tag contacts on the Contacts page or with a Tag step in an automation.",
+  emptyHint = "No tags yet. Contacts get tags from a Tag step in your automations.",
 }: {
   options: TagOption[];
   value: string[];
