@@ -120,6 +120,38 @@ export async function refreshExpiringTokens(): Promise<{ refreshed: number; fail
   return { refreshed, failed };
 }
 
+/**
+ * Re-sync accounts not synced in the last 20 hours. Instagram signs the links
+ * to profile pictures and post images and they expire after a few days, so a
+ * cache only refreshed by the Sync button goes blank (owner-reported). Runs
+ * every 12 hours; the 20-hour gate skips accounts someone just synced.
+ */
+export async function refreshStaleProfiles(): Promise<{ refreshed: number; failed: number }> {
+  if (!isInstagramConfigured()) return { refreshed: 0, failed: 0 };
+
+  const accounts = await prisma.instagramAccount.findMany({
+    where: {
+      status: "connected",
+      accessTokenEnc: { not: null },
+      OR: [{ lastSyncAt: null }, { lastSyncAt: { lt: new Date(Date.now() - 20 * 60 * 60 * 1000) } }],
+    },
+    select: { id: true },
+  });
+
+  let refreshed = 0;
+  let failed = 0;
+  for (const account of accounts) {
+    try {
+      if (await syncAccount(account.id)) refreshed++;
+    } catch (error) {
+      failed++;
+      if (error instanceof MetaApiError && error.isAuthError) await markReconnectNeeded(account.id);
+      else console.error("[account] profile refresh failed", account.id, error instanceof Error ? error.message : error);
+    }
+  }
+  return { refreshed, failed };
+}
+
 /** Pull profile + recent media into our cache so the UI is fast and API-light. */
 export async function syncAccount(accountId: string): Promise<{ media: number } | null> {
   const account = await prisma.instagramAccount.findUnique({ where: { id: accountId } });

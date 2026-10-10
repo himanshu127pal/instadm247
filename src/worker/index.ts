@@ -24,7 +24,7 @@ import { runBroadcast, runDueReengagements } from "@/lib/engine/broadcast";
 import { runRewind } from "@/lib/engine/rewind";
 import { scanPlannedAutomations } from "@/lib/engine/planner";
 import { publishDuePosts } from "@/lib/engine/scheduler";
-import { refreshExpiringTokens } from "@/lib/meta/account";
+import { refreshExpiringTokens, refreshStaleProfiles } from "@/lib/meta/account";
 import { reconcilePlans } from "@/lib/billing/resolve";
 import { purgeRejectedPaymentEvents } from "@/lib/billing/trace";
 import { deliverEmail } from "@/lib/email/send";
@@ -119,6 +119,11 @@ workers.push(
         case "refresh_tokens": {
           const result = await refreshExpiringTokens();
           log("maintenance", `token refresh: ${result.refreshed} ok, ${result.failed} failed`);
+          return;
+        }
+        case "refresh_profiles": {
+          const result = await refreshStaleProfiles();
+          log("maintenance", `profile refresh: ${result.refreshed} ok, ${result.failed} failed`);
           return;
         }
         case "rollup_stats": {

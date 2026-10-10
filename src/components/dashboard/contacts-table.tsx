@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoteImg } from "@/components/ui/remote-img";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -243,18 +244,16 @@ export function ContactsTable({
                     </td>
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2.5">
-                        {contact.profilePicUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={contact.profilePicUrl}
-                            alt=""
-                            className="h-7 w-7 shrink-0 rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[var(--bg-sunken)] text-[10px] font-semibold">
-                            {initials(contact.username ?? contact.name, "?")}
-                          </span>
-                        )}
+                        <RemoteImg
+                          src={contact.profilePicUrl}
+                          alt=""
+                          className="h-7 w-7 shrink-0 rounded-full object-cover"
+                          fallback={
+                            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[var(--bg-sunken)] text-[10px] font-semibold">
+                              {initials(contact.username ?? contact.name, "?")}
+                            </span>
+                          }
+                        />
                         <span className="min-w-0">
                           <span className="block truncate font-medium">
                             {contactLabel(contact)}

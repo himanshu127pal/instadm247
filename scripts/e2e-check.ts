@@ -30,6 +30,7 @@ import { runDodoCheckChecks } from "./e2e-dodo-check";
 import { runInboxReplyChecks } from "./e2e-inbox-reply";
 import { runMediaChecks } from "./e2e-media";
 import { runFollowAnalyticsChecks } from "./e2e-follow-analytics";
+import { runProfileRefreshChecks } from "./e2e-profile-refresh";
 import { runBroadcastFieldChecks } from "./e2e-broadcast-fields";
 import { runContactTagChecks } from "./e2e-contact-tags";
 import { runAutomationNameChecks } from "./e2e-automation-names";
@@ -1022,6 +1023,7 @@ async function main() {
   await runInboxReplyChecks(prisma, check, section);
   await runMediaChecks(prisma, check, section);
   await runFollowAnalyticsChecks(prisma, check, section);
+  await runProfileRefreshChecks(prisma, check, section);
   await runBroadcastFieldChecks(prisma, check, section);
   await runContactTagChecks(prisma, check, section);
   runAutomationNameChecks(check, section);

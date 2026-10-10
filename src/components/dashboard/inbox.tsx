@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoteImg } from "@/components/ui/remote-img";
 import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
@@ -256,20 +257,17 @@ export function InboxView({
 }
 
 function Avatar({ contact }: { contact: Contact }) {
-  if (contact.profilePicUrl) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={contact.profilePicUrl}
-        alt=""
-        className="h-9 w-9 shrink-0 rounded-full object-cover"
-      />
-    );
-  }
   return (
-    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-kapow-400),var(--color-zap-500))] text-[12px] font-semibold text-white">
-      {initials(contact.username ?? contact.name, "?")}
-    </span>
+    <RemoteImg
+      src={contact.profilePicUrl}
+      alt=""
+      className="h-9 w-9 shrink-0 rounded-full object-cover"
+      fallback={
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-kapow-400),var(--color-zap-500))] text-[12px] font-semibold text-white">
+          {initials(contact.username ?? contact.name, "?")}
+        </span>
+      }
+    />
   );
 }
 

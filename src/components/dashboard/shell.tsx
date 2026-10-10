@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoteImg } from "@/components/ui/remote-img";
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -357,18 +358,16 @@ function AccountSwitcher({ accounts }: { accounts: Account[] }) {
             className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] transition-colors hover:bg-[var(--bg-subtle)]"
           >
             <span className="relative">
-              {account.profilePictureUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={account.profilePictureUrl}
-                  alt=""
-                  className="h-6 w-6 rounded-full object-cover"
-                />
-              ) : (
-                <span className="grid h-6 w-6 place-items-center rounded-full border-2 border-[var(--border)] bg-[var(--color-kapow-400)] text-[10px] font-extrabold text-white">
-                  {initials(account.username)}
-                </span>
-              )}
+              <RemoteImg
+                src={account.profilePictureUrl}
+                alt=""
+                className="h-6 w-6 rounded-full object-cover"
+                fallback={
+                  <span className="grid h-6 w-6 place-items-center rounded-full border-2 border-[var(--border)] bg-[var(--color-kapow-400)] text-[10px] font-extrabold text-white">
+                    {initials(account.username)}
+                  </span>
+                }
+              />
               <span
                 className={cn(
                   "absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ring-2 ring-[var(--bg)]",
