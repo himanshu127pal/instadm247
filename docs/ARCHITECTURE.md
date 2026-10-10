@@ -64,7 +64,7 @@ Queues:
 | `flow` | Execute / resume flow runs (delayed jobs live here) |
 | `dispatch` | Outbound Instagram API sends, rate limited per account |
 | `broadcast` | Fan-out of broadcast + smart re-engage campaigns |
-| `maintenance` | Token refresh, window sweeps, analytics rollups, planner scanning |
+| `maintenance` | Token refresh, profile and post-image refresh (Instagram's CDN links expire in days; every 12h for accounts not synced in 20h), window sweeps, analytics rollups, planner scanning |
 
 ## Data model (see `prisma/schema.prisma` for the truth)
 

@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { ImageIcon } from "lucide-react";
+import { RemoteImg } from "@/components/ui/remote-img";
 
 export type PostThumb = {
   id: string;
@@ -31,7 +31,6 @@ export function PostThumbs({ posts, total }: { posts: PostThumb[]; total: number
 }
 
 function Thumb({ post, first }: { post: PostThumb; first: boolean }) {
-  const [broken, setBroken] = React.useState(false);
   // A video's media URL is the video itself; only its thumbnail is an image.
   const src = post.thumbnailUrl ?? (post.mediaType === "VIDEO" || post.mediaType === "REELS" ? null : post.mediaUrl);
   const label = post.caption?.split("\n")[0].slice(0, 80) || "Post";
@@ -40,12 +39,13 @@ function Thumb({ post, first }: { post: PostThumb; first: boolean }) {
       title={label}
       className={`grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md border-2 border-[var(--bg-raised)] bg-[var(--bg-sunken)] ring-1 ring-[var(--border)] ${first ? "" : "-ml-2"}`}
     >
-      {src && !broken ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={label} className="h-full w-full object-cover" loading="lazy" onError={() => setBroken(true)} />
-      ) : (
-        <ImageIcon className="h-3 w-3 text-[var(--text-faint)]" />
-      )}
+      <RemoteImg
+        src={src}
+        alt={label}
+        className="h-full w-full object-cover"
+        loading="lazy"
+        fallback={<ImageIcon className="h-3 w-3 text-[var(--text-faint)]" />}
+      />
     </span>
   );
 }

@@ -66,6 +66,7 @@ export type EmailJob = { emailMessageId: string };
 
 export type MaintenanceJob =
   | { kind: "refresh_tokens" }
+  | { kind: "refresh_profiles" }
   | { kind: "rollup_stats" }
   | { kind: "scan_planner" }
   | { kind: "sweep_windows" }
@@ -103,6 +104,9 @@ export async function scheduleMaintenance(): Promise<void> {
 
   const repeating: Array<[string, MaintenanceJob, string]> = [
     ["refresh_tokens", { kind: "refresh_tokens" }, "0 4 * * *"],
+    // Instagram's picture and post-image links expire after a few days, so
+    // re-pull them before they do. Two API calls per account per run.
+    ["refresh_profiles", { kind: "refresh_profiles" }, "20 */12 * * *"],
     ["rollup_stats", { kind: "rollup_stats" }, "*/15 * * * *"],
     ["scan_planner", { kind: "scan_planner" }, "*/5 * * * *"],
     ["sweep_windows", { kind: "sweep_windows" }, "*/10 * * * *"],

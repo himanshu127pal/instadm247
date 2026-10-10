@@ -54,7 +54,7 @@ Nobody can DM people who have never interacted with the account. There is no "ma
     body: `Go to **Instagram accounts** → **Connect Instagram**. You sign in on Instagram's own screen and approve messaging permissions; we never see the password.
 - The account must be a **Professional** account (Business or Creator). Personal accounts can't be automated. Switch in the Instagram app under Settings → Account type and tools.
 - To let automations reply to DMs, in the Instagram app turn on Settings → Messages and story replies → Message controls → Connected tools → **Allow access to messages**.
-- **Sync** on an account card pulls in your recent posts so you can pick specific posts in automations.
+- **Sync** on an account card pulls in your recent posts so you can pick specific posts in automations. Accounts also re-sync on their own twice a day, so the profile picture and post images stay current (Instagram's image links expire after a few days). If a picture is missing, **Sync** brings it back straight away.
 - If a card says **Reconnect needed** or **Access revoked**, click **Reconnect @username**. Automations for that account are paused until you do.
 - If a card says webhooks aren't subscribed, click **Retry subscription**; until then triggers won't fire for that account.
 - **Connect another account** adds more accounts, up to your plan's limit.`,

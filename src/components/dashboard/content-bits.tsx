@@ -5,19 +5,23 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Film, ImageIcon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui";
+import { RemoteImg } from "@/components/ui/remote-img";
 
 /** A post or story image. Instagram's links expire; a dead one becomes a plain tile. */
 export function ContentImage({ src, video, alt }: { src: string | null; video?: boolean; alt: string }) {
-  const [broken, setBroken] = React.useState(false);
-  if (!src || broken) {
-    return (
-      <div className="grid h-full w-full place-items-center bg-[var(--bg-sunken)] text-[var(--text-faint)]">
-        {video ? <Film className="h-6 w-6" /> : <ImageIcon className="h-6 w-6" />}
-      </div>
-    );
-  }
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} loading="lazy" onError={() => setBroken(true)} className="h-full w-full object-cover" />;
+  return (
+    <RemoteImg
+      src={src}
+      alt={alt}
+      loading="lazy"
+      className="h-full w-full object-cover"
+      fallback={
+        <div className="grid h-full w-full place-items-center bg-[var(--bg-sunken)] text-[var(--text-faint)]">
+          {video ? <Film className="h-6 w-6" /> : <ImageIcon className="h-6 w-6" />}
+        </div>
+      }
+    />
+  );
 }
 
 /** Pull the latest posts from Instagram for every connected account. */

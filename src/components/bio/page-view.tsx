@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoteImg } from "@/components/ui/remote-img";
 import * as React from "react";
 import { motion } from "motion/react";
 import { ArrowUpRight, Mail, MessageCircle } from "lucide-react";
@@ -85,26 +86,24 @@ export function BioPageView({ page, blocks }: { page: BioPageData; blocks: BioBl
           transition={{ duration: 0.4 }}
           className="mb-8 text-center"
         >
-          {page.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={page.avatarUrl}
-              alt=""
-              className="mx-auto h-24 w-24 rounded-full border-[3px] object-cover"
-              style={{ borderColor: theme.ink, boxShadow: `5px 5px 0 0 ${theme.ink}` }}
-            />
-          ) : (
-            <span
-              className="font-display mx-auto grid h-24 w-24 place-items-center rounded-full border-[3px] text-[32px]"
-              style={{
-                borderColor: theme.ink,
-                background: theme.accent,
-                boxShadow: `5px 5px 0 0 ${theme.ink}`,
-              }}
-            >
-              {initials(page.title, "?")}
-            </span>
-          )}
+          <RemoteImg
+            src={page.avatarUrl}
+            alt=""
+            className="mx-auto h-24 w-24 rounded-full border-[3px] object-cover"
+            style={{ borderColor: theme.ink, boxShadow: `5px 5px 0 0 ${theme.ink}` }}
+            fallback={
+              <span
+                className="font-display mx-auto grid h-24 w-24 place-items-center rounded-full border-[3px] text-[32px]"
+                style={{
+                  borderColor: theme.ink,
+                  background: theme.accent,
+                  boxShadow: `5px 5px 0 0 ${theme.ink}`,
+                }}
+              >
+                {initials(page.title, "?")}
+              </span>
+            }
+          />
 
           <h1 className="font-display mt-5 text-[34px] leading-none tracking-wide">
             {page.title}
@@ -206,15 +205,12 @@ function BlockRow({
         boxShadow: `4px 4px 0 0 ${theme.ink}`,
       }}
     >
-      {block.imageUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={block.imageUrl}
-          alt=""
-          className="h-11 w-11 shrink-0 rounded-lg border-2 object-cover"
-          style={{ borderColor: theme.ink }}
-        />
-      )}
+      <RemoteImg
+        src={block.imageUrl}
+        alt=""
+        className="h-11 w-11 shrink-0 rounded-lg border-2 object-cover"
+        style={{ borderColor: theme.ink }}
+      />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[15px] font-extrabold">{block.label}</span>
         {block.subtitle && (

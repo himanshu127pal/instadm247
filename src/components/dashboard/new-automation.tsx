@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoteImg } from "@/components/ui/remote-img";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -383,18 +384,16 @@ export function NewAutomationWizard({
                           )}
                           title={item.caption ?? undefined}
                         >
-                          {item.thumbnailUrl || item.mediaUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={item.thumbnailUrl ?? item.mediaUrl ?? ""}
-                              alt=""
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <span className="grid h-full w-full place-items-center bg-[var(--bg-sunken)] text-[10px] text-[var(--text-faint)]">
-                              {item.mediaType ?? "post"}
-                            </span>
-                          )}
+                          <RemoteImg
+                            src={item.thumbnailUrl ?? item.mediaUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            fallback={
+                              <span className="grid h-full w-full place-items-center bg-[var(--bg-sunken)] text-[10px] text-[var(--text-faint)]">
+                                {item.mediaType ?? "post"}
+                              </span>
+                            }
+                          />
                           {selected && (
                             <span className="absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-[var(--accent)] text-white">
                               <Check className="h-2.5 w-2.5" />

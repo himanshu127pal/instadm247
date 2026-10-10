@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoteImg } from "@/components/ui/remote-img";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -157,18 +158,16 @@ export function AccountsView({
               className="rounded-[var(--radius-card)] border-[2.5px] border-[var(--border)] bg-[var(--bg-raised)] p-5 shadow-[4px_4px_0_0_var(--shadow-ink)]"
             >
               <div className="flex flex-wrap items-start gap-4">
-                {account.profilePictureUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={account.profilePictureUrl}
-                    alt=""
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="grid h-12 w-12 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-kapow-400),var(--color-zap-500))] text-[15px] font-semibold text-white">
-                    {initials(account.username)}
-                  </span>
-                )}
+                <RemoteImg
+                  src={account.profilePictureUrl}
+                  alt=""
+                  className="h-12 w-12 rounded-full object-cover"
+                  fallback={
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-kapow-400),var(--color-zap-500))] text-[15px] font-semibold text-white">
+                      {initials(account.username)}
+                    </span>
+                  }
+                />
 
                 <div className="min-w-[180px] flex-1">
                   <div className="flex flex-wrap items-center gap-2">
