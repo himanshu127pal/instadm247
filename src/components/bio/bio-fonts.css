@@ -1,0 +1,83 @@
+/*
+  Fonts a link-in-bio page can pick (src/lib/bio-design.ts BIO_FONTS).
+  Self-hosted, latin subset, OFL (public/fonts/bio/OFL-LICENSE.txt): no
+  visitor's browser is sent to a third party, and a browser only downloads
+  the ones a page actually uses.
+*/
+@font-face {
+  font-family: "Bio Inter";
+  src: url("/fonts/bio/inter-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio Poppins";
+  src: url("/fonts/bio/poppins-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio Poppins";
+  src: url("/fonts/bio/poppins-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio Montserrat";
+  src: url("/fonts/bio/montserrat-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio Space Grotesk";
+  src: url("/fonts/bio/space-grotesk-latin-wght-normal.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio Archivo Black";
+  src: url("/fonts/bio/archivo-black-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio Playfair Display";
+  src: url("/fonts/bio/playfair-display-latin-wght-normal.woff2") format("woff2");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio Libre Baskerville";
+  src: url("/fonts/bio/libre-baskerville-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio Libre Baskerville";
+  src: url("/fonts/bio/libre-baskerville-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio DM Serif Display";
+  src: url("/fonts/bio/dm-serif-display-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bio Caveat";
+  src: url("/fonts/bio/caveat-latin-wght-normal.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}

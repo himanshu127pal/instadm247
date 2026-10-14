@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { BioPageView } from "@/components/bio/page-view";
 import { badgeHref, isBranded } from "@/lib/branding";
+import { resolveDesign } from "@/lib/bio-design";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +71,8 @@ export default async function PublicBioPage({
         title: page.title,
         bio: page.bio,
         avatarUrl: page.avatarUrl ?? page.account?.profilePictureUrl ?? null,
-        theme: page.theme,
+        design: resolveDesign(page.theme, page.design),
+        shareUrl: `${env.appUrl}/l/${page.slug}`,
         // On Free the badge shows whatever the saved setting says; the
         // setting only takes effect on a plan that removes branding.
         showBadge: page.showBadge || isBranded(page.workspace),
