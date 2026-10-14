@@ -34,17 +34,23 @@ export function checkSlugFormat(slug: string): SlugCheck {
 
 /**
  * Full check. Slugs are global across every workspace; `pageId` is the page
- * being edited, which may of course keep its own link.
+ * being edited, which may of course keep its own link, or take back one of
+ * its old ones. An old address that still redirects (a renamed or merged
+ * page, for 90 days) is taken until it lapses.
  */
 export async function checkSlug(slug: string, pageId?: string | null): Promise<SlugCheck> {
   const format = checkSlugFormat(slug);
   if (!format.available) return format;
-  const clash = await prisma.bioPage.findFirst({
-    where: { slug, ...(pageId ? { NOT: { id: pageId } } : {}) },
-    select: { id: true },
-  });
-  return clash ? { available: false, reason: `/l/${slug} is already taken.` } : { available: true };
+  const [clash, redirect] = await Promise.all([
+    prisma.bioPage.findFirst({ where: { slug, ...(pageId ? { NOT: { id: pageId } } : {}) }, select: { id: true } }),
+    prisma.bioRedirect.findUnique({ where: { slug }, select: { pageId: true, expiresAt: true } }),
+  ]);
+  const held = redirect && redirect.expiresAt > new Date() && redirect.pageId !== pageId;
+  return clash || held ? { available: false, reason: `/l/${slug} is already taken.` } : { available: true };
 }
+
+/** How long an old address keeps redirecting, and stays reserved. */
+export const REDIRECT_DAYS = 90;
 
 /** A link made from a name: "rezora.ai" → "rezora-ai". May be empty. */
 export function slugFromName(name: string): string {

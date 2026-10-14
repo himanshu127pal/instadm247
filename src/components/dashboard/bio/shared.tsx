@@ -5,8 +5,19 @@ import { BioPageView, type BioBlock } from "@/components/bio/page-view";
 import { presetDesign, type BioDesign } from "@/lib/bio-design";
 import { cn } from "@/lib/utils";
 
-/** `key` is the editor's own handle on a block, before and after it has an id. */
-export type EditorBlock = BioBlock & { key: string; enabled: boolean; clickCount?: number };
+/**
+ * `key` is the editor's own handle on a block, before and after it has an id.
+ * `tab` is the key of the tab it's on; null is the home tab.
+ */
+export type EditorBlock = BioBlock & { key: string; tab: string | null; enabled: boolean; clickCount?: number };
+
+/** A page inside the page, at /l/<page>/<slug>. Existing tabs use their id as key. */
+export type EditorTab = { key: string; id?: string; label: string; slug: string; enabled: boolean };
+
+/** A tab's link from its name: "Shop all" → "shop-all". */
+export function tabSlugFrom(label: string): string {
+  return label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
+}
 
 export function blockKey(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
@@ -25,6 +36,8 @@ export type BioDraft = {
   showBadge: boolean;
   theme: string;
   design: BioDesign;
+  homeLabel: string;
+  tabs: EditorTab[];
   blocks: EditorBlock[];
 };
 
@@ -42,21 +55,38 @@ export function PhoneFrame({ children, className }: { children: React.ReactNode;
   );
 }
 
-/** The page as a visitor sees it, drawn from a draft. */
+/** The page as a visitor sees it, drawn from a draft, on the open tab. */
 export function DraftPreview({
   draft,
   account,
   branded,
   appUrl,
+  activeTab = null,
+  onSelectTab,
 }: {
   draft: BioDraft;
   account: BioAccount | null;
   branded: boolean;
   appUrl: string;
+  /** The open tab's key; null is home. */
+  activeTab?: string | null;
+  onSelectTab?: (key: string | null) => void;
 }) {
+  const visibleTabs = draft.tabs.filter((t) => t.enabled || t.key === activeTab);
+  const tab = visibleTabs.find((t) => t.key === activeTab) ?? null;
+  const shown = draft.blocks.filter(
+    (b) => b.enabled && b.label.trim() && (b.tab === (tab?.key ?? null) || (b.kind === "SOCIAL" && b.tab === null)),
+  );
+  const tabs = visibleTabs.length
+    ? [
+        { key: "home", label: draft.homeLabel || "Home", active: !tab, onSelect: onSelectTab && (() => onSelectTab(null)) },
+        ...visibleTabs.map((t) => ({ key: t.key, label: t.label || "Untitled", active: t.key === tab?.key, onSelect: onSelectTab && (() => onSelectTab(t.key)) })),
+      ]
+    : [];
   return (
     <BioPageView
       preview
+      tabs={tabs}
       page={{
         id: "preview",
         title: draft.title || "Your name",
@@ -68,7 +98,7 @@ export function DraftPreview({
         handle: account?.username ?? null,
         shareUrl: `${appUrl}/l/${draft.slug}`,
       }}
-      blocks={draft.blocks.filter((b) => b.enabled && b.label.trim())}
+      blocks={shown}
     />
   );
 }

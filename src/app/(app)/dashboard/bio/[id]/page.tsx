@@ -20,10 +20,10 @@ export default async function EditBioPage({
   const { tab } = await searchParams;
 
   const [page, accounts] = await Promise.all([
-    prisma.bioPage.findFirst({ where: { id, workspaceId: workspace.id }, include: { blocks: { orderBy: { order: "asc" } } } }),
+    prisma.bioPage.findFirst({ where: { id, workspaceId: workspace.id }, include: { blocks: { orderBy: { order: "asc" } }, tabs: { orderBy: { order: "asc" } } } }),
     prisma.instagramAccount.findMany({
       where: { workspaceId: workspace.id },
-      select: { id: true, username: true, profilePictureUrl: true },
+      select: { id: true, username: true, profilePictureUrl: true, bioPage: { select: { id: true } } },
       orderBy: { createdAt: "asc" },
     }),
   ]);
@@ -35,7 +35,10 @@ export default async function EditBioPage({
         pageId={page.id}
         appUrl={env.appUrl}
         branded={isBranded(workspace)}
-        accounts={accounts}
+        // Only accounts free for this page: its own, or one with no page yet.
+        accounts={accounts
+          .filter((a) => !a.bioPage || a.bioPage.id === page.id)
+          .map(({ id, username, profilePictureUrl }) => ({ id, username, profilePictureUrl }))}
         initialTab={tab === "design" || tab === "settings" ? tab : "content"}
         initial={{
           slug: page.slug,
@@ -47,6 +50,8 @@ export default async function EditBioPage({
           showBadge: page.showBadge,
           theme: page.theme,
           design: resolveDesign(page.theme, page.design),
+          homeLabel: page.homeLabel,
+          tabs: page.tabs.map((t) => ({ key: t.id, id: t.id, label: t.label, slug: t.slug, enabled: t.enabled })),
           blocks: page.blocks.map((b) => ({
             key: b.id,
             id: b.id,
@@ -56,6 +61,7 @@ export default async function EditBioPage({
             subtitle: b.subtitle,
             imageUrl: b.imageUrl,
             enabled: b.enabled,
+            tab: b.tabId,
             clickCount: b.clickCount,
           })),
         }}

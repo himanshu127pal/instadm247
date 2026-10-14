@@ -211,7 +211,7 @@ export const FEATURES: FeaturePage[] = [
     ],
     faqs: [
       { question: "Is link in bio free?", answer: "Yes, on every plan. The Free plan shows a small \"Made with InstaDM247\" badge." },
-      { question: "Can I have more than one page?", answer: "Yes, one per account, campaign or brand." },
+      { question: "Can I have more than one page?", answer: "Each Instagram account gets one link, with as many tabs inside it as you need (a shop, your links, your services), each at its own address under your link." },
       { question: "Do I need to know design?", answer: "No. Start from a template and a theme; change only what you want. The editor warns you if a colour would make text hard to read." },
     ],
     related: ["lead-capture", "comment-to-dm", "broadcasts"],

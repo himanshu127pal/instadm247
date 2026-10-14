@@ -41,6 +41,9 @@ export type BioPageData = {
 
 const TITLE_SIZE = { sm: 26, md: 34, lg: 44 } as const;
 
+/** A tab in the bar under the header. `href` on the live page; `onSelect` in the editor. */
+export type BioTabLink = { key: string; label: string; href?: string; active: boolean; onSelect?: () => void };
+
 /** An https URL, made safe to sit inside CSS `url("…")`. */
 function cssUrl(url: string): string {
   return `url("${url.replace(/["'()\\\s]/g, (c) => encodeURIComponent(c))}")`;
@@ -61,11 +64,15 @@ function background(d: BioDesign): string {
 export function BioPageView({
   page,
   blocks,
+  tabs = [],
   preview = false,
   still = false,
 }: {
   page: BioPageData;
+  /** The blocks to show: the home tab's, or the open tab's. Social icons always come from home. */
   blocks: BioBlock[];
+  /** Shown as a bar when the page has more than one tab. */
+  tabs?: BioTabLink[];
   /** In the editor: no click tracking, fills its frame instead of the screen. */
   preview?: boolean;
   /** A picture of the page (thumbnails): no links or buttons at all, so it can sit inside one. */
@@ -148,6 +155,8 @@ export function BioPageView({
           </div>
         )}
 
+        {tabs.length > 1 && <TabBar tabs={tabs} design={d} still={still} />}
+
         <div className="space-y-3 px-5">
           {rest.map((block, i) => (
             <motion.div
@@ -184,6 +193,40 @@ export function BioPageView({
         )}
       </div>
     </main>
+  );
+}
+
+function TabBar({ tabs, design: d, still }: { tabs: BioTabLink[]; design: BioDesign; still: boolean }) {
+  return (
+    <nav aria-label="Pages" className="mb-6 px-5">
+      <div className="flex gap-1 overflow-x-auto p-1 [scrollbar-width:none]" style={{ borderRadius: d.radius + 4 }}>
+        {tabs.map((tab) => {
+          const style: React.CSSProperties = tab.active
+            ? {
+                background: withAlpha(d.blockBg, 1 - d.transparency / 100),
+                color: d.blockText,
+                borderRadius: d.radius,
+                border: d.blockOutline ? `2px solid ${d.blockText}` : "2px solid transparent",
+                boxShadow: d.blockShadow && d.blockOutline ? `3px 3px 0 0 ${d.shadow}` : undefined,
+              }
+            : { color: d.text, borderRadius: d.radius, border: "2px solid transparent" };
+          const className = "min-w-[6rem] flex-1 shrink-0 truncate px-4 py-2.5 text-center text-[13px] font-extrabold uppercase tracking-wide transition-opacity hover:opacity-80";
+          if (still) return <span key={tab.key} className={className} style={style}>{tab.label}</span>;
+          if (tab.onSelect) {
+            return (
+              <button key={tab.key} type="button" onClick={tab.onSelect} aria-current={tab.active ? "page" : undefined} className={className} style={style}>
+                {tab.label}
+              </button>
+            );
+          }
+          return (
+            <a key={tab.key} href={tab.href} aria-current={tab.active ? "page" : undefined} className={className} style={style}>
+              {tab.label}
+            </a>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 

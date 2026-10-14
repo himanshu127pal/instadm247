@@ -17,10 +17,12 @@ export type BioListPage = {
   handle: string | null;
   design: BioDesign;
   presetLabel: string;
+  /** Tab names, home first; empty when the page has no tabs. */
+  tabs: string[];
   published: boolean;
   showBadge: boolean;
   viewCount: number;
-  blocks: Array<{ id: string; kind: string; label: string; url: string | null; subtitle: string | null; imageUrl: string | null; enabled: boolean; clickCount: number }>;
+  blocks: Array<{ id: string; kind: string; label: string; url: string | null; subtitle: string | null; imageUrl: string | null; enabled: boolean; tabId: string | null; clickCount: number }>;
 };
 
 /** Every page, with what it looks like and how it's doing. Editing happens on the page's own screen. */
@@ -66,7 +68,8 @@ export function BioList({ pages, appUrl }: { pages: BioListPage[]; appUrl: strin
                   preview
                   still
                   page={{ ...page, shareUrl: "", badgeHref: "#", showBadge: page.showBadge }}
-                  blocks={page.blocks.filter((b) => b.enabled)}
+                  tabs={page.tabs.map((label, i) => ({ key: String(i), label, active: i === 0 }))}
+                  blocks={page.blocks.filter((b) => b.enabled && b.tabId === null)}
                 />
               </Thumbnail>
             </Link>
@@ -79,7 +82,9 @@ export function BioList({ pages, appUrl }: { pages: BioListPage[]; appUrl: strin
                     <Badge tone={page.published ? "success" : "neutral"}>{page.published ? "Live" : "Draft"}</Badge>
                   </div>
                   <p className="mt-1 text-[12.5px] font-bold text-[var(--text-muted)]">
-                    {page.presetLabel} · {page.blocks.length} block{page.blocks.length === 1 ? "" : "s"} · {page.viewCount.toLocaleString()} views ·{" "}
+                    {page.presetLabel} ·{" "}
+                    {page.tabs.length > 0 && `${page.tabs.length} tabs · `}
+                    {page.blocks.length} block{page.blocks.length === 1 ? "" : "s"} · {page.viewCount.toLocaleString()} views ·{" "}
                     {taps(page).toLocaleString()} taps
                   </p>
                 </div>
