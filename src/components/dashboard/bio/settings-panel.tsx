@@ -52,16 +52,20 @@ export function SettingsPanel({
                 ? `✓ Available: ${appUrl}/l/${draft.slug}`
                 : slugState.status === "checking"
                   ? "Checking…"
-                  : `${appUrl}/l/${draft.slug || "your-name"}. Changing it breaks the old link wherever you've shared it.`
+                  : `${appUrl}/l/${draft.slug || "your-name"}. If you change it, the old link keeps working for 90 days, then anyone can claim it.`
             }
             error={slugState.status === "unavailable" ? slugState.message : undefined}
           >
             <Input value={draft.slug} onChange={(e) => update({ slug: cleanSlug(e.target.value) })} placeholder="demo-studio" />
           </Field>
           {accounts.length > 0 && (
-            <Field label="Instagram account" hint="Shows your @handle, and your Instagram photo unless you've added another.">
+            <Field
+              label="Instagram account"
+              hint="Each account has one link-in-bio page. Shows your @handle, and your Instagram photo unless you've added another."
+            >
               <Select value={draft.accountId} onChange={(e) => update({ accountId: e.target.value })}>
-                <option value="">None</option>
+                {/* Only an old page that never had an account may stay without one. */}
+                {!draft.accountId && <option value="">None</option>}
                 {accounts.map((a) => (
                   <option key={a.id} value={a.id}>
                     @{a.username}

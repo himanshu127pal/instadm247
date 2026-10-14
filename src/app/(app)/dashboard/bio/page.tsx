@@ -17,19 +17,22 @@ export default async function BioPagesPage() {
     where: { workspaceId: workspace.id },
     include: {
       blocks: { orderBy: { order: "asc" } },
+      tabs: { orderBy: { order: "asc" }, select: { label: true, enabled: true } },
       account: { select: { username: true, profilePictureUrl: true } },
     },
     orderBy: { createdAt: "desc" },
   });
+  // One page per Instagram account: "New page" only while an account has none.
+  const freeAccounts = await prisma.instagramAccount.count({ where: { workspaceId: workspace.id, bioPage: null } });
   const branded = isBranded(workspace);
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
       <PageHeader
         title="Link in bio"
-        description="A hosted page for your Instagram bio link, with click tracking on every block, so you can see what people actually tap."
+        description="One page per Instagram account, for the link in your bio, with tabs inside it and click tracking on every block, so you can see what people actually tap."
         actions={
-          pages.length > 0 ? (
+          pages.length > 0 && freeAccounts > 0 ? (
             <Link href="/dashboard/bio/new">
               <Button variant="gradient">
                 <Plus className="h-4 w-4" /> New page
@@ -52,6 +55,7 @@ export default async function BioPagesPage() {
             handle: page.account?.username ?? null,
             design,
             presetLabel: `${preset?.label ?? "Comic"}${isCustomised(page.theme, design) ? " (customised)" : ""}`,
+            tabs: page.tabs.length ? [page.homeLabel, ...page.tabs.filter((t) => t.enabled).map((t) => t.label)] : [],
             published: page.published,
             showBadge: page.showBadge || branded,
             viewCount: page.viewCount,
@@ -63,6 +67,7 @@ export default async function BioPagesPage() {
               subtitle: b.subtitle,
               imageUrl: b.imageUrl,
               enabled: b.enabled,
+              tabId: b.tabId,
               clickCount: b.clickCount,
             })),
           };

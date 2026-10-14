@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { adoptOrphanBioPage } from "@/lib/bio-pages";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { subscribeAccountWebhooks } from "@/lib/meta/webhook-subscribe";
@@ -123,6 +124,10 @@ export async function GET(request: Request) {
     if (!subscription.ok) {
       console.error(`[oauth] webhook subscription failed: ${subscription.error}`);
     }
+
+    // A link-in-bio page left without an account goes to this one, so removing
+    // and reconnecting an account can't mint a second link.
+    await adoptOrphanBioPage(workspaceId, account.id).catch(() => undefined);
 
     // Best-effort media sync so the media picker is populated straight away.
     await syncAccount(account.id).catch(() => undefined);

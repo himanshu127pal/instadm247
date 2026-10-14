@@ -298,7 +298,8 @@ model InstagramAccount {
   broadcasts         Broadcast[]
   scheduledPosts     ScheduledPost[]
   rewindJobs         RewindJob[]
-  bioPages           BioPage[]
+  /// One link-in-bio page per account (docs/BIO.md §One link per account).
+  bioPage            BioPage?
 
   @@index([workspaceId])
 }
@@ -979,7 +980,9 @@ model CouponCode {
 model BioPage {
   id          String  @id @default(cuid())
   workspaceId String
-  accountId   String?
+  /// One page per Instagram account, so nobody can claim a pile of links.
+  /// Null only on pages from before that rule, in a workspace with no account.
+  accountId   String? @unique
 
   slug      String  @unique
   title     String
@@ -989,6 +992,8 @@ model BioPage {
   theme     String  @default("comic")
   /// The customer's changes on top of the preset; null renders the preset.
   design    Json?
+  /// What the first tab is called, when the page has other tabs.
+  homeLabel String  @default("Home")
   published Boolean @default(true)
   /// The only genuine white-label surface we have.
   showBadge Boolean @default(true)
@@ -1001,9 +1006,49 @@ model BioPage {
   workspace Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   account   InstagramAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
   blocks    BioBlock[]
+  tabs      BioTab[]
+  redirects BioRedirect[]
   views     BioPageView[]
 
   @@index([workspaceId])
+}
+
+/// A page inside a link-in-bio page, at /l/<page slug>/<tab slug>. The page's
+/// header, social icons and design are shared; each tab has its own blocks.
+model BioTab {
+  id        String   @id @default(cuid())
+  pageId    String
+  /// The path segment. Unique within its page only.
+  slug      String
+  label     String
+  order     Int      @default(0)
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  page   BioPage    @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  blocks BioBlock[]
+
+  @@unique([pageId, slug])
+  @@index([pageId, order])
+}
+
+/// An old address that still works for a while: a page's previous link, or a
+/// page that was merged into another as a tab. While it lives, nobody else
+/// can claim the slug.
+model BioRedirect {
+  slug      String   @id
+  pageId    String
+  /// Set when the old address now lives as a tab.
+  tabId     String?
+  /// "renamed" (a page's previous link: only the latest is kept) or "merged".
+  reason    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  page BioPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
 }
 
 model BioBlock {
@@ -1018,10 +1063,13 @@ model BioBlock {
   order      Int      @default(0)
   enabled    Boolean  @default(true)
   clickCount Int      @default(0)
+  /// The tab it's on; null is the first (home) tab. Social icons are always home.
+  tabId      String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   page   BioPage         @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  tab    BioTab?         @relation(fields: [tabId], references: [id], onDelete: Cascade)
   clicks BioBlockClick[]
 
   @@index([pageId, order])

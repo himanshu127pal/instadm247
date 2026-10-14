@@ -51,7 +51,7 @@ export function BioNew({
           slug: slug.trim(),
           title: title.trim(),
           theme: starter.preset,
-          accountId: accountId || null,
+          accountId,
           published: false,
           blocks: starter.blocks,
         }),
@@ -142,7 +142,6 @@ export function BioNew({
                   if (next && !edited.slug) setSlug(suggestions[next.id] ?? "");
                 }}
               >
-                <option value="">None</option>
                 {accounts.map((a) => (
                   <option key={a.id} value={a.id}>
                     @{a.username}

@@ -39,6 +39,8 @@ export function BioStudio({
   const [saved, setSaved] = React.useState(initial);
   const [tab, setTab] = React.useState<Tab>(initialTab);
   const [saving, setSaving] = React.useState<"save" | "publish" | null>(null);
+  /** The tab being edited and previewed: a tab key, or null for home. */
+  const [activeTab, setActiveTab] = React.useState<string | null>(null);
   const [showPreview, setShowPreview] = React.useState(false);
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
   const account = accounts.find((a) => a.id === draft.accountId) ?? null;
@@ -82,6 +84,12 @@ export function BioStudio({
       setTab("settings");
       return toast.error("The page needs a link.");
     }
+    const unnamed = next.tabs.find((t) => !t.label.trim() || !t.slug);
+    if (unnamed) {
+      setTab("content");
+      setActiveTab(unnamed.key);
+      return toast.error("Every tab needs a name and a link.");
+    }
     setSaving(changes.published ? "publish" : "save");
     try {
       // Social icons first: they always show under the header.
@@ -102,7 +110,10 @@ export function BioStudio({
           published: next.published,
           showBadge: next.showBadge,
           accountId: next.accountId || null,
-          blocks: blocks.map(({ id, kind, label, url, subtitle, imageUrl, enabled }) => ({
+          homeLabel: next.homeLabel.trim() || "Home",
+          tabs: next.tabs.map(({ key, id, label, slug, enabled }) => ({ key, id, label: label.trim(), slug, enabled })),
+          blocks: blocks.map(({ id, kind, label, url, subtitle, imageUrl, enabled, tab }) => ({
+            tab,
             id,
             kind,
             label: label.trim(),
@@ -113,12 +124,17 @@ export function BioStudio({
           })),
         }),
       });
-      const data = (await res.json()) as { error?: string; blockIds?: string[] };
+      const data = (await res.json()) as { error?: string; blockIds?: string[]; tabIds?: Array<{ key: string; id: string }> };
       if (!res.ok) throw new Error(data.error ?? "Could not save the page");
-      // New blocks now have ids: give them to every undo step too, so a later
-      // save updates them (and keeps their taps) instead of recreating them.
+      // New blocks and tabs now have ids: give them to every undo step too, so
+      // a later save updates them (and keeps their taps) instead of recreating them.
       const ids = new Map(blocks.map((b, i) => [b.key, data.blockIds?.[i]]));
-      const withIds = (d: BioDraft): BioDraft => ({ ...d, blocks: d.blocks.map((b) => (b.id || !ids.get(b.key) ? b : { ...b, id: ids.get(b.key) })) });
+      const tabIds = new Map((data.tabIds ?? []).map((t) => [t.key, t.id]));
+      const withIds = (d: BioDraft): BioDraft => ({
+        ...d,
+        tabs: d.tabs.map((t) => (t.id || !tabIds.get(t.key) ? t : { ...t, id: tabIds.get(t.key) })),
+        blocks: d.blocks.map((b) => (b.id || !ids.get(b.key) ? b : { ...b, id: ids.get(b.key) })),
+      });
       history.mapAll(withIds);
       if (changes.published !== undefined) update({ published: changes.published });
       setSaved(withIds(next));
@@ -133,7 +149,7 @@ export function BioStudio({
   const liveUrl = `${appUrl}/l/${saved.slug}`;
   const preview = (
     <PhoneFrame>
-      <DraftPreview draft={draft} account={account} branded={branded} appUrl={appUrl} />
+      <DraftPreview draft={draft} account={account} branded={branded} appUrl={appUrl} activeTab={activeTab} onSelectTab={setActiveTab} />
     </PhoneFrame>
   );
 
@@ -190,7 +206,7 @@ export function BioStudio({
             ))}
           </div>
 
-          {tab === "content" && <ContentPanel draft={draft} update={update} />}
+          {tab === "content" && <ContentPanel draft={draft} update={update} activeTab={activeTab} setActiveTab={setActiveTab} appUrl={appUrl} />}
           {tab === "design" && <DesignPanel draft={draft} update={update} />}
           {tab === "settings" && (
             <SettingsPanel draft={draft} update={update} pageId={pageId} appUrl={appUrl} accounts={accounts} branded={branded} />
@@ -232,7 +248,7 @@ export function BioStudio({
             <X className="h-5 w-5" />
           </button>
           <PhoneFrame className="h-[min(640px,85vh)]">
-            <DraftPreview draft={draft} account={account} branded={branded} appUrl={appUrl} />
+            <DraftPreview draft={draft} account={account} branded={branded} appUrl={appUrl} activeTab={activeTab} onSelectTab={setActiveTab} />
           </PhoneFrame>
         </div>
       )}
