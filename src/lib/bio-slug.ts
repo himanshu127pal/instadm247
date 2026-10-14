@@ -45,3 +45,28 @@ export async function checkSlug(slug: string, pageId?: string | null): Promise<S
   });
   return clash ? { available: false, reason: `/l/${slug} is already taken.` } : { available: true };
 }
+
+/** A link made from a name: "rezora.ai" → "rezora-ai". May be empty. */
+export function slugFromName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, SLUG_MAX - 3)
+    .replace(/-+$/, "");
+}
+
+/**
+ * A free link to suggest for a new page: the name itself, or the name with
+ * -2, -3… when that's taken (most often by the customer's own first page).
+ * Empty if nothing nearby is free; they then type one.
+ */
+export async function suggestSlug(name: string): Promise<string> {
+  const base = slugFromName(name);
+  if (!base) return "";
+  for (let n = 1; n <= 20; n++) {
+    const candidate = n === 1 ? base : `${base}-${n}`;
+    if ((await checkSlug(candidate)).available) return candidate;
+  }
+  return "";
+}

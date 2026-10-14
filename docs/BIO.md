@@ -11,6 +11,9 @@ new page `/dashboard/bio/new`, editor `/dashboard/bio/[id]`.
   Edit. Editing never happens here: the old inline form kept one page's
   details while "New page" was pressed, and said the link was taken.
 - **New page**: pick a starter template (`BIO_STARTERS`), name, link, account.
+  The name and link start from the account's username; the server works out
+  a free link per account (`suggestSlug`: the name, then -2, -3…), so the
+  form never opens on a link that's taken.
   Creates a **draft** (its links are placeholders) and opens the editor.
 - **Editor**: tabs **Blocks**, **Design**, **Settings**, and a phone preview
   rendered by the same `BioPageView` the public page uses. One draft, one
