@@ -17,7 +17,7 @@ import {
   isBranded,
   withBrandingLine,
 } from "../src/lib/branding";
-import { checkSlug, checkSlugFormat } from "../src/lib/bio-slug";
+import { checkSlug, checkSlugFormat, slugFromName, suggestSlug } from "../src/lib/bio-slug";
 import { dispatch } from "../src/lib/engine/dispatch";
 
 type Check = (label: string, condition: boolean, detail?: string) => void;
@@ -177,6 +177,15 @@ export async function runBrandingChecks(prisma: PrismaClient, check: Check, sect
     check(
       "bad formats are refused before the database is asked",
       !checkSlugFormat("A").available && !checkSlugFormat("has space").available && !checkSlugFormat("-edge-").available,
+    );
+    check(
+      "an Instagram username becomes a valid link",
+      slugFromName("rezora.ai") === "rezora-ai" && slugFromName("my_shop.") === "my-shop" && slugFromName("__") === "" && checkSlugFormat(slugFromName("Ana.Maria_")).available,
+    );
+    check("a new page is offered its name as the link when it's free", (await suggestSlug(`e2e-free-${tag}`)) === `e2e-free-${tag}`);
+    check(
+      "a new page is never offered a link that's taken (the -2 is)",
+      (await suggestSlug(`e2e-bio-${tag}`)) === `e2e-bio-${tag}-2`,
     );
 
     mutableEnv.billing.enabled = true;

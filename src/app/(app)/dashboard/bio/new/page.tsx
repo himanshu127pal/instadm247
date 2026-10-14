@@ -4,6 +4,7 @@ import { getActiveWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { isBranded } from "@/lib/branding";
+import { suggestSlug } from "@/lib/bio-slug";
 import { PageHeader } from "@/components/dashboard/bits";
 import { BioNew } from "@/components/dashboard/bio/bio-new";
 
@@ -22,7 +23,13 @@ export default async function NewBioPage() {
         <ArrowLeft className="h-4 w-4" /> All pages
       </Link>
       <PageHeader title="New link-in-bio page" />
-      <BioNew accounts={accounts} appUrl={env.appUrl} branded={isBranded(workspace)} />
+      <BioNew
+        accounts={accounts}
+        // A free link per account, so the form never opens on one that's taken.
+        suggestions={Object.fromEntries(await Promise.all(accounts.map(async (a) => [a.id, await suggestSlug(a.username)] as const)))}
+        appUrl={env.appUrl}
+        branded={isBranded(workspace)}
+      />
     </div>
   );
 }

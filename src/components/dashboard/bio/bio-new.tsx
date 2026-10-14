@@ -15,13 +15,26 @@ import { cleanSlug, Thumbnail, useSlugAvailability, type BioAccount } from "./sh
  * Start a page: pick a template, name it, claim its link. Then straight to
  * the editor, so the details of one page never sit in a form for another.
  */
-export function BioNew({ accounts, appUrl, branded }: { accounts: BioAccount[]; appUrl: string; branded: boolean }) {
+export function BioNew({
+  accounts,
+  suggestions,
+  appUrl,
+  branded,
+}: {
+  accounts: BioAccount[];
+  /** A free link for each account's page, worked out by the server. */
+  suggestions: Record<string, string>;
+  appUrl: string;
+  branded: boolean;
+}) {
   const router = useRouter();
   const [starterId, setStarterId] = React.useState(BIO_STARTERS[0].id);
   const [accountId, setAccountId] = React.useState(accounts[0]?.id ?? "");
   const account = accounts.find((a) => a.id === accountId) ?? null;
   const [title, setTitle] = React.useState(account?.username ?? "");
-  const [slug, setSlug] = React.useState(account ? cleanSlug(account.username) : "");
+  const [slug, setSlug] = React.useState(account ? (suggestions[account.id] ?? "") : "");
+  // Until the person types their own, the name and link follow the account picked.
+  const [edited, setEdited] = React.useState({ title: false, slug: false });
   const [saving, setSaving] = React.useState(false);
   const slugState = useSlugAvailability(slug, null);
   const starter = BIO_STARTERS.find((s) => s.id === starterId)!;
@@ -95,7 +108,11 @@ export function BioNew({ accounts, appUrl, branded }: { accounts: BioAccount[]; 
       <SectionCard title="2. Name it and claim your link">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Name on the page">
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Demo Studio" maxLength={80} />
+            <Input value={title} onChange={(e) => {
+                setTitle(e.target.value);
+                setEdited((x) => ({ ...x, title: true }));
+              }}
+              placeholder="Demo Studio" maxLength={80} />
           </Field>
           <Field
             label="Link"
@@ -108,14 +125,21 @@ export function BioNew({ accounts, appUrl, branded }: { accounts: BioAccount[]; 
             }
             error={slugState.status === "unavailable" ? slugState.message : undefined}
           >
-            <Input value={slug} onChange={(e) => setSlug(cleanSlug(e.target.value))} placeholder="demo-studio" />
+            <Input value={slug} onChange={(e) => {
+                setSlug(cleanSlug(e.target.value));
+                setEdited((x) => ({ ...x, slug: true }));
+              }}
+              placeholder="demo-studio" />
           </Field>
           {accounts.length > 0 && (
             <Field label="Instagram account" hint="Shows your @handle, and your Instagram photo unless you add another.">
               <Select
                 value={accountId}
                 onChange={(e) => {
+                  const next = accounts.find((a) => a.id === e.target.value);
                   setAccountId(e.target.value);
+                  if (next && !edited.title) setTitle(next.username);
+                  if (next && !edited.slug) setSlug(suggestions[next.id] ?? "");
                 }}
               >
                 <option value="">None</option>
