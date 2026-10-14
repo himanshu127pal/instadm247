@@ -985,7 +985,10 @@ model BioPage {
   title     String
   bio       String?
   avatarUrl String?
+  /// The preset the page's look started from. See src/lib/bio-design.ts.
   theme     String  @default("comic")
+  /// The customer's changes on top of the preset; null renders the preset.
+  design    Json?
   published Boolean @default(true)
   /// The only genuine white-label surface we have.
   showBadge Boolean @default(true)

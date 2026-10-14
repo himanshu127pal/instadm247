@@ -3,37 +3,11 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { AuthError } from "@/lib/auth";
 import { ok, parseBody, route } from "@/lib/api";
-import { checkSlug, SLUG_MAX, SLUG_MIN, SLUG_PATTERN } from "@/lib/bio-slug";
+import { checkSlug } from "@/lib/bio-slug";
 import { isBranded } from "@/lib/branding";
+import { bioPageSchema as upsertSchema } from "@/lib/bio-schema";
 
 export const runtime = "nodejs";
-
-const blockSchema = z.object({
-  id: z.string().optional(),
-  kind: z.enum(["LINK", "HEADING", "TEXT", "SOCIAL", "EMAIL", "WHATSAPP", "PRODUCT"]),
-  label: z.string().min(1).max(120),
-  url: z.string().max(500).nullable().optional(),
-  subtitle: z.string().max(160).nullable().optional(),
-  imageUrl: z.string().max(500).nullable().optional(),
-  enabled: z.boolean().default(true),
-});
-
-const upsertSchema = z.object({
-  id: z.string().optional(),
-  slug: z
-    .string()
-    .min(SLUG_MIN)
-    .max(SLUG_MAX)
-    .regex(SLUG_PATTERN, "Use lowercase letters, numbers and hyphens only"),
-  title: z.string().min(1).max(80),
-  bio: z.string().max(300).nullable().optional(),
-  avatarUrl: z.string().max(500).nullable().optional(),
-  theme: z.enum(["comic", "midnight", "punch", "mint", "sky"]).default("comic"),
-  published: z.boolean().default(true),
-  showBadge: z.boolean().default(true),
-  accountId: z.string().nullable().optional(),
-  blocks: z.array(blockSchema).max(50).default([]),
-});
 
 export const POST = route(async ({ workspace, request }) => {
   const body = await parseBody(request, upsertSchema);
@@ -72,6 +46,7 @@ async function upsertPage(workspace: { id: string; planKey: string }, body: z.in
     bio: body.bio ?? null,
     avatarUrl: body.avatarUrl ?? null,
     theme: body.theme,
+    design: body.design ?? Prisma.DbNull,
     published: body.published,
     showBadge,
     accountId: body.accountId ?? null,
@@ -122,7 +97,7 @@ async function upsertPage(workspace: { id: string; planKey: string }, body: z.in
     }
 
     const page = await prisma.bioPage.update({ where: { id: body.id }, data });
-    return ok({ page });
+    return ok({ page, blockIds: await blockIdsInOrder(page.id) });
   }
 
   const page = await prisma.bioPage.create({
@@ -143,7 +118,13 @@ async function upsertPage(workspace: { id: string; planKey: string }, body: z.in
     },
   });
 
-  return ok({ page });
+  return ok({ page, blockIds: await blockIdsInOrder(page.id) });
+}
+
+/** The saved blocks' ids, in the order they were sent, so the editor can match them up. */
+async function blockIdsInOrder(pageId: string): Promise<string[]> {
+  const blocks = await prisma.bioBlock.findMany({ where: { pageId }, orderBy: { order: "asc" }, select: { id: true } });
+  return blocks.map((b) => b.id);
 }
 
 export const DELETE = route(async ({ workspace, request }) => {

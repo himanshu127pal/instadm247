@@ -193,25 +193,26 @@ export const FEATURES: FeaturePage[] = [
     name: "Link in bio",
     title: "Free link-in-bio page with click tracking",
     description:
-      "A fast link-in-bio page for your Instagram profile, with per-link click tracking, five themes, and product, email and WhatsApp blocks.",
+      "A link-in-bio page for Instagram with click tracking on every link, templates, social icons, and a design editor with live preview.",
     eyebrow: "Link in bio",
     headline: "One link in your bio. Every tap counted.",
     intro:
       "A hosted page at your own short link, built for a phone and an Instagram profile tap. Add links, headings, products, email and WhatsApp buttons, and see exactly which ones people use.",
     steps: [
-      { title: "Pick your link", body: "Choose your address. We check it's free as you type." },
-      { title: "Add blocks", body: "Links, headings, text, products, social, email and WhatsApp." },
+      { title: "Pick a template", body: "Creator, Shop, Coach or blank, then claim your address. We check it's free as you type." },
+      { title: "Make it yours", body: "Links, products, headings, social icons, email and WhatsApp, and the look, with a live preview as you go." },
       { title: "Put it in your bio", body: "Copy the link into your Instagram profile." },
     ],
     highlights: [
       { title: "Click tracking", body: "Views and taps per block, with full history." },
-      { title: "Five themes", body: "Comic cream, midnight, punch, mint and sky." },
+      { title: "Design it your way", body: "11 themes, three header layouts, your colours and fonts, gradient or photo backgrounds, and block styles from comic to clean." },
       { title: "Fast", body: "No dashboard code, no tracking scripts. It loads quickly on a phone." },
       { title: "Your brand", body: "Paid plans can remove the \"Made with InstaDM247\" badge." },
     ],
     faqs: [
       { question: "Is link in bio free?", answer: "Yes, on every plan. The Free plan shows a small \"Made with InstaDM247\" badge." },
       { question: "Can I have more than one page?", answer: "Yes, one per account, campaign or brand." },
+      { question: "Do I need to know design?", answer: "No. Start from a template and a theme; change only what you want. The editor warns you if a colour would make text hard to read." },
     ],
     related: ["lead-capture", "comment-to-dm", "broadcasts"],
   },

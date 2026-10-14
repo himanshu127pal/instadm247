@@ -216,8 +216,14 @@ To thank people when they finish, add a Send DM step after the last question.`,
     id: "bio",
     title: "Link in bio",
     path: "/dashboard/bio",
-    body: `**Link in bio** → create a page: title, **Link** (your page's address; it tells you as you type if it's taken), bio, theme, avatar and the Instagram account. Add blocks: Link, Heading, Text, Email, WhatsApp, Product; reorder or hide them. Switch **Published** on and paste **Your link** into your Instagram bio. Every tap is counted.
-On the Free plan the "Made with InstaDM247" badge always shows; on paid plans you can turn off **Show badge**.`,
+    body: `**Link in bio** lists your pages, each with a picture of how it looks, its views and taps, and **Open**, **Design** and **Edit**.
+**New page** → pick a template (**Creator**, **Shop**, **Coach** or **Blank**), give it a **Name on the page**, a **Link** (your page's address; it tells you as you type if it's taken) and the Instagram account, then **Create and edit**. New pages start as a draft with placeholder links: replace them before you publish.
+The editor has three tabs, with a live phone preview beside them (on a phone, tap **Preview**). Nothing changes for visitors until you press **Save** or **Publish**; **Undo** and **Redo** step through your changes.
+- **Blocks**: **Profile** (name, bio, **Profile picture link**, which falls back to your Instagram photo), **Social icons** (a row of icons under your name: Instagram, TikTok, YouTube, X, LinkedIn, WhatsApp, email and more), and **Blocks**: Link, Product, Heading, Text, Email, WhatsApp. Reorder with the arrows, hide with the switch, remove with the bin.
+- **Design**: **Theme** (11 ready-made looks; picking one replaces colours, fonts and styles), **Header** (Minimal, Banner with a cover image, or Portrait with your photo big), **Profile picture** (circle or rounded, size, outline), **Background** (solid, gradient or image, and the comic halftone dots), **Colours** (it warns when text would be hard to read), **Fonts** and **Block style** (corner radius, see-through, shadow, outline).
+- **Settings**: the link, the Instagram account, **Published**, **Share button** (lets visitors share your page), the "Made with InstaDM247" badge, and **Delete page**.
+Every tap on a block or social icon is counted. Links must be web addresses (or an email or phone number for those blocks); anything else is refused when you save.
+On the Free plan the "Made with InstaDM247" badge always shows; on paid plans you can turn it off.`,
   },
   {
     id: "templates",

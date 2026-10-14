@@ -35,6 +35,7 @@ import { runBroadcastFieldChecks } from "./e2e-broadcast-fields";
 import { runContactTagChecks } from "./e2e-contact-tags";
 import { runAutomationNameChecks } from "./e2e-automation-names";
 import { runMyContentChecks } from "./e2e-my-content";
+import { runBioDesignChecks } from "./e2e-bio-design";
 import { runSupportChecks } from "./e2e-support";
 import { runOnboardingChecks } from "./e2e-onboarding";
 import { evaluateKeywords, matchesKeyword, normalizeText } from "../src/lib/engine/match";
@@ -1028,6 +1029,7 @@ async function main() {
   await runContactTagChecks(prisma, check, section);
   runAutomationNameChecks(check, section);
   runMyContentChecks(check, section);
+  runBioDesignChecks(check, section);
   await runSupportChecks(prisma, check, section);
   await runOnboardingChecks(prisma, check, section);
 
